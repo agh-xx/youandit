@@ -26,12 +26,15 @@ define main (self, frame)
 
     throw GotoPrompt;
     }
-
+  
   if (frame <= self.cur.frame)
     self.cur.frame --;
 
   if (0 > self.cur.frame)
     self.cur.frame = 0;
+
+  self.buffers[frame] = NULL;
+  self.buffers = self.buffers[wherenot (_isnull (self.buffers))];
 
   variable buf = self.buffers[self.cur.frame];
 
@@ -40,9 +43,6 @@ define main (self, frame)
  
   ifnot (NULL == self.cur.mainbufframe)
     self.cur.mainbufframe = self.cur.frame;
-
-  self.buffers[frame] = NULL;
-  self.buffers = self.buffers[wherenot (_isnull (self.buffers))];
 
   self.frames--;
 
