@@ -15,7 +15,7 @@ private variable
 private define write_progress_info (s)
 {
   (@print_norm) (sprintf ("%8d/%-8d bytes ",  s.bytes_received, s.total_bytes);
-    print_in_msg_line, dont_write_to_file);
+    print_in_msg_line, dont_write_to_stdout);
 }
 
 private define progress_callback (s, dltotal, dlnow, ultotal, ulnow)

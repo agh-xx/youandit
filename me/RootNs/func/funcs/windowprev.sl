@@ -1,6 +1,6 @@
 define main (self)
 {
-  if (2 == length (root.windnames) && CW.name != "root")
+  if (2 == length (root.windnames) && CW.name != mytypename)
     {
     srv->send_msg ("There is only one window", -1);
     if (qualifier_exists ("dont_goto_prompt"))
@@ -18,7 +18,7 @@ define main (self)
  
   name = windnames[cur];
  
-  while (name == "root")
+  while (name == mytypename)
     {
     cur = cur == 0 ? len : cur - 1;
     name = windnames[cur];

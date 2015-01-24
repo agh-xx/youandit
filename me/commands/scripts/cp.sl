@@ -1,9 +1,9 @@
-require ("pcre");
-require ("makedir");
-require ("parents");
-require ("copy");
-require ("cprecursive");
-require ("cprecursive_opts");
+ineed ("pcre");
+ineed ("makedir");
+ineed ("parents");
+ineed ("copy");
+ineed ("cprecursive");
+ineed ("cprecursive_opts");
 
 define assign_interactive_noclobber (interactive, noclobber, code)
 {

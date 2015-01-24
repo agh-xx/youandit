@@ -1,4 +1,4 @@
-require ("extract");
+ineed ("extract");
 
 define main ()
 {

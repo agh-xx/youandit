@@ -30,7 +30,7 @@ define f_print_norm (str)
 
   srv->refresh;
  
-  ifnot (qualifier_exists ("dont_write_to_file"))
+  ifnot (qualifier_exists ("dont_write_to_stdout"))
     () = fprintf (STDOUTFP, "%s\n", strtrim_end (str));
 }
 
@@ -43,7 +43,7 @@ define f_print_err (str)
 
   srv->refresh;
 
-  ifnot (qualifier_exists ("dont_write_to_file"))
+  ifnot (qualifier_exists ("dont_write_to_stdout"))
     () = fprintf (STDOUTFP, "%s\n", strtrim_end (str));
 
   () = fprintf (STDERRFP, "%s\n", strtrim_end (str));
@@ -58,7 +58,7 @@ define f_print_warn (str)
 
   srv->refresh;
 
-  ifnot (qualifier_exists ("dont_write_to_file"))
+  ifnot (qualifier_exists ("dont_write_to_stdout"))
     () = fprintf (STDOUTFP, "%s\n", strtrim_end (str));
 
   () = fprintf (STDERRFP, "%s\n", strtrim_end (str));

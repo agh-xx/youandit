@@ -93,7 +93,6 @@ try
   () = evalfile (sprintf ("%s/I_Ns/lib/except_to_arr", STDNS));
   () = evalfile (sprintf ("%s/I_Ns/lib/std", STDNS));
   () = evalfile (sprintf ("%s/I_Ns/lib/need", STDNS), "i");
-  () = evalfile (sprintf ("%s/I_Ns/lib/require", STDNS));
   () = evalfile (sprintf ("%s/I_Ns/init/typedefs", STDNS));
   () = evalfile (sprintf ("%s/I_Ns/init/sysproc", STDNS));
 

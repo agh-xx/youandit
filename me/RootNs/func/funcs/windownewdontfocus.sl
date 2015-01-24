@@ -50,4 +50,3 @@ define main ()
 
   throw GotoPrompt;
 }
-

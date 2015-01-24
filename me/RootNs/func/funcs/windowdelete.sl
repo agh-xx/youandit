@@ -6,7 +6,7 @@ define main ()
   else
     name = ();
 
-  if (any (["root", "main"] == name))
+  if (any ([mytypename, maintypename] == name))
     {
     srv->send_msg (sprintf ("You can't delete the %s window", name), -1);
     if (qualifier_exists ("dont_goto_prompt"))

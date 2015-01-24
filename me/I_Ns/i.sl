@@ -31,7 +31,9 @@ variable
   SLSH_EXEC,
   SUDO_EXEC,
   getchar_lang,
-  getch;
+  getch,
+  mytypename = "i",
+  maintypename = "main";
 
 try
   {
@@ -165,12 +167,12 @@ if (24 > AVAILABLE_LINES)
 if (82 > COLUMNS)
   root->exit_me (1, "I DONT REALLY WANT TO CONTINUE WITH LESS THAN 82 COLUMNS");
 
-if (NULL == root.addwind ("root", "Root_Type";
-    typedir = sprintf ("%s/I_Ns/types/", STDNS), msgarray = "Root Window Buffer",
+if (NULL == root.addwind (mytypename, sprintf ("%s_Type", strup (mytypename));
+    typedir = sprintf ("%s/I_Ns/types/", STDNS), msgarray = "Distribution Managment Buffer",
     dont_draw))
   root->exit_me (1, NULL);
 
-if (NULL == root.addwind ("main", "Shell_Type";dont_draw))
+if (NULL == root.addwind (maintypename, "Shell_Type";dont_draw))
   root->exit_me (1, NULL);
 
 $9 = wherenot (strncmp (__argv, "--app=", 6));

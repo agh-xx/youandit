@@ -1,4 +1,4 @@
-require ("copyfile");
+ineed ("copyfile");
 
 define mvfile (source, dest, opts)
 {

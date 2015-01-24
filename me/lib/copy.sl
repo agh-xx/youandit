@@ -1,5 +1,5 @@
-require ("copyfile");
-require ("modetoint");
+ineed ("copyfile");
+ineed ("modetoint");
 
 define copy (source, dest, st_source, st_dest, opts)
 {
@@ -83,8 +83,6 @@ define copy (source, dest, st_source, st_dest, opts)
           (@print_err) (sprintf ("%s: couldn't be removed", dest));
           return -1;
           }
-
-        force = 1;
         }
     }
 

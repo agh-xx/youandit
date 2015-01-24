@@ -1,4 +1,4 @@
-require ("copyfile");
+ineed ("copyfile");
 
 define ln (source, dest, opts)
 {

@@ -29,33 +29,39 @@ define main (self, argv)
       }
 
       {
-      case "sync":
+      case "synctree":
         if (1 == length (argv))
           {
-          srv->send_msg ("sync: needs an argument (directory)", -1);
+          srv->send_msg ("synctree: needs an argument (directory)", -1);
           throw Break;
           }
 
-        ifnot (isdirectory (argv[1]))
-          {
-          srv->send_msg (sprintf ("%s: is not a directory", argv[1]), -1);
-          throw Break;
-          }
-        
-        if (are_same_files (ROOTDIR,  argv[1]))
-          {
-          srv->send_msg ("you are trying to sync with me", -1);
-          throw Break;
-          }
-      
-        throw Break;
+      retval = proc->call (["synccurrenttree", "--nocl",
+           argv[1],
+           sprintf ("--execdir=%s/proc", path_dirname (__FILE__)),
+           sprintf ("--msgfname=%s", buf.fname),
+           sprintf ("--mainfname=%s", buf.fname)]);
+      }
 
+      {
+      case "backuptree":
+        if (1 == length (argv))
+          {
+          srv->send_msg ("backuptree: needs an argument (directory)", -1);
+          throw Break;
+          }
+
+      retval = proc->call (["backupcurrenttree", "--nocl",
+           argv[1],
+           sprintf ("--execdir=%s/proc", path_dirname (__FILE__)),
+           sprintf ("--msgfname=%s", buf.fname),
+           sprintf ("--mainfname=%s", buf.fname)]);
       }
     }
   catch Break:
     routine = NULL;
   catch AnyError:
-    root.lib.printtostdout (exception_to_array);
+    root.lib.printtostdout (exception_to_array ());
   finally:
     {
     ifnot (NULL == routine)
@@ -63,6 +69,7 @@ define main (self, argv)
       self.drawframe (0;reread_buf);
       self.setinfoline (buf, 0, length (buf.ar_len));
       self.writeinfolines ();
+      self.gotopager(;func="G", frame = 0);
       }
 
     self.gotoprompt ();

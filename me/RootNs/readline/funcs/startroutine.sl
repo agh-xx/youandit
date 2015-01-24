@@ -39,7 +39,7 @@ define main (self, keys)
     root.func.call ("windowprev");
 
   if (any (keys->cmap.root == self.cur.chr))
-    root.func.call ("windowgoto", "root");
+    root.func.call ("windowgoto", mytypename);
 
   ifnot (NULL == keys->cmap.battery)
     if (any (keys->cmap.battery == self.cur.chr))
@@ -52,7 +52,7 @@ define main (self, keys)
   if (any (keys->cmap.windgoto == self.cur.chr))
     {
     winds = list_to_array (root.windnames);
-    winds = winds[wherenot ((winds == CW.name) or (winds == "root"))];
+    winds = winds[wherenot ((winds == CW.name) or (winds == mytypename))];
 
     ifnot (length (winds))
       {

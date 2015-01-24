@@ -52,10 +52,10 @@ define main (self, command, retval)
   if (any (["windowgoto", "windowdelete"] == command))
     {
     windows = list_to_array (root.windnames);
-    windows = windows[wherenot ((CW.name == windows) or ("root" == windows))];
+    windows = windows[wherenot ((CW.name == windows) or (mytypename == windows))];
  
     if ("windowdelete" == command)
-      windows = windows[wherenot ("main" == windows)];
+      windows = windows[wherenot (maintypename == windows)];
 
     ifnot (length (windows))
       {

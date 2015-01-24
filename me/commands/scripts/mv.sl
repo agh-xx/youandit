@@ -1,5 +1,5 @@
-require ("mvfile");
-require ("mvdir");
+ineed ("mvfile");
+ineed ("mvdir");
 
 define assign_interactive_noclobber (interactive, noclobber, code)
 {

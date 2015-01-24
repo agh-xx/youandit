@@ -44,7 +44,7 @@ define sethwclock ()
 
 define main ()
 {
-  (@print_norm) ("Setting Date and Hardware Clock";dont_write_to_file, print_in_msg_line);
+  (@print_norm) ("Setting Date and Hardware Clock";dont_write_to_stdout, print_in_msg_line);
 
   gethwclock ();
 
@@ -78,7 +78,7 @@ define main ()
 
   (@print_norm) (sprintf ("Set date to: %s", ref));
   (@print_norm) ("Changing hardware clock, wait 2 seconds ...";
-    dont_write_to_file, print_in_msg_line);
+    dont_write_to_stdout, print_in_msg_line);
 
   sethwclock ();
 

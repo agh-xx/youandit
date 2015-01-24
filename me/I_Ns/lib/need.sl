@@ -34,7 +34,7 @@ define need ()
     () = evalfile (file, ns);
     }
   catch ParseError:
-    throw ParseError;
+    throw ParseError, __get_exception_info.message;
   
   LOADED[sprintf ("%s.%s", ns, file)] = 1;
 }

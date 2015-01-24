@@ -1,6 +1,6 @@
-require ("fswalk");
-require ("cprecursive");
-require ("cprecursive_opts");
+ineed ("fswalk");
+ineed ("cprecursive");
+ineed ("cprecursive_opts");
 
 private define file_callback (file, st, filelist)
 {

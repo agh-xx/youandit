@@ -50,7 +50,7 @@ private define file_callback (file, st_source, source, dest, opts, exit_code)
       return 1;
       }
 
-  (dest,) = strreplace (file, source, dest, 1);
+  (dest, ) = strreplace (file, source, dest, 1);
 
   if (-1 == copy (file, dest, st_source, stat_file (dest), opts))
     {
@@ -65,12 +65,12 @@ define cprecursive (source, dest, opts)
 {
   variable
     exit_code = 0,
-    fswalk = fswalk_new (&dir_callback, &file_callback;
+    os = fswalk_new (&dir_callback, &file_callback;
     dargs = {source, dest, opts, &exit_code},
     fargs = {source, dest, opts, &exit_code},
     maxdepth = opts.maxdepth);
 
-  fswalk.walk (source);
+  os.walk (source);
 
   return exit_code;
 }
