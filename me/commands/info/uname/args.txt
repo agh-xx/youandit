@@ -1,0 +1,9 @@
+--kernel-name void print the kernel name
+--kernel-release void print the kernel release
+--kernel-version void print the kernel version
+--machine void print the machine hardware name
+--processor void print the processor type
+--nodename void print the network node hostname
+--all void print all information
+--help void Show help
+--info void Show information

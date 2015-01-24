@@ -1,0 +1,14 @@
+ SYNOPSIS
+  Print group memberships
+
+ USAGE
+  groups [options] [username]
+
+ DESCRIPTION
+  Print group memberships for username or, if no username is specified,
+    for the current process
+
+ OPTIONS
+
+  --help          Show this message
+  --info          Show information

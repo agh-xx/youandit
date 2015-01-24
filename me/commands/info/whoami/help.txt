@@ -1,0 +1,14 @@
+ SYNOPSIS
+  Print username
+
+ USAGE
+  whoami [options] [username]
+
+ DESCRIPTION
+   Print the user name associated with the current effective user ID,
+     Same as id -un
+
+ OPTIONS
+
+  --help          Show this message
+  --info          Show information

@@ -1,0 +1,6 @@
+--time=      string use this time "sec:min:hour:day:mon:year" instead of current time
+--atime      void   change the access time
+--mtime      void   change only the modification time
+--no-create  void   do not create any files
+--help       void   Show help
+--info       void   Show information

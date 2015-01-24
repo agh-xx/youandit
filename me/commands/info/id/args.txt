@@ -1,0 +1,7 @@
+--group  void   print only the effective group ID
+--groups void   print all group IDs
+--name   void   print a name instead of a number, with --[user][group][groups]
+--real   void   print the real ID instead of the effective ID, with --[user][group][groups]
+--user   void   print only the effective user ID
+--help   void   show this message
+--info 	 void   show information

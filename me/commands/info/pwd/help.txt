@@ -1,0 +1,9 @@
+DESCRIPTION
+  Print the current directory
+
+USAGE
+  pwd
+
+OPTIONS
+  --help   Show help
+  --info   show information

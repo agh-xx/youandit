@@ -1,0 +1,20 @@
+ SYNOPSIS
+  Machine information
+
+ USAGE
+  uname [options]
+
+ DESCRIPTION
+  Print information about the current machine and operating system
+
+ OPTIONS
+
+  --kernel-name      Print the kernel name
+  --kernel-release   Print the kernel release
+  --kernel-version   Print the kernel version
+  --machine          Print the machine hardware name
+  --processor        Print the processor type
+  --nodename         Print the network node hostname
+  --all              Print all information
+  --help             Show this message
+  --info             Show information

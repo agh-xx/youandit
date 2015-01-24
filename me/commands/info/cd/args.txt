@@ -1,0 +1,12 @@
+--help void Show help
+--info void Show information
+-0 void  /home/aga/
+-1 void  /home/aga/
+-2 void  /home/aga/
+-3 void  /home/aga/
+-4 void  /home/aga/
+-5 void  /home/aga/slang/
+-6 void  /home/aga/
+-7 void  /home/aga/root/sources/usr/commands/
+-8 void  /home/aga/root/sources/usr/commands/std/
+-9 void  /home/aga/root/sources/usr/commands/std/scripts/

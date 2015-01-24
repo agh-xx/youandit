@@ -1,0 +1,16 @@
+ SYNOPSIS
+  Convert ISO encoding to UTF8
+
+ USAGE
+  iso2utf8 [options] filename
+
+ DESCRIPTION
+  Convert the ISO encoding of the characters in a file to UTF8
+
+ OPTIONS
+  --recursive Make changes recursivelly
+  --force     Force convertion
+  --iso       ISO encoding, default is ISO88597
+  --backup    Backup with the given extension, if "no" make no backup
+  --info      Show information
+  --help      Show help

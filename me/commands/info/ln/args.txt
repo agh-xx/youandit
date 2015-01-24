@@ -1,0 +1,7 @@
+--interactive void ask before removing existing files
+--force       void remove existing file
+--backup      void make backups
+--suffix=     string change default backup suffix (~)
+--symbolic    void make symbolic links instead of hardlinks
+--help        void Show help
+--info        void Show information

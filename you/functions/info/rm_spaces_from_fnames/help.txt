@@ -1,0 +1,13 @@
+ SYNOPSIS
+  Remove spaces from filenames
+
+ USAGE
+  remove_spaces_from_fnames [options] filename
+
+ DESCRIPTION
+  Replace spaces from filenames with an undercore
+
+ OPTIONS
+
+  --recursive Make changes recursivelly
+  --info      Show information

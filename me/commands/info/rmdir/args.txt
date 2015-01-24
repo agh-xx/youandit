@@ -1,0 +1,4 @@
+--ask     void Ask before removing
+--parents void Remove directory and its ancestors
+--help    void Show help
+--info    void Show information

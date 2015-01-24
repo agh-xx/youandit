@@ -1,0 +1,2 @@
+--help   void   show this message
+--info 	 void   show information

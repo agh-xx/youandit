@@ -1,0 +1,13 @@
+ SYNOPSIS
+  change directory
+
+ USAGE
+  cd [options] directory
+
+ DESCRIPTION
+  change directory
+
+ OPTIONS
+
+  --help   show this message
+  --info   show information

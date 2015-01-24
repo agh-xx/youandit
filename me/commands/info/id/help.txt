@@ -1,0 +1,19 @@
+ SYNOPSIS
+  Print user/group information
+
+ USAGE
+  id [options] [username]
+
+ DESCRIPTION
+  Print user and group information for the specified username
+    or (when username omitted) for the current user
+
+ OPTIONS
+
+  -g, --group     Print only the effective group ID
+  -G, --groups    Print all group IDs
+  -n, --name      Print a name instead of a number, with -ugG
+  -r, --real      Print the real ID instead of the effective ID, with -ugG
+  -u, --user      Print only the effective user ID
+  --help          Show this message
+  --info          Show information
