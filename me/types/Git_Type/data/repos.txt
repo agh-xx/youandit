@@ -1,1 +1,2 @@
+/home/aga/repos/slang/
 /home/share/youandit/sources/

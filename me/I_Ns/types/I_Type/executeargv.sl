@@ -8,7 +8,18 @@ define main (self, argv)
   try
     {
     switch (argv[0])
- 
+
+      {
+      case "checkconnection":
+        retval = proc->get ("isconnected", "isconnected";type = 1);
+        ifnot (retval)
+          srv->send_msg ("Is not connected", -1);
+        else
+          srv->send_msg ("It is connected", 0);
+
+        throw Break;
+      }
+
       {
       case "bytecompile":
       retval = proc->call (["bytecompile", __argv[0], "--nocl",

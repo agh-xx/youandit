@@ -20,10 +20,10 @@ private define startroutine (self, keys)
 define main (self, name)
 {
   variable
-    rootcommands = ["bytecompile", "debugconsole", "synctree", "backuptree"],
+    rootcommands = ["bytecompile", "debugconsole", "synctree", "backuptree", "checkconnection"],
     sorted = array_sort (rootcommands),
     rootcommandshelp = ["bytecompile application", "the debug console",
-      "sync current distribution from another source", "backup distribution"];
+      "sync current distribution from another source", "backup distribution", "check internet connection"];
 
   root.windows[name] = struct
     {
