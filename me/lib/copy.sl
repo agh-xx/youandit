@@ -1,5 +1,22 @@
 ineed ("copyfile");
 ineed ("modetoint");
+ineed ("fileis");
+
+define clean (force, backup, backupfile, dest)
+{
+  if (force)
+    {
+    ifnot (NULL == backupfile)
+      if (NULL == backup)
+        () = rename (backupfile, dest);
+      else
+        () = copyfile (backupfile, dest);
+    }
+  else
+    ifnot (NULL == backup)
+      ifnot (NULL == backupfile)
+        () = remove (backupfile);
+}
 
 define copy (source, dest, st_source, st_dest, opts)
 {
@@ -41,20 +58,22 @@ define copy (source, dest, st_source, st_dest, opts)
       }
 
     if (opts.backup)
-      {
-      backup = sprintf ("%s%s", dest, opts.suffix);
-
-      if (-1 == copyfile (dest, backup))
+      ifnot (any ([isfifo (source;st = st_source), issock (source;st = st_source),
+          ischr (source;st = st_source), isblock (source;st = st_source)]))
         {
-        (@print_err) (sprintf ("cannot backup, %s", dest));
-        return -1;
+        backup = sprintf ("%s%s", dest, opts.suffix);
+
+        if (-1 == copyfile (dest, backup))
+          {
+          (@print_err) (sprintf ("cannot backup, %s", dest));
+          return -1;
+          }
+
+        ifnot (access (dest, X_OK))
+          () = chmod (backup, 0755);
+
+        backuptext = sprintf ("(backup: `%s')", backup);
         }
-
-      ifnot (access (dest, X_OK))
-        () = chmod (backup, 0755);
-
-      backuptext = sprintf ("(backup: `%s')", backup);
-      }
 
     ifnot (st_dest.st_mode & S_IWUSR)
       if (NULL == opts.force)
@@ -63,27 +82,31 @@ define copy (source, dest, st_source, st_dest, opts)
         return 0;
         }
       else
-        {
-        if (NULL == opts.backup)
+        ifnot (any ([isfifo (source;st = st_source), issock (source;st = st_source),
+          ischr (source;st = st_source), isblock (source;st = st_source)]))
           {
-          backup = sprintf ("%s%s", dest, opts.suffix);
-
-          if (-1 == copyfile (dest, backup))
+          if (NULL == opts.backup)
             {
-            (@print_err) (sprintf ("cannot backup, %s", dest));
+            backup = sprintf ("%s%s", dest, opts.suffix);
+
+            if (-1 == copyfile (dest, backup))
+              {
+              (@print_err) (sprintf ("cannot backup, %s", dest));
+              return -1;
+              }
+
+            ifnot (access (dest, X_OK))
+              () = chmod (backup, 0755);
+            }
+
+          if (-1 == remove (dest))
+            {
+            (@print_err) (sprintf ("%s: couldn't be removed", dest));
             return -1;
             }
 
-          ifnot (access (dest, X_OK))
-            () = chmod (backup, 0755);
+          force = 1;
           }
-
-        if (-1 == remove (dest))
-          {
-          (@print_err) (sprintf ("%s: couldn't be removed", dest));
-          return -1;
-          }
-        }
     }
 
   if (stat_is ("lnk", st_source.st_mode))
@@ -93,32 +116,26 @@ define copy (source, dest, st_source, st_dest, opts)
       {
       (@print_err) (sprintf
         ("source `%s' points to the non existing file `%s', aborting ...", source, link));
-
-      ifnot (NULL == opts.backup)
-        () = remove (backup);
       
-      if (NULL == opts.backup && backup != NULL)
-        () = remove (backup);
+      clean (force, opts.backup, backup, dest);
       
       return -1;
       }
     else if (NULL == opts.nodereference)
-      () = symlink (link, dest);
+      if (-1 == symlink (link, dest))
+        {
+        clean (force, opts.backup, backup, dest);
+
+        return -1;
+        }
     }
-  else if (
-    stat_is ("fifo", st_source.st_mode) ||
-    stat_is ("sock", st_source.st_mode) ||
-    stat_is ("chr",  st_source.st_mode) ||
-    stat_is ("blk",  st_source.st_mode))
+  else if (any ([isfifo (source;st = st_source), issock (source;st = st_source),
+        ischr (source;st = st_source), isblock (source;st = st_source)]))
     {
     (@print_norm) (sprintf
       ("cannot copy special file `%s': Operation not permitted", source));
 
-    ifnot (NULL == opts.backup)
-      () = remove (backup);
-    
-    if (NULL == opts.backup && backup != NULL)
-      () = remove (backup);
+    clean (force, opts.backup, backup, dest);
     
     return 0;
     }
@@ -126,17 +143,13 @@ define copy (source, dest, st_source, st_dest, opts)
     {
     if (-1 == copyfile (source, dest))
       {
-      ifnot (NULL == opts.backup)
-        () = remove (backup);
-      
-      if (NULL == opts.backup && backup != NULL)
-        () = remove (backup);
+      clean (force, opts.backup, backup, dest);
 
       return -1;
       }
     }
 
-  if (NULL == opts.backup && backup != NULL)
+  if (force && NULL != opts.backup)
     () = remove (backup);
 
   ifnot (NULL == opts.permissions)

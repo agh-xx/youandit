@@ -7,7 +7,7 @@ private define failed_rout (err_type)
   gotoprompt = 1;
   variable failed_wind = CW.name;
 
-  CW = root.windows["root"];
+  CW = root.windows[mytypename];
   
   root.lib.printtostdout ([err_type, exception_to_array ()]);
   

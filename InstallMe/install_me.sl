@@ -62,6 +62,7 @@ if ((0 == $4) && -1 == execv ($3, [$3,
   sprintf ("--sourcedir=%s", SOURCEDIR),
   sprintf ("--stdmoduledir=%s/modules", STDNS),
   sprintf ("--usrmoduledir=%s/modules", USRNS),
+  sprintf ("--persmoduledir=%s/modules", PERSNS),
   sprintf ("--are_we_building_modules=%d", $1 ? 0 : 1),
   sprintf ("--cc=%s", $2)]))
   {

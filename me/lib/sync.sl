@@ -2,6 +2,23 @@ ineed ("copyfile");
 ineed ("fswalk");
 ineed ("makedir");
 ineed ("modetoint");
+ineed ("fileis");
+
+define clean (force, backup, backupfile, dest)
+{
+  if (force)
+    {
+    ifnot (NULL == backupfile)
+      if (NULL == backup)
+        () = rename (backupfile, dest);
+      else
+        () = copyfile (backupfile, dest);
+    }
+  else
+    ifnot (NULL == backup)
+      ifnot (NULL == backupfile)
+        () = remove (backupfile);
+}
 
 private define older (st_source, st_dest)
 {
@@ -30,10 +47,11 @@ private define size (st_source, st_dest)
 private define _copy (s, source, dest, st_source, st_dest)
 {
   variable
+    force = NULL,
     link,
     mode,
     retval,
-    backup,
+    backup = NULL,
     backuptext = "";
 
   if (s.interactive)
@@ -53,20 +71,22 @@ private define _copy (s, source, dest, st_source, st_dest)
     }
 
   if (s.backup)
-    {
-    backup = sprintf ("%s%s", dest, s.suffix);
-
-    if (-1 == copyfile (dest, backup))
+      ifnot (any ([isfifo (source;st = st_source), issock (source;st = st_source),
+          ischr (source;st = st_source), isblock (source;st = st_source)]))
       {
-      (@print_err) (sprintf ("cannot backup, %s", dest));
-      return -1;
+      backup = sprintf ("%s%s", dest, s.suffix);
+
+      if (-1 == copyfile (dest, backup))
+        {
+        (@print_err) (sprintf ("cannot backup, %s", dest));
+        return -1;
+        }
+
+      ifnot (access (dest, X_OK))
+        () = chmod (backup, 0755);
+
+      backuptext = sprintf ("(backup: `%s')", backup);
       }
-
-    ifnot (access (dest, X_OK))
-      () = chmod (backup, 0755);
-
-    backuptext = sprintf ("(backup: `%s')", backup);
-    }
   
   ifnot (NULL == st_dest)
     ifnot (st_dest.st_mode & S_IWUSR)
@@ -76,27 +96,31 @@ private define _copy (s, source, dest, st_source, st_dest)
         return -1;
         }
       else
-        {
-        if (NULL == s.backup)
+        ifnot (any ([isfifo (source;st = st_source), issock (source;st = st_source),
+            ischr (source;st = st_source), isblock (source;st = st_source)]))
           {
-          backup = sprintf ("%s%s", dest, s.suffix);
-
-          if (-1 == copyfile (dest, backup))
+          if (NULL == s.backup)
             {
-            (@print_err) (sprintf ("cannot backup, %s", dest));
+            backup = sprintf ("%s%s", dest, s.suffix);
+
+            if (-1 == copyfile (dest, backup))
+              {
+              (@print_err) (sprintf ("cannot backup, %s", dest));
+              return -1;
+              }
+
+            ifnot (access (dest, X_OK))
+              () = chmod (backup, 0755);
+            }
+
+          if (-1 == remove (dest))
+            {
+            (@print_err) (sprintf ("%s: couldn't be removed", dest));
             return -1;
             }
 
-          ifnot (access (dest, X_OK))
-            () = chmod (backup, 0755);
+          force = 1;
           }
-
-        if (-1 == remove (dest))
-          {
-          (@print_err) (sprintf ("%s: couldn't be removed", dest));
-          return -1;
-          }
-        }
 
   if (stat_is ("lnk", st_source.st_mode))
     {
@@ -106,40 +130,41 @@ private define _copy (s, source, dest, st_source, st_dest)
       {
       (@print_err) (sprintf
         ("source `%s' points to the non existing file `%s', aborting ...", source, link));
-
-      ifnot (NULL == s.backup)
-        () = remove (backup);
       
+      clean (force, s.backup, backup, dest);
+
       return -1;
       }
     else
       if (-1 == symlink (link, dest))
+        {
+        clean (force, s.backup, backup, dest);
+
         return -1;
+        }
       else
         return 1;
     }
-  else if (
-    stat_is ("fifo", st_source.st_mode) ||
-    stat_is ("sock", st_source.st_mode) ||
-    stat_is ("chr",  st_source.st_mode) ||
-    stat_is ("blk",  st_source.st_mode))
+  else if (any ([isfifo (source;st = st_source), issock (source;st = st_source),
+        ischr (source;st = st_source), isblock (source;st = st_source)]))
     {
     (@print_norm) (sprintf
       ("cannot copy special file `%s': Operation not permitted", source));
 
-    ifnot (NULL == s.backup)
-      () = remove (backup);
-    
+    clean (force, s.backup, backup, dest);
+
     return 1;
     }
   else
     if (-1 == copyfile (source, dest))
       {
-      ifnot (NULL == s.backup)
-        () = remove (backup);
-      
+      clean (force, s.backup, backup, dest);
+
       return -1;
       }
+  
+  if (force && NULL == s.backup)
+    () = remove (backup);
 
   () = lchown (dest, st_source.st_uid, st_source.st_gid);
 
@@ -186,6 +211,16 @@ private define file_callback (file, st, s, source, dest)
 
 private define dir_callback (dir, st, s, source, dest)
 {
+  ifnot (NULL == s.ignoredir)
+    {
+    variable ldir = strtok (dir, "/");
+    if (any (ldir[-1] == s.ignoredir))
+      {
+      (@print_norm) (sprintf ("ignored dir: %s", dir));
+      return 0;
+      }
+    }
+
   (dest, ) = strreplace (dir, source, dest, 1);
 
   if (NULL == stat_file (dest))
@@ -238,6 +273,7 @@ define sync_new ()
       suffix = "~",
       preserve_time = 1,
       interactive,
+      ignoredir,
       methods
       },
     methods = qualifier ("methods", ["newer", "size"]);

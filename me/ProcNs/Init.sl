@@ -9,6 +9,7 @@ if ((0 == PROC_PID) && -1 == execve (SLSH_EXEC,
     [
     array_map (String_Type, &sprintf, "%s=%s",
     [
+    "MSGFILE",
     "ROOTDIR",
     "SLSH_EXEC",
     "FIFO_ROOT",
@@ -21,6 +22,7 @@ if ((0 == PROC_PID) && -1 == execve (SLSH_EXEC,
     "SUDO_EXEC"
     ],
     [
+    sprintf ("%s/%s/msg.txt", TMPDIR, mytypename),
     ROOTDIR,
     SLSH_EXEC,
     FIFO_ROOT,

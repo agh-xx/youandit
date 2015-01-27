@@ -50,6 +50,7 @@ catch ImportError:
 try
   {
   () = evalfile (sprintf ("%s/I_Ns/lib/except_to_arr", STDNS));
+  () = evalfile (sprintf ("%s/I_Ns/lib/need", STDNS), "i");
   () = evalfile (sprintf ("%s/SockNs/sock_funcs", STDNS), "sock");
   () = evalfile (sprintf ("%s/SrvNs/Client", STDNS), "srv");
   }
@@ -67,6 +68,25 @@ catch ParseError:
         _push_struct_field_values (__get_exception_info)), "\n"));
   exit (1);
   }
+
+define _print (msg)
+{
+  variable fp = fopen (getenv ("MSGFILE"), "a+");
+  () = fprintf (fp, "%s\n", msg);
+  () = fclose (fp);
+}
+
+variable 
+  print_err = &_print,
+  print_norm = &_print;
+
+define ineed (lib)
+{
+  try
+    i->need (lib);
+  catch ParseError:
+    throw ParseError, __get_exception_info.message;
+}
 
 define get_bg_pid ()
 {
@@ -249,6 +269,10 @@ define get ()
  
   ifnot (NULL == err)
     {
+    variable ff = fopen ("/tmp/err", "w");
+    () = array_map (Integer_Type, &fprintf, ff, "%s\n", err);
+    () = fclose (ff);
+
     () = sock->get_bit_send_bit (PROC_FD, 1);
     () = sock->get_bit_send_str_ar (PROC_FD, err);
     return;

@@ -14,7 +14,7 @@ variable
   SOURCEDIR,
   ARE_WE_BUILDING_MODULES,
   MODULES = [
-    "getkey", "pcre", "fork", "fcntl", "sysconf", "rand", "iconv", "slsmg",
+    "getkey", "pcre", "json", "fork", "fcntl", "sysconf", "rand", "iconv", "slsmg",
     "socket", "curl"],
   SMODULESDIR = (
     SMODULESDIR = String_Type[length (MODULES)],
@@ -25,7 +25,7 @@ variable
   CC,
   CCARG = "-shared -fPIC -g -O2 -lm",
   EXTRAARG = (EXTRAARG = String_Type[length (MODULES)], EXTRAARG[*] = "", EXTRAARG),
-  EXCLUDEFILESBASENAME = ["TODO", "stackfile.sl", "i_root.sl", ".gitignore"],
+  EXCLUDEFILESBASENAME = ["TODO", "stackfile.sl", "you.sl", ".gitignore"],
   EXCLUDEFILESFULLPATH = [""],
   EXCLUDEDIRS = ["C", "InstallMe", ".git", "about_me"];
 
@@ -80,22 +80,29 @@ define compilemodules (module, sourcedir, installdir, extraarg)
     exit (1);
     }
 
-  () = system (sprintf ("%s %s %s %s-module.c -o %s-module.so",
+  variable exit_code = system (sprintf ("%s %s %s %s-module.c -o %s-module.so",
      CC, CCARG, extraarg, module, module));
+  
+  if (exit_code)
+    {
+    () = fprintf (stderr,
+       "failed\n%s: module failed to compile, exit code: %d\n", module, exit_code);
+    exit (1);
+    }
 
   if (-1 == access (installdir, F_OK))
     if (-1 == mkdir (installdir))
       {
-      () = fprintf (stderr, "failed\n%s: failed to create directory\n ERRNO: %s\n",
-        installdir, errno_string (errno));
+      () = fprintf (stderr,
+        "failed\n%s: failed to create directory\n ERRNO: %s\n", installdir, errno_string (errno));
       exit (1);
       }
  
   if (-1 == rename (sprintf ("%s/%s/%s-module.so", SOURCEDIR, sourcedir, module),
       sprintf ("%s/%s-module.so", installdir, module)))
     {
-    () = fprintf (stderr, "failed\n%s/%s/%s-module.so: failed to move\n",
-     ROOTDIR, sourcedir, module);
+    () = fprintf (stderr,
+      "failed\n%s/%s/%s-module.so: failed to move\n", ROOTDIR, sourcedir, module);
     exit (1);
     }
 
@@ -163,6 +170,7 @@ define main ()
   variable
     i,
     fs,
+    persmoduledir,
     stdmoduledir,
     usrmoduledir,
     c = cmdopt_new ();
@@ -170,8 +178,9 @@ define main ()
   c.add ("cc", &CC;type = "string");
   c.add ("rootdir", &ROOTDIR;type = "string");
   c.add ("sourcedir", &SOURCEDIR;type = "string");
-  c.add ("stdmoduledir", &stdmoduledir;type= "string");
-  c.add ("usrmoduledir", &usrmoduledir;type= "string");
+  c.add ("stdmoduledir", &stdmoduledir;type = "string");
+  c.add ("usrmoduledir", &usrmoduledir;type = "string");
+  c.add ("persmoduledir", &persmoduledir;type = "string");
   c.add ("are_we_building_modules", &ARE_WE_BUILDING_MODULES;type = "int");
 
   () = c.process (__argv, 1);
@@ -179,6 +188,7 @@ define main ()
   INSTALL_MODULESDIR[*] = stdmoduledir;
   INSTALL_MODULESDIR[wherefirst ("curl" == MODULES)] = usrmoduledir;
   INSTALL_MODULESDIR[wherefirst ("iconv" == MODULES)] = usrmoduledir;
+  INSTALL_MODULESDIR[wherefirst ("json" == MODULES)] = persmoduledir;
 
   if (-1 == chdir (SOURCEDIR))
     {

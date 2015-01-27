@@ -92,13 +92,14 @@ define main (self, start)
 
     if (' ' == chr)
       {
-      file = path_concat (file, tmp[-1] == '/' ? substr (tmp, 1, strlen (tmp) -1) : tmp);
-      st = stat_file (file);
-
+      file = path_concat (file, tmp[-1] == '/' ? substr (tmp, 1, strlen (tmp) - 1) : tmp);
+      st = lstat_file (file);
+      
       ifnot (NULL == st)  % THIS SHOULD NOT FAIL
         {
         isdir = stat_is ("dir", st.st_mode);
         self.cur.argv[self.cur.index] = sprintf ("%s%s", file, isdir ? "/" : "");
+
         if ("./" == self.cur.argv[self.cur.index][[0:1]])
           self.cur.argv[self.cur.index] = substr (self.cur.argv[self.cur.index], 3, -1);
         self.cur.col = strlen (strjoin (self.cur.argv[[:self.cur.index]], " ")) + 1;
@@ -127,6 +128,7 @@ define main (self, start)
         ar = array_map (String_Type, &path_concat, file, ar);
         ar = ar[wherenot (array_map (Char_Type, &strncmp, ar,
           self.cur.argv[self.cur.index] + " ", strlen (self.cur.argv[self.cur.index]) + 1))];
+
         if (length (ar))
           {
           self.cur.argv[self.cur.index] = sprintf ("%s%s", ar[0], self.appendslash (ar[0]));

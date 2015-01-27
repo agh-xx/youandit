@@ -65,8 +65,7 @@ define main ()
   ifnot (NULL == issudo)
     {
     argv = [
-      SUDO_EXEC, "-S", "-E",  "-C", sprintf ("%d", _fileno (SRV_SOCKET)+ 1),
-      argv];
+      SUDO_EXEC, "-S", "-E",  "-C", sprintf ("%d", _fileno (SRV_SOCKET)+ 1), argv];
 
     passwd = root.lib.getpasswd ();
 
