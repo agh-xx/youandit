@@ -18,4 +18,87 @@ dynamic languages.
 
 This is a work in progress and it should be regarded like this in eternity, as one
 of the basic reasons which this project was started, is to be used to teach basic
-programming consepts to the author first and to other people around this guy.
+programming concepts to the author first and to other people around this guy.
+
+INSTALLATION
+
+# REQUIRED dependencies:
+# ps from procps-ng
+# stty from coreutils
+# sudo
+# libpcre (libs and headers)
+# libcurl (lib and header)
+
+# optionally
+# to display man pages
+# col from util_linux
+# groff
+# gzip
+
+# open a shell and enter the following commands
+
+# optionally:
+# mkdir gitrepos
+# cd gitrepos
+
+# This application always follows S-Lang development, so it wont work
+# with a standard release, so
+# clone S-Lang repository
+
+git clone git://git.jedsoft.org/git/slang.git &&
+
+# build distribution
+cd slang
+# by default prefix is /usr/local, so leave it there as it doesn't contadicts
+# with another libslang installed by a package manager
+
+./configure &&
+# check if picked up pcre, otherwise install pcre headers and libs and rerun configure
+make &&
+sudo make install &&
+# run ldconfig
+sudo ldconfig -v
+
+# install curl module
+git clone git://git.jedsoft.org/git/slcurl.git
+cd slcurl
+./configure &&
+# check for any errors, namely a missing curl header
+make &&
+sudo make install
+
+# Now make a dir to store the sources for this application
+mkdir somedir
+cd somedir
+
+# IMPORTANT NOTE: it should be sources for the name of the repo,
+# otherwise nothing will work
+git clone https://github.com/agh-xx/youandit.git sources
+ln -sv sources/me/I_Ns/you.sl
+
+# create the personal hierarchy
+mkdir -p sources/she/modules
+mkdir sources/she/data
+mkdir sources/she/data/bytecompile
+mkdir -p sources/she/functions/scripts
+mkdir sources/she/functions/data
+mkdir sources/she/functions/info
+mkdir sources/she/types
+mkdir sources/she/lib
+mkdir -p sources/she/commands/scripts
+mkdir sources/she/commands/info
+
+# End of installation commands
+
+# PREREQUISITY to make sudo work properly and it wont break the application
+# sudo it closes all file integer descriptors above stderr
+
+# so add the following three lines to your sudoers
+# replace USER with your username
+
+Defaults:USER closefrom_override 
+Defaults:USER !tty_tickets 
+Defaults:USER timestamp_timeout=1
+
+# Now run
+/usr/bin/local/slsh ./you.sl
