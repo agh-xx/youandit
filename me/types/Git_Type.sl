@@ -42,7 +42,7 @@ define main (self, name)
       "status", "diff", "fulllog", "log", "logpatch", "commitall",
       "commit", "lastlog", "branchchange", "branchnew", "branchdelete",
       "merge", "reposet", "initrepo", "rmrepofromdb",
-      "branches", "diffrevision"],
+      "branches", "diffrevision", "pushupstream"],
     sorted = array_sort (gitcommands),
     gitcommandshelp = [
       "Start Bisecting arg: (a full revision hash || ~nr to mean HEAD - nr commits)",
@@ -71,7 +71,9 @@ define main (self, name)
       "initialize repo and add to the db arg: (a directory)",
       "remove repo from db arg: (repo)",
       "show branches (git branch)",
-      "diff of a rev arg: (a full|abbr hash || ~nr to mean - nr revs to cur branch)"]
+      "diff of a rev arg: (a full|abbr hash || ~nr to mean - nr revs to cur branch)",
+      "push changes to upstream remote address"
+      ]
       [sorted],
     git = which ("git");
 

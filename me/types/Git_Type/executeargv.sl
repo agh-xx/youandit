@@ -41,7 +41,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=bisect_init",
+        retval = proc->call (["git_proc", "--nocl", "--func=bisect_init",
           sprintf ("--revision=%s", argv[1]),
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
@@ -60,7 +60,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=bisect_good",
+        retval = proc->call (["git_proc", "--nocl", "--func=bisect_good",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
           sprintf ("--branch=%s", self.cur.branch),
@@ -78,7 +78,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=bisect_bad",
+        retval = proc->call (["git_proc", "--nocl", "--func=bisect_bad",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
           sprintf ("--branch=%s", self.cur.branch),
@@ -96,7 +96,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=bisect_reset",
+        retval = proc->call (["git_proc", "--nocl", "--func=bisect_reset",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
           sprintf ("--branch=%s", self.cur.branch),
@@ -120,7 +120,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=showdiffrevision",
+        retval = proc->call (["git_proc", "--nocl", "--func=showdiffrevision",
           sprintf ("--revision=%s", argv[1]),
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
@@ -157,7 +157,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=applypatch",
+        retval = proc->call (["git_proc", "--nocl", "--func=applypatch",
           sprintf ("--patch=%s", argv[1]),
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
@@ -175,7 +175,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=branch", "--mode=none",
+        retval = proc->call (["git_proc", "--nocl", "--func=branch", "--mode=none",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
           sprintf ("--execdir=%s", path_dirname (__FILE__)),
@@ -253,7 +253,7 @@ define main (self, argv)
             throw Break;
             }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=init",
+        retval = proc->call (["git_proc", "--nocl", "--func=init",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", argv[1]),
           sprintf ("--execdir=%s", path_dirname (__FILE__)),
@@ -295,7 +295,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=lastlog",
+        retval = proc->call (["git_proc", "--nocl", "--func=lastlog",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
           sprintf ("--execdir=%s", path_dirname (__FILE__)),
@@ -330,7 +330,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=merge",
+        retval = proc->call (["git_proc", "--nocl", "--func=merge",
           sprintf ("--branch=%s", argv[1]),
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
@@ -366,7 +366,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=branchdelete",
+        retval = proc->call (["git_proc", "--nocl", "--func=branchdelete",
           sprintf ("--branch=%s", argv[1]),
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
@@ -378,7 +378,7 @@ define main (self, argv)
 
         ifnot (retval)
           {
-          retval = proc->call(["git_proc", "--nocl", "--func=branch", "--mode=none",
+          retval = proc->call (["git_proc", "--nocl", "--func=branch", "--mode=none",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
           sprintf ("--execdir=%s", path_dirname (__FILE__)),
@@ -410,7 +410,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=branchnew",
+        retval = proc->call (["git_proc", "--nocl", "--func=branchnew",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--branch=%s", argv[1]),
           sprintf ("--repo=%s", self.cur.repo),
@@ -422,7 +422,7 @@ define main (self, argv)
 
         ifnot (retval)
           {
-          retval = proc->call(["git_proc", "--nocl", "--func=branch", "--mode=none",
+          retval = proc->call (["git_proc", "--nocl", "--func=branch", "--mode=none",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
           sprintf ("--execdir=%s", path_dirname (__FILE__)),
@@ -471,7 +471,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=branchchange",
+        retval = proc->call (["git_proc", "--nocl", "--func=branchchange",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--branch=%s", argv[1]),
           sprintf ("--repo=%s", self.cur.repo),
@@ -492,7 +492,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=logpatch",
+        retval = proc->call (["git_proc", "--nocl", "--func=logpatch",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
           sprintf ("--execdir=%s", path_dirname (__FILE__)),
@@ -502,12 +502,65 @@ define main (self, argv)
 
       {
       case "pull":
-        retval = proc->call(["git_proc", "--nocl", "--func=pull",
+        retval = proc->call (["git_proc", "--nocl", "--func=pull",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
           sprintf ("--execdir=%s", path_dirname (__FILE__)),
           sprintf ("--mainfname=%s", buf.fname),
           sprintf ("--msgfname=%s", self.msgbuf)]);
+      }
+
+      {
+      case "push":
+        retval = proc->call (["git_proc", "--nocl", "--func=get_upstream_url", "--mode=none",
+          sprintf ("--file=%s", buf.fname),
+          sprintf ("--repo=%s", self.cur.repo),
+          sprintf ("--execdir=%s", path_dirname (__FILE__)),
+          sprintf ("--mainfname=%s", buf.fname),
+          sprintf ("--msgfname=%s", self.msgbuf)]);
+        
+        if (retval)
+          {
+          self.drawframe (0;reread_buf);
+          self.setinfoline (NULL, 0, NULL);
+          self.writeinfolines ();
+          throw Break;
+          }
+
+        ar = readfile (buf.fname);
+        ifnot ("https" == ar[[:4]])
+          {
+          writefile ("Is not over a https repo, I don't know if it works", buf.fname);
+          self.drawframe (0;reread_buf);
+          self.setinfoline (NULL, 0, NULL);
+          self.writeinfolines ();
+         throw Break;
+         }
+
+        variable passwd = root.lib.getpasswd ();
+
+        ifnot (strlen (passwd))
+          {
+          srv->send_msg ("Password is an empty string. Aborting ...", -1);
+          throw Break;
+          }
+
+        variable username = (@self.readline.getsingleline) (self.readline);
+        ifnot (strlen (username))
+          {
+          srv->send_msg ("username is an empty string. Aborting ...", -1);
+          throw Break;
+          }
+
+        variable url = sprintf ("https://%s:%s@%s", username, passwd, substr (ar, 9, -1));
+        retval = proc->call (["git_proc", "--nocl", "--func=push_upstream",
+          sprintf ("--url=%s", url),
+          sprintf ("--file=%s", buf.fname),
+          sprintf ("--repo=%s", self.cur.repo),
+          sprintf ("--execdir=%s", path_dirname (__FILE__)),
+          sprintf ("--mainfname=%s", buf.fname),
+          sprintf ("--msgfname=%s", self.msgbuf)]);
+
       }
 
       {
@@ -524,7 +577,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=commitall",
+        retval = proc->call (["git_proc", "--nocl", "--func=commitall",
           sprintf ("--msg=%s", msg),
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
@@ -547,7 +600,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=commit",
+        retval = proc->call (["git_proc", "--nocl", "--func=commit",
           sprintf ("--msg=%s", msg),
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
@@ -570,7 +623,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=add",
+        retval = proc->call (["git_proc", "--nocl", "--func=add",
           sprintf ("--newfile=%s", argv[1]),
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
@@ -588,7 +641,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=status",
+        retval = proc->call (["git_proc", "--nocl", "--func=status",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
           sprintf ("--execdir=%s", path_dirname (__FILE__)),
@@ -609,7 +662,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=fulllog",
+        retval = proc->call (["git_proc", "--nocl", "--func=fulllog",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
           sprintf ("--execdir=%s", path_dirname (__FILE__)),
@@ -635,7 +688,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=log",
+        retval = proc->call (["git_proc", "--nocl", "--func=log",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
           sprintf ("--execdir=%s", path_dirname (__FILE__)),
@@ -741,7 +794,7 @@ define main (self, argv)
 
         self.cur.repo = argv[1];
 
-        retval = proc->call(["git_proc", "--nocl", "--func=branch", "--mode=none",
+        retval = proc->call (["git_proc", "--nocl", "--func=branch", "--mode=none",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
           sprintf ("--execdir=%s", path_dirname (__FILE__)),
@@ -769,7 +822,7 @@ define main (self, argv)
           writefile ([repeat ("_", COLUMNS), "STATUS"], buf.fname;mode="a");
           len += 2;
 
-          retval = proc->call(["git_proc", "--nocl", "--func=status", "--mode=a",
+          retval = proc->call (["git_proc", "--nocl", "--func=status", "--mode=a",
             sprintf ("--file=%s", buf.fname),
             sprintf ("--repo=%s", self.cur.repo),
             sprintf ("--execdir=%s", path_dirname (__FILE__)),
@@ -792,7 +845,7 @@ define main (self, argv)
           throw Break;
           }
 
-        retval = proc->call(["git_proc", "--nocl", "--func=diff",
+        retval = proc->call (["git_proc", "--nocl", "--func=diff",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
           sprintf ("--execdir=%s", path_dirname (__FILE__)),
@@ -803,6 +856,7 @@ define main (self, argv)
         ifnot (length (ar))
           writefile ("No Differences", buf.fname);
       }
+
     }
   catch Break:
     routine = NULL;

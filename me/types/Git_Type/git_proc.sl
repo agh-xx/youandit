@@ -5,6 +5,7 @@ variable
   out_flags = O_WRONLY|O_CREAT,
   err_flags = out_flags,
   msg,
+  url,
   newfile,
   file,
   repo,
@@ -303,6 +304,72 @@ define git_log ()
   return status.exit_status;
 }
 
+define git_push_upstream ()
+{
+  argv = [git, "push", "--verbose", "--repo", url];
+
+  () = dup2_fd (stdoutw, 1);
+  () = dup2_fd (stderrw, 2);
+ 
+  pid = fork ();
+
+  if ((0 == pid) && -1 == execv (argv[0], argv))
+    return 1;
+ 
+  status = waitpid (pid, 0);
+  return status.exit_status;
+}
+
+define git_get_upstream_url ()
+{
+  variable url;
+
+  argv = [git, "config", "-l"];
+
+  (stdoutr, stdoutw) = pipe ();
+  (stderrr, stderrw) = pipe ();
+
+  () = dup2_fd (stdoutw, 1);
+  () = dup2_fd (stderrw, 2);
+ 
+  pid = fork ();
+
+  if ((0 == pid) && -1 == execv (argv[0], argv))
+    return 1;
+ 
+  status = waitpid (pid, 0);
+
+  () = array_map (Integer_Type, &_close, [2, 1, _fileno (stderrw), _fileno (stdoutw)]);
+
+  if (status.exit_status)
+    {
+    url = strchop (read_fd (stderrr), '\n', 0);
+    writefile (url, file;mode="a+");
+    return 1;
+    }
+
+  url = read_fd (stdoutr);
+  if (NULL == url)
+    {
+    writefile (["I cant get upstream's url"],  file);
+    return 1;
+    }
+
+  url = strtrim_end (strchop (url, '\n', 0));
+  url = url[wherenot (strncmp (url, "remote.upstream.url", strlen ("remote.upstream.url")))];
+  ifnot (length (url))
+    {
+    writefile (["I cant get upstream's url"],  file);
+    return 1;
+    }
+  
+  url = strchop (url[0], '=', 0)[1];
+
+  writefile (url,  file);
+
+  return 0;
+}
+
 define git_pull ()
 {
   argv = [git, "pull"];
@@ -488,6 +555,7 @@ define main ()
   c.add ("newfile", &newfile;type = "string");
   c.add ("branch", &branch;type = "string");
   c.add ("msg", &msg;type = "string");
+  c.add ("url", &url;type = "string");
   c.add ("mode", &mode;type = "string");
 
   () = c.process (__argv, 1);
