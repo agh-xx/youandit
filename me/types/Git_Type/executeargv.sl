@@ -511,7 +511,7 @@ define main (self, argv)
       }
 
       {
-      case "push":
+      case "pushupstream":
         retval = proc->call (["git_proc", "--nocl", "--func=get_upstream_url", "--mode=none",
           sprintf ("--file=%s", buf.fname),
           sprintf ("--repo=%s", self.cur.repo),
@@ -527,8 +527,8 @@ define main (self, argv)
           throw Break;
           }
 
-        ar = readfile (buf.fname);
-        ifnot ("https" == ar[[:4]])
+        variable url = readfile (buf.fname)[0];
+        ifnot ("https" == url[[:4]])
           {
           writefile ("Is not over a https repo, I don't know if it works", buf.fname);
           self.drawframe (0;reread_buf);
@@ -552,7 +552,7 @@ define main (self, argv)
           throw Break;
           }
 
-        variable url = sprintf ("https://%s:%s@%s", username, passwd, substr (ar, 9, -1));
+        url = sprintf ("https://%s:%s@%s", username, passwd, substr (url, 9, -1));
         retval = proc->call (["git_proc", "--nocl", "--func=push_upstream",
           sprintf ("--url=%s", url),
           sprintf ("--file=%s", buf.fname),
