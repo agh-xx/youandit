@@ -202,6 +202,12 @@ private define file_callback (file, st, s, source, dest)
   if (NULL == st_dest)
     return _copy (s, file, dest, st, st_dest);
 
+  % FIXME: miiiight be not right (Its not right)
+  if (islnk (file;st = st))
+    if (islnk (dest))
+      if (-1 == remove (dest))
+        return -1;
+
   _for i (0, length (s.methods) - 1)
     if ((@s.methods[i]) (st, st_dest))
       return _copy (s, file, dest, st, st_dest);

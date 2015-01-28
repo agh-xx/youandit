@@ -16,6 +16,11 @@ define issock (file)
   return NULL != st && stat_is ("sock", st.st_mode);
 }
 
+define islnk (file)
+{
+  variable st = qualifier ("st", lstat_file (file));
+  return NULL != st && stat_is ("lnk", st.st_mode);
+}
 
 define ischr (file)
 {

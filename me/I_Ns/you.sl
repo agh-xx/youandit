@@ -1,13 +1,11 @@
 if (length (where ("--help" == __argv)))
   {
-  () = array_map (Integer_Type, &fprintf, stderr, "%s\n",
+  () = array_map (Integer_Type, &fprintf, stdout, "%s\n",
     [path_basename (__argv[0]) + " [Option]", "",
-    "Options:",
-    "",
-    "--debug  Debug this program",
+    "Options:", "--debug  Debug this program",
     "--install install this program",
     "--no-modules don't build modules when use --install",
-    "--app=appname:Some_Type start program with `app'"]);
+    "--app=appname:Some_Type start programm with `app'"]);
   exit (0);
   }
 

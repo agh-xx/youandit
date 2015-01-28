@@ -10,14 +10,14 @@ define main (self, argv)
     switch (argv[0])
 
       {
-      case "checkconnection":
-        retval = proc->get ("isconnected", "isconnected";type = 1);
-        ifnot (retval)
-          srv->send_msg ("Is not connected", -1);
-        else
-          srv->send_msg ("It is connected", 0);
+      case "checknet":
+      retval = proc->get ("isconnected", "isconnected";type = 1);
+      ifnot (retval)
+        srv->send_msg ("Not connected", -1);
+      else
+        srv->send_msg ("Is connected", 0);
 
-        throw Break;
+      throw Break;
       }
 
       {
@@ -40,14 +40,40 @@ define main (self, argv)
       }
 
       {
-      case "synctree":
+      case "sync_this_tree":
         if (1 == length (argv))
           {
-          srv->send_msg ("synctree: needs an argument (directory)", -1);
+          srv->send_msg ("sync_this_tree: needs an argument (directory)", -1);
           throw Break;
           }
 
       retval = proc->call (["synccurrenttree", "--nocl",
+           argv[1],
+           sprintf ("--execdir=%s/proc", path_dirname (__FILE__)),
+           sprintf ("--msgfname=%s", buf.fname),
+           sprintf ("--mainfname=%s", buf.fname)]);
+
+      retval = proc->call (["bytecompile", __argv[0], "--nocl",
+           sprintf ("--execdir=%s/proc", path_dirname (__FILE__)),
+           sprintf ("--msgfname=%s", buf.fname),
+           sprintf ("--mainfname=%s", buf.fname)]);
+ 
+      if (retval)
+        writefile (sprintf ("ERROR\nEXIT_CODE: %d", retval), buf.fname;mode = "a");
+      else
+        writefile (["bytecompile completed with no errors", repeat ("_", COLUMNS)], buf.fname;
+          mode = "a");
+      }
+
+      {
+      case "sync_another_tree":
+        if (1 == length (argv))
+          {
+          srv->send_msg ("sync_another_tree: needs an argument (directory)", -1);
+          throw Break;
+          }
+
+      retval = proc->call (["syncanothertree", "--nocl",
            argv[1],
            sprintf ("--execdir=%s/proc", path_dirname (__FILE__)),
            sprintf ("--msgfname=%s", buf.fname),

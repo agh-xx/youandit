@@ -30,7 +30,7 @@ define main ()
   tree += "/sources";
 
   () = mkdir (tree);
-
+  
   exit_code = sync.run (cur, tree);
 
   ifnot (exit_code)
