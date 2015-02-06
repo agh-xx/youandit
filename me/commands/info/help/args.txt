@@ -1,7 +1,0 @@
---intrinsic=          pcrepattern pattern to look for intrinsic function
---functionkeys        void show F[keys] functions
---buildintrinsiccache void build cache to look for intrinsic functions
---pcresyntax          void show pcresyntax
---myself              void show general help
---help                void show help
---info                void show information

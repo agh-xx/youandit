@@ -23,7 +23,7 @@ define makedir (dir, mode)
       return -1;
       }
 
-  (@print_norm) (sprintf ("created directory `%s' with access: %s", dir,
+  (@print_out) (sprintf ("created directory `%s' with access: %s", dir,
     stat_mode_to_string (stat_file (dir).st_mode)));
 
   return 0;

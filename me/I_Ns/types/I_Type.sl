@@ -21,11 +21,11 @@ define main (self, name)
 {
   variable
     rootcommands = ["bytecompile", "debugconsole", "sync_this_tree", "sync_another_tree",
-      "backuptree", "checknet"],
+      "backuptree", "checknet", "trytofixbrokenwindow"],
     sorted = array_sort (rootcommands),
     rootcommandshelp = ["bytecompile application", "the debug console",
       "sync current distribution from a previus backup", "sync another tree from current",
-      "backup distribution", "checknet"];
+      "backup distribution", "checknet", "try to fix broken window in case of a problem"];
 
   root.windows[name] = struct
     {
@@ -51,9 +51,8 @@ define main (self, name)
   me.history = self.addhistory (;file = sprintf ("%s/data/.history.txt", mytypedir));
   me.history.read ();
  
-
   me.addframe (;;
-    struct {@__qualifiers (), array = "Root Message Buffer", framename = me.msgbuf});
+    struct {@__qualifiers (), framename = me.msgbuf});
 
   throw Return, " ", 0;
 }

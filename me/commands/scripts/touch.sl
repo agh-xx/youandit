@@ -98,7 +98,7 @@ define main ()
         continue;
         }
 
-      (@print_norm) (sprintf ("`%s': created", files[i]));
+      (@print_out) (sprintf ("`%s': created", files[i]));
 
       if (atime == NULL == mtime)
         continue;
@@ -113,7 +113,7 @@ define main ()
         exit_code = 1;
         }
       else
-        (@print_norm) (sprintf ("`%s': access time has been changed", files[i]));
+        (@print_out) (sprintf ("`%s': access time has been changed", files[i]));
 
     if (mtime)
       if (-1 == utime (files[i], st.st_atime, tim))
@@ -122,7 +122,7 @@ define main ()
         exit_code = 1;
         }
       else
-        (@print_norm) (sprintf ("`%s': modification time has been changed", files[i]));
+        (@print_out) (sprintf ("`%s': modification time has been changed", files[i]));
 
     if (atime || mtime)
       continue;
@@ -133,7 +133,7 @@ define main ()
       exit_code = 1;
       }
     else
-      (@print_norm) (sprintf (
+      (@print_out) (sprintf (
         "`%s': access and modification times have been changed", files[i]));
     }
 

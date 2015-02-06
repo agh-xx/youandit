@@ -10,8 +10,8 @@ variable
   getch,
   highlight,
   print_err,
-  print_norm,
-  print_warn,
+  print_out,
+  print_out,
   getchar_lang,
   STDERRFP = NULL,
   STDOUTFP = NULL,
@@ -260,7 +260,7 @@ define proc_main ()
     exit_me ();
 
   if (NULL == NOWRITECL)
-    (@print_norm) (sprintf ("%s\n[%s]$%s\n", repeat ("_", COLUMNS), getcwd (),
+    (@print_out) (sprintf ("%s\n[%s]$%s\n", repeat ("_", COLUMNS), getcwd (),
       strjoin (__argv, " ")));
  
   EXIT_CODE = exec_ref (ref);
@@ -271,7 +271,7 @@ define proc_main ()
     else
       STDOUT = substr (STDOUT, 1, strlen (STDOUT) - 6);
 
-  if (NULL == EXIT_CODE)
+  if (NULL == EXIT_CODE || -1 == EXIT_CODE)
     EXIT_CODE = 1;
 
   exit_me ();

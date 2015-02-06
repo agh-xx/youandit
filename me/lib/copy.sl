@@ -33,17 +33,17 @@ define copy (source, dest, st_source, st_dest, opts)
     {
     if (opts.noclobber)
       {
-      (@print_warn) (sprintf
+      (@print_out) (sprintf
         ("%s: Cannot overwrite existing file; noclobber option is given", dest));
       return 0;
       }
 
     if (opts.update && st_source.st_mtime <= st_dest.st_mtime)
       {
-      (@print_warn) (sprintf ("`%s' is newer than `%s', aborting ...", dest, source));
+      (@print_out) (sprintf ("`%s' is newer than `%s', aborting ...", dest, source));
       return 0;
       }
-    
+ 
     % TODO QUIT
     if (opts.interactive)
       {
@@ -52,7 +52,7 @@ define copy (source, dest, st_source, st_dest, opts)
         ['y', 'n', 'q']);
       if (any (['n', 033, 'q'] == retval))
         {
-        (@print_norm) (sprintf ("%s aborting ...", source));
+        (@print_out) (sprintf ("%s aborting ...", source));
         return 0;
         }
       }
@@ -116,9 +116,9 @@ define copy (source, dest, st_source, st_dest, opts)
       {
       (@print_err) (sprintf
         ("source `%s' points to the non existing file `%s', aborting ...", source, link));
-      
+ 
       clean (force, opts.backup, backup, dest);
-      
+ 
       return -1;
       }
     else if (NULL == opts.nodereference)
@@ -132,11 +132,11 @@ define copy (source, dest, st_source, st_dest, opts)
   else if (any ([isfifo (source;st = st_source), issock (source;st = st_source),
         ischr (source;st = st_source), isblock (source;st = st_source)]))
     {
-    (@print_norm) (sprintf
+    (@print_out) (sprintf
       ("cannot copy special file `%s': Operation not permitted", source));
 
     clean (force, opts.backup, backup, dest);
-    
+ 
     return 0;
     }
   else
@@ -159,7 +159,7 @@ define copy (source, dest, st_source, st_dest, opts)
 
   () = chmod (dest, mode);
 
-  (@print_norm) (sprintf ("`%s' -> `%s' %s", source, dest, backuptext));
+  (@print_out) (sprintf ("`%s' -> `%s' %s", source, dest, backuptext));
 
   return 0;
 }

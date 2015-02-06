@@ -71,9 +71,9 @@ define change_ref (file, uid, gid, user, group)
   else
     {
     if (uid == cur_uid && gid == cur_gid)
-      (@print_norm) (sprintf ("ownership of `%s' retained as %s:%s", file, user, group));
+      (@print_out) (sprintf ("ownership of `%s' retained as %s:%s", file, user, group));
     else
-      (@print_norm) (sprintf ("changed ownership of `%s' from %s:%s to %s:%s",
+      (@print_out) (sprintf ("changed ownership of `%s' from %s:%s to %s:%s",
         file, cur_user, cur_group, user, group));
     }
 }
@@ -109,9 +109,9 @@ define chown_it (file, uid, gid, user, group)
   else
     {
     if (uid == cur_uid && gid == cur_gid)
-      (@print_norm) (sprintf ("ownership of `%s' retained as %s:%s", file, user, group));
+      (@print_out) (sprintf ("ownership of `%s' retained as %s:%s", file, user, group));
     else
-      (@print_norm) (sprintf ("changed ownership of `%s' from %s:%s to %s:%s",
+      (@print_out) (sprintf ("changed ownership of `%s' from %s:%s to %s:%s",
         file, cur_user, cur_group, user, group));
     }
  

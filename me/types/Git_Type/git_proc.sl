@@ -362,7 +362,7 @@ define git_get_upstream_url ()
     writefile (["I cant get upstream's url"],  file);
     return 1;
     }
-  
+ 
   url = strchop (url[0], '=', 0)[1];
 
   writefile (url,  file);

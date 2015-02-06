@@ -11,7 +11,7 @@ define sigwinch_handler (sig)
   if (24 > AVAILABLE_LINES)
     root->exit_me (1, "I DONT REALLY WANT TO CONTINUE WITH LESS THAN 24 LINES");
 
-  if (82 > COLUMNS)
+  if (92 > COLUMNS)
     root->exit_me (1, "I DONT REALLY WANT TO CONTINUE WITH LESS THAN 92 COLUMNS");
 
   variable

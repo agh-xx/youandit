@@ -63,7 +63,7 @@ define ln (source, dest, opts)
 
       if ('n' == retval)
         {
-        (@print_warn) (sprintf ("Not confirmed, to remove %s, aborting ...", dest);print_in_msg_line);
+        (@print_out) (sprintf ("Not confirmed, to remove %s, aborting ...", dest);print_in_msg_line);
         return 0;
         }
 
@@ -151,7 +151,7 @@ define ln (source, dest, opts)
     (@print_err) (sprintf ("creating %s failed `%s', ERRNO: %s", opts.symbolic
         ? "symbolic link" : "hardlink", dest, errno_string (errno)));
   else
-    (@print_norm) (sprintf ("`%s' %s `%s'%s", dest, opts.symbolic ? "->" : "=>",
+    (@print_out) (sprintf ("`%s' %s `%s'%s", dest, opts.symbolic ? "->" : "=>",
         source, opts.backup  ? sprintf (" (backup: `%s')", backupdest) : ""));
 
   if (-1 == retval)

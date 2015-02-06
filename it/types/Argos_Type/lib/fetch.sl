@@ -14,7 +14,7 @@ private variable
 
 private define write_progress_info (s)
 {
-  (@print_norm) (sprintf ("%8d/%-8d bytes ",  s.bytes_received, s.total_bytes);
+  (@print_out) (sprintf ("%8d/%-8d bytes ",  s.bytes_received, s.total_bytes);
     print_in_msg_line, dont_write_to_stdout);
 }
 
@@ -148,7 +148,7 @@ define fetch (url, dir)
   ifnot (saveddir == dir)
     () = chdir (saveddir);
 
-  (@print_norm) (sprintf ("file: %s retrieved and saved to %s", file, dir));
+  (@print_out) (sprintf ("file: %s retrieved and saved to %s", file, dir));
 
   return 0;
 }

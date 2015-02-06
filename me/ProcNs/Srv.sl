@@ -76,9 +76,9 @@ define _print (msg)
   () = fclose (fp);
 }
 
-variable 
+variable
   print_err = &_print,
-  print_norm = &_print;
+  print_out = &_print;
 
 define ineed (lib)
 {

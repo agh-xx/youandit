@@ -13,7 +13,7 @@ define main ()
     cur = sprintf ("%s/../sources", ROOTDIR),
     tree = path_concat (__argv[1], strftime ("%H:%M_%d_%m_%Y")),
     sync = sync_new ();
-  
+ 
   if (are_same_files (cur, tree))
     {
     (@print_err) ("you are trying to backup on me, doesn't make sense";dont_write_to_stdout);
@@ -30,7 +30,7 @@ define main ()
   tree += "/sources";
 
   () = mkdir (tree);
-  
+ 
   exit_code = sync.run (cur, tree);
 
   ifnot (exit_code)
@@ -40,11 +40,11 @@ define main ()
     }
 
   ifnot (exit_code)
-    (@print_norm) ("backup completed without any error");
+    (@print_out) ("backup completed without any error");
   else
     (@print_err) (sprintf ("backup failed, EXIT_CODE: ", exit_code);dont_write_to_stdout);
 
-  (@print_norm) (repeat ("_", COLUMNS));
+  (@print_out) (repeat ("_", COLUMNS));
 
   return exit_code;
 }

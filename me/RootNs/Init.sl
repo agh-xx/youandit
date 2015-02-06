@@ -1,19 +1,18 @@
-static variable
-  gotoprompt = 0,
-  FTYPES = Assoc_Type[Struct_Type];
+private variable gotoprompt = 0;
 
 private define failed_rout (err_type)
 {
   gotoprompt = 1;
-  variable failed_wind = CW.name;
+
+  variable
+    err = exception_to_array (),
+    failed_wind = CW.name;
 
   CW = root.windows[mytypename];
-  
-  root.lib.printtostdout ([err_type, exception_to_array ()]);
-  
+ 
   writefile ([sprintf ("ERROR IN WINDOW %s", failed_wind), err_type,
-    repeat ("_", COLUMNS), exception_to_array ()], CW.msgbuf;mode = "a");
-  
+    repeat ("_", COLUMNS), err], CW.msgbuf;mode = "a");
+
   CW.drawwind ();
 }
 
@@ -40,7 +39,7 @@ private define exec ()
   catch GotoPrompt:
     gotoprompt = 1;
   catch AnyError:
-    failed_rout ("Runtime Error"); 
+    failed_rout ("Runtime Error");
   finally
     eval ("define main ();", "root");
 
@@ -171,7 +170,6 @@ private define addwind (self, name, type)
       {
       srv->send_msg (sprintf ("Cannot create application directory %s, ERRNO: %s",
         tmpdir, errno_string (errno)), -1);
-      assoc_delete_key (root.windows, name);
       return NULL;
       }
     }
@@ -179,14 +177,12 @@ private define addwind (self, name, type)
     ifnot (isdirectory (tmpdir))
       {
       srv->send_msg (sprintf ("%s: is not a directory", tmpdir), -1);
-      assoc_delete_key (root.windows, name);
       return NULL;
       }
     else
       if (-1 == access (tmpdir, R_OK|W_OK))
         {
         srv->send_msg (sprintf ("%s: You dont't have the required permissions", tmpdir), -1);
-        assoc_delete_key (root.windows, name);
         return NULL;
         }
 

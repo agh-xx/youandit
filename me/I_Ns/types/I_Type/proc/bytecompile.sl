@@ -52,7 +52,7 @@ define rm_dir (dir)
     return;
     }
 
-  (@print_norm) (sprintf ("%s: extra directory has been removed", dir));
+  (@print_out) (sprintf ("%s: extra directory has been removed", dir));
   return;
 }
 
@@ -87,7 +87,7 @@ define rmfile (file)
     return;
     }
 
-  (@print_norm) (sprintf ("%s: extra file has been removed", file));
+  (@print_out) (sprintf ("%s: extra file has been removed", file));
 }
 
 define file_callback_a (file, st)
@@ -156,7 +156,7 @@ define file_callback (file, st)
     {
     view_exception ([sprintf ("%s: failed to compile", file), exception_to_array ()]);
     array_map (Void_Type, print_err, exception_to_array ());
-    array_map (Void_Type, print_norm, exception_to_array ());
+    array_map (Void_Type, print_out, exception_to_array ());
     EXIT_CODE = 1;
     return -1;
     }
@@ -164,7 +164,7 @@ define file_callback (file, st)
   if (-1 == rename (sprintf ("%s/%sc", SOURCEDIR, file), sprintf ("%sc", newfile)))
     {
     (@print_err) (sprintf ("%sc: failed to move", file));
-    (@print_norm) (sprintf ("%sc: failed to move", file));
+    (@print_out) (sprintf ("%sc: failed to move", file));
      EXIT_CODE = 1;
      return -1;
     }

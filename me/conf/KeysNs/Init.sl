@@ -45,6 +45,7 @@ variable
   CTRL_y = 0x19,
   CTRL_z = 0x1a,
   CTRL_BSLASH = 0x1c,
+  CTRL_BRACKETRIGHT = 0x1d,
   ESC_q = 0x10070;
 
 ifnot (strncmp ("st-", getenv ("TERM"), 3))

@@ -32,6 +32,10 @@ define main (self, msg)
     }
 
   srv->send_msg (NULL, 0);
-  if (__is_initialized (&CW))
-    CW.drawwind (;reread_buf);
+ 
+  ifnot (qualifier_exists ("dont_draw"))
+    if (__is_initialized (&CW))
+      CW.drawwind (;reread_buf);
+
+  throw Break;
 }

@@ -322,7 +322,7 @@ private define sed (file)
       try
         {
         writefile (ar, file);
-        (@print_norm) (sprintf ("%s: was written, with %d changes", file, NUMCHANGES));
+        (@print_out) (sprintf ("%s: was written, with %d changes", file, NUMCHANGES));
         }
       catch AnyError:
         {

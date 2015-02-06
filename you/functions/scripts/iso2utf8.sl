@@ -276,7 +276,7 @@ private define convert (file)
     return;
     }
 
-  (@print_norm) (sprintf ("%s: converted", file));
+  (@print_out) (sprintf ("%s: converted", file));
 
   return;
 }
@@ -332,7 +332,7 @@ define main ()
       {
       if (NULL == recursive)
         {
-        (@print_warn) (sprintf ("%s: is a directory and recursive is NULL", files[i]));
+        (@print_out) (sprintf ("%s: is a directory and recursive is NULL", files[i]));
         continue;
         }
 
@@ -360,7 +360,7 @@ define main ()
     EXIT_CODE = 1;
     }
  
-  (@print_norm) (sprintf ("EXIT CODE: %d", EXIT_CODE));
+  (@print_out) (sprintf ("EXIT CODE: %d", EXIT_CODE));
 
   return EXIT_CODE;
 }

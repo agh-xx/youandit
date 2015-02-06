@@ -48,7 +48,7 @@ define main ()
       exit_code = -1;
       }
     else
-      (@print_norm) (sprintf ("%s: fifo created, with access %s", files[i],
+      (@print_out) (sprintf ("%s: fifo created, with access %s", files[i],
       stat_mode_to_string (stat_file (files[i]).st_mode)));
     }
 

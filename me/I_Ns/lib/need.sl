@@ -22,7 +22,7 @@ define need ()
 
   if (NULL == ns || "" == ns)
     ns = "Global";
-  
+ 
   if (LOADED[sprintf ("%s.%s", ns, file)])
     return;
 
@@ -35,6 +35,6 @@ define need ()
     }
   catch ParseError:
     throw ParseError, __get_exception_info.message;
-  
+ 
   LOADED[sprintf ("%s.%s", ns, file)] = 1;
 }

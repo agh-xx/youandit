@@ -167,7 +167,7 @@ define main ()
         1 == are_same_files (source, destname;
           fnamea_st = st_source, fnameb_st = st_destname))
       {
-      (@print_warn) (sprintf ("`%s' and `%s' are the same file", source, destname));
+      (@print_out) (sprintf ("`%s' and `%s' are the same file", source, destname));
       exit_code = 1;
       continue;
       }
@@ -183,7 +183,7 @@ define main ()
     if (isdir_source)
       if (NULL == recursive)
         {
-        (@print_warn) (sprintf ("omitting directory `%s'", source));
+        (@print_out) (sprintf ("omitting directory `%s'", source));
         exit_code = 1;
         continue;
         }
@@ -197,21 +197,21 @@ define main ()
     if (NULL == opts.copy_hidden)
       if ('.' == path_basename (source)[0])
         {
-        (@print_norm) (sprintf ("omitting hidden file `%s'", source));
+        (@print_out) (sprintf ("omitting hidden file `%s'", source));
         continue;
         }
 
     ifnot (NULL == opts.matchpat)
       ifnot (pcre_exec (opts.matchpat, source))
         {
-        (@print_norm) (sprintf ("ignore file: %s", source));
+        (@print_out) (sprintf ("ignore file: %s", source));
         continue;
         }
 
     ifnot (NULL == opts.ignorepat)
       if (pcre_exec (opts.ignorepat, source))
         {
-        (@print_norm) (sprintf ("ignore file: %s", source));
+        (@print_out) (sprintf ("ignore file: %s", source));
         continue;
         }
  

@@ -7,7 +7,7 @@ define _usage ()
 
   if (NULL == helpfile)
     {
-    (@print_warn) (sprintf ("No Help file available for %s", __argv[0]));
+    (@print_out) (sprintf ("No Help file available for %s", __argv[0]));
     ifnot (length (ar))
       exit (1);
     }
@@ -17,7 +17,7 @@ define _usage ()
 
   ifnot (length (ar))
     {
-    (@print_warn) (sprintf ("No Help file available for %s", __argv[0]));
+    (@print_out) (sprintf ("No Help file available for %s", __argv[0]));
     exit (1);
     }
 
@@ -36,7 +36,7 @@ define info ()
 
   if (NULL == infofile || -1 == access (infofile, F_OK))
     {
-    (@print_warn) (sprintf ("No Info file available for %s", __argv[0]));
+    (@print_out) (sprintf ("No Info file available for %s", __argv[0]));
  
     EXIT_CODE = 1;
     exit_me ();

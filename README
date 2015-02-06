@@ -97,8 +97,8 @@ mkdir sources/she/commands/info
 # so add the following three lines to your sudoers
 # replace USER with your username
 
-Defaults:USER closefrom_override 
-Defaults:USER !tty_tickets 
+Defaults:USER closefrom_override
+Defaults:USER !tty_tickets
 Defaults:USER timestamp_timeout=1
 
 # Now run

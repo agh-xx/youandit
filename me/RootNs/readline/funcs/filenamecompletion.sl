@@ -94,7 +94,7 @@ define main (self, start)
       {
       file = path_concat (file, tmp[-1] == '/' ? substr (tmp, 1, strlen (tmp) - 1) : tmp);
       st = lstat_file (file);
-      
+ 
       ifnot (NULL == st)  % THIS SHOULD NOT FAIL
         {
         isdir = stat_is ("dir", st.st_mode);

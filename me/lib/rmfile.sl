@@ -23,14 +23,14 @@ define rmfile (file, interactive)
           }
         else
           {
-          (@print_norm) (sprintf ("%s: removed file", file));
+          (@print_out) (sprintf ("%s: removed file", file));
           return 0;
           }
       }
 
       {
       case 'q':
-        (@print_norm) (sprintf ("removing file `%s' aborting ...", file));
+        (@print_out) (sprintf ("removing file `%s' aborting ...", file));
         @interactive = "exit";
         return 0;
       }
@@ -45,14 +45,14 @@ define rmfile (file, interactive)
           }
         else
           {
-          (@print_norm) (sprintf ("%s: removed file", file));
+          (@print_out) (sprintf ("%s: removed file", file));
           return  0;
           }
       }
 
       {
       case 'n':
-        (@print_norm) (sprintf ("%s: Not confirming to remove file", file));
+        (@print_out) (sprintf ("%s: Not confirming to remove file", file));
         return 0;
       }
 
@@ -65,7 +65,7 @@ define rmfile (file, interactive)
     }
   else
     {
-    (@print_norm) (sprintf ("%s: removed file", file));
+    (@print_out) (sprintf ("%s: removed file", file));
     return 0;
     }
 }

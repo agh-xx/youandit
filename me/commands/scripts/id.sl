@@ -212,7 +212,7 @@ define id_all (s)
  
   output = strtrim_end (output, ",");
  
-  (@print_norm) (output);
+  (@print_out) (output);
 
   return 0;
 }
@@ -225,7 +225,7 @@ define id_main (s)
       return -1;
     else
       {
-      (@print_norm) (str);
+      (@print_out) (str);
       return 0;
       }
  
@@ -234,7 +234,7 @@ define id_main (s)
       return -1;
     else
       {
-      (@print_norm)  (str);
+      (@print_out)  (str);
       return 0;
       }
  
@@ -243,7 +243,7 @@ define id_main (s)
       return -1;
     else
       {
-      (@print_norm) (str);
+      (@print_out) (str);
       return 0;
       }
  
@@ -252,7 +252,7 @@ define id_main (s)
       return -1;
     else
       {
-      (@print_norm) (str);
+      (@print_out) (str);
       return 0;
       }
  
@@ -261,7 +261,7 @@ define id_main (s)
       return -1;
     else
       {
-      (@print_norm) (str);
+      (@print_out) (str);
       return 0;
       }
 }

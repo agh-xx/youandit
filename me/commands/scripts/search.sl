@@ -266,7 +266,7 @@ define main ()
     array_map (Void_Type, &grep, files, maxdepth);
 
     _for i (0, length (LINENRS) - 1)
-      (@print_norm) (sprintf ("%s|%d col %d| %s", FNAMES[i], LINENRS[i], COLS[i], LINES[i]));
+      (@print_out) (sprintf ("%s|%d col %d| %s", FNAMES[i], LINENRS[i], COLS[i], LINES[i]));
 
     return 0;
     }
@@ -285,11 +285,11 @@ define main ()
     ar = array_map (Array_Type, &danglinglinksfunc, files, maxdepth);
 
   ifnot (length (ar))
-    (@print_norm) ("Nothing found");
+    (@print_out) ("Nothing found");
   else
     {
     _for i (0, length (ar) - 1)
-      array_map (Void_Type, print_norm, array_map
+      array_map (Void_Type, print_out, array_map
           (String_Type, &sprintf, "%s|0 col 0| 1", ar[i]));
     }
 

@@ -23,14 +23,14 @@ define removedir (dir, interactive)
           }
         else
           {
-          (@print_norm) (sprintf ("%s: removed directory", dir);print_in_msg_line);
+          (@print_out) (sprintf ("%s: removed directory", dir);print_in_msg_line);
           return 0;
           }
       }
 
       {
       case 'q':
-        (@print_warn) (sprintf ("removing directory `%s' aborting ...", dir));
+        (@print_out) (sprintf ("removing directory `%s' aborting ...", dir));
         @interactive = "exit";
         return 0;
       }
@@ -45,14 +45,14 @@ define removedir (dir, interactive)
           }
         else
           {
-          (@print_norm) (sprintf ("%s: removed directory", dir));
+          (@print_out) (sprintf ("%s: removed directory", dir));
           return 0;
           }
       }
 
       {
       case 'n':
-        (@print_norm) (sprintf ("%s: Not confirming to remove directory", dir));
+        (@print_out) (sprintf ("%s: Not confirming to remove directory", dir));
         return 0;
       }
     }
@@ -64,7 +64,7 @@ define removedir (dir, interactive)
     }
   else
     {
-    (@print_norm) (sprintf ("%s: removed directory", dir));
+    (@print_out) (sprintf ("%s: removed directory", dir));
     return 0;
     }
 }

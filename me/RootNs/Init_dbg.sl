@@ -1,5 +1,4 @@
 private variable
-  FTYPES = Assoc_Type[Struct_Type],
   WRITE_ON_EXECUTIONS = 20,
   Funcs = Assoc_Type[Array_Type],
   executions = 0,
@@ -44,12 +43,12 @@ private define failed_rout (err_type)
   variable failed_wind = CW.name;
 
   CW = root.windows[mytypename];
-  
+ 
   root.lib.printtostdout ([err_type, exception_to_array ()]);
-  
+ 
   writefile ([sprintf ("ERROR IN WINDOW %s", failed_wind), err_type,
     repeat ("_", COLUMNS), exception_to_array ()], CW.msgbuf;mode = "a");
-  
+ 
   CW.drawwind ();
 }
 
@@ -80,7 +79,7 @@ private define exec ()
   catch GotoPrompt:
     gotoprompt = 1;
   catch AnyError:
-    failed_rout ("Runtime Error"); 
+    failed_rout ("Runtime Error");
   finally
     {
     executions ++;

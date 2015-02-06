@@ -42,8 +42,8 @@ private define untar (archive, file, verbose, tar)
       {
       () = _close (_fileno (stdoutw));
       () = dup2_fd (out_fd, 1);
-      (@print_norm) (sprintf ("extracting %s", file));
-      print (stdoutr, print_norm);
+      (@print_out) (sprintf ("extracting %s", file));
+      print (stdoutr, print_out);
       }
 
   () = _close (_fileno (stderrw));
@@ -159,7 +159,7 @@ private define func_unrar (archive, verbose, type)
       {
       () = _close (_fileno (stdoutw));
       () = dup2_fd (out_fd, 1);
-      print (stdoutr, print_norm);
+      print (stdoutr, print_out);
       }
 
   () = _close (_fileno (stderrw));
@@ -219,7 +219,7 @@ private define func_unzip (archive, verbose, type)
       {
       () = _close (_fileno (stdoutw));
       () = dup2_fd (out_fd, 1);
-      print (stdoutr, print_norm);
+      print (stdoutr, print_out);
       }
 
   () = _close (_fileno (stderrw));

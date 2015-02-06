@@ -168,6 +168,33 @@ private define write_nstring_at ()
 
 funcs["write_nstring_at"] = &write_nstring_at;
 
+private define draw_wind ()
+{
+  variable
+    i,
+    ar = sock->send_bit_get_str_ar (SRV_FD, 0),
+    colors = sock->send_bit_get_int_ar (SRV_FD, 0),
+    rows = sock->send_bit_get_int_ar (SRV_FD, 0),
+    cols = sock->send_bit_get_int_ar (SRV_FD, 0),
+    goto = sock->send_bit_get_int_ar (SRV_FD, 0);
+ 
+  slsmg_cls ();
+
+  _for i (0, length (ar) - 1)
+    {
+    slsmg_gotorc (rows[i], cols[i]);
+    slsmg_set_color (colors[i]);
+    slsmg_write_string (ar[i]);
+    }
+
+  slsmg_gotorc (goto[0], goto[1]);
+  slsmg_refresh ();
+
+  sock->send_bit (SRV_FD, 0);
+}
+
+funcs["draw_wind"] = &draw_wind;
+
 private define reset_smg ()
 {
   slsmg_reset_smg ();

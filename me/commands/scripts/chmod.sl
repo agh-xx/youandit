@@ -22,10 +22,10 @@ private define chmod_it (file, mode)
     {
     strmode = stat_mode_to_string (stat_file (file).st_mode);
     if (cur_mode == mode)
-      (@print_norm) (sprintf ("mode of `%s' retained as 0%o (%s)",
+      (@print_out) (sprintf ("mode of `%s' retained as 0%o (%s)",
          file, mode, strmode));
     else
-      (@print_norm) (sprintf ("mode of `%s' changed from 0%o (%s) to 0%o (%s)",
+      (@print_out) (sprintf ("mode of `%s' changed from 0%o (%s) to 0%o (%s)",
          file, cur_mode, strcurmode, mode, strmode));
     }
 }

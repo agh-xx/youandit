@@ -255,7 +255,7 @@ define long_format (files, st)
       }
     }
 
-  array_map (Void_Type, print_norm, files);
+  array_map (Void_Type, print_out, files);
 }
 
 define get_type (mode)
@@ -467,10 +467,10 @@ define print_to_screen (files, opts)
     if (NULL == opts.find)
       {
       files = format_ar_for_print (files, COLUMNS);
-      array_map (Void_Type, print_norm, files);
+      array_map (Void_Type, print_out, files);
       }
     else
-      array_map (Void_Type, print_norm, files);
+      array_map (Void_Type, print_out, files);
   else
     long_format (files, st);
 }
@@ -618,7 +618,7 @@ define main ()
     {
     if (access (dir[i], R_OK))
       {
-      (@print_norm) (sprintf ("%s: %s", dir[i], errno_string (errno)));
+      (@print_out) (sprintf ("%s: %s", dir[i], errno_string (errno)));
       continue;
       }
 

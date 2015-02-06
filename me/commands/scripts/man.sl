@@ -259,7 +259,7 @@ define main ()
       }
 
     writefile (list, cachefile);
-    (@print_norm) ("Cache file was written");
+    (@print_out) ("Cache file was written");
     return 0;
     }
 
@@ -290,7 +290,7 @@ define main ()
     if (1 == length (man_page))
       {
       (ar, retval) = getpage (man_page[0]);
-      array_map (Void_Type, print_norm, ar);
+      array_map (Void_Type, print_out, ar);
       return retval;
       }
  
@@ -330,7 +330,7 @@ define main ()
     man_page = man_page[retval];
 
     (ar, retval) = getpage (man_page);
-    array_map (Void_Type, print_norm, ar);
+    array_map (Void_Type, print_out, ar);
     return retval;
     }
 
@@ -345,7 +345,7 @@ define main ()
   ifnot (access (page, F_OK))
     {
     (ar, retval) = getpage (page);
-    array_map (Void_Type, print_norm, ar);
+    array_map (Void_Type, print_out, ar);
     return retval;
     }
   else
@@ -376,7 +376,7 @@ define main ()
       }
 
     (ar, retval) = getpage (man_page);
-    array_map (Void_Type, print_norm, ar);
+    array_map (Void_Type, print_out, ar);
     return retval;
     }
 }

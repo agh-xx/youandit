@@ -34,7 +34,7 @@ define main (self, argv)
           srv->send_msg ("it needs a tracker name", -1);
           throw Break;
          }
-        
+ 
         ifnot (NULL == self.trackers)
           if (any (argv[1] == self.trackers))
             {
@@ -58,7 +58,7 @@ define main (self, argv)
             throw Break;
             }
           }
-      
+ 
       if (NULL == self.trackers)
         self.trackers = [argv[1]];
       else

@@ -56,7 +56,7 @@ define main ()
     %  ar = ar[wherenot (_isnull (ar))];
     % % ar = ar[array_sort (ar)];
 
-    %  array_map (Void_Type, print_norm, ar);
+    %  array_map (Void_Type, print_out, ar);
     %  }
     %
     %() = _close (_fileno (stdoutr));

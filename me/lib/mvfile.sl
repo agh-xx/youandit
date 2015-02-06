@@ -52,6 +52,6 @@ define mvfile (source, dest, opts)
       }
     }
 
-  (@print_norm) (sprintf ("`%s' -> `%s'%s", source, dest, backuptext));
+  (@print_out) (sprintf ("`%s' -> `%s'%s", source, dest, backuptext));
   return 0;
 }

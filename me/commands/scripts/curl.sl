@@ -38,7 +38,7 @@ private define write_progress_info (s)
  % msg_write_string (str);
  % msg_erase_eol ();
  % msg_refresh ();
- (@print_norm) (sprintf ("%8d/%-8d bytes ",  s.bytes_received, s.total_bytes));
+ (@print_out) (sprintf ("%8d/%-8d bytes ",  s.bytes_received, s.total_bytes));
 }
 
 private define progress_callback (s, dltotal, dlnow, ultotal, ulnow)

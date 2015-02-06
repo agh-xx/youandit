@@ -518,7 +518,7 @@ define main (self, argv)
           sprintf ("--execdir=%s", path_dirname (__FILE__)),
           sprintf ("--mainfname=%s", buf.fname),
           sprintf ("--msgfname=%s", self.msgbuf)]);
-        
+ 
         if (retval)
           {
           self.drawframe (0;reread_buf);
@@ -537,13 +537,7 @@ define main (self, argv)
          throw Break;
          }
 
-        variable passwd = root.lib.getpasswd ();
-
-        ifnot (strlen (passwd))
-          {
-          srv->send_msg ("Password is an empty string. Aborting ...", -1);
-          throw Break;
-          }
+        srv->send_msg_and_refresh ("Please enter your username", 0);
 
         variable username = (@self.readline.getsingleline) (self.readline);
         ifnot (strlen (username))
@@ -552,6 +546,14 @@ define main (self, argv)
           throw Break;
           }
 
+        variable passwd = root.lib.getpasswd ();
+
+        ifnot (strlen (passwd))
+          {
+          srv->send_msg ("Password is an empty string. Aborting ...", -1);
+          throw Break;
+          }
+ 
         url = sprintf ("https://%s:%s@%s", username, passwd, substr (url, 9, -1));
         retval = proc->call (["git_proc", "--nocl", "--func=push_upstream",
           sprintf ("--url=%s", url),

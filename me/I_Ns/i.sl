@@ -1,7 +1,3 @@
-new_exception ("Return", RunTimeError, "Return value");
-new_exception ("Break", RunTimeError, "Break script and return");
-new_exception ("GotoPrompt", RunTimeError, "Break script and go to prompt");
-
 $9 = NULL;
 
 variable
@@ -28,6 +24,7 @@ variable
   FD_FIFO_ROOT,
   TTY_INITED = 0,
   REGS = Assoc_Type[Array_Type],
+  FTYPES = Assoc_Type[Struct_Type],
   SLSH_EXEC,
   SUDO_EXEC,
   getchar_lang,
@@ -89,6 +86,7 @@ try
   import ("getkey");
 
   () = evalfile (sprintf ("%s/init/typedefs", path_dirname (__FILE__)));
+  () = evalfile (sprintf ("%s/init/exceptions", path_dirname (__FILE__)));
   () = evalfile (sprintf ("%s/init/sysproc", path_dirname (__FILE__)), "i");
   () = evalfile (sprintf ("%s/init/colors_var", path_dirname (__FILE__)));
   () = evalfile (sprintf ("%s/conf/etc/env", STDNS));
@@ -103,8 +101,10 @@ try
   () = evalfile (sprintf ("%s/ProcNs/lib/call", STDNS), "proc");
   () = evalfile (sprintf ("%s/ProcNs/lib/get", STDNS), "proc");
   () = evalfile (sprintf ("%s/RootNs/Init", STDNS), "root");
+  () = evalfile (sprintf ("%s/I_Ns/ftypes/Init", STDNS));
   () = evalfile (sprintf ("%s/I_Ns/init/sigalarm_handler", STDNS));
   () = evalfile (sprintf ("%s/I_Ns/init/sigwinch_handler", STDNS));
+  () = evalfile (sprintf ("%s/I_Ns/nss/Init", STDNS), "i");
 
   if (DEV)
     dev_on ();
@@ -133,6 +133,7 @@ catch ImportError:
   }
 
 srv->init ();
+
 () = evalfile (sprintf ("%s/init/colors", path_dirname (__FILE__)));
 
 (TTY_INITED, getchar_lang, getch) = (@(__get_reference ("input->TTY_Inited")),
@@ -164,8 +165,8 @@ catch AnyError:
 if (24 > AVAILABLE_LINES)
   root->exit_me (1, "I DONT REALLY WANT TO CONTINUE WITH LESS THAN 24 LINES");
 
-if (82 > COLUMNS)
-  root->exit_me (1, "I DONT REALLY WANT TO CONTINUE WITH LESS THAN 82 COLUMNS");
+if (92 > COLUMNS)
+  root->exit_me (1, "I DONT REALLY WANT TO CONTINUE WITH LESS THAN 92 COLUMNS");
 
 if (NULL == root.addwind (mytypename, sprintf ("%s_Type", strup (mytypename));
     typedir = sprintf ("%s/I_Ns/types/", STDNS), msgarray = "Distribution Managment Buffer",
@@ -190,6 +191,4 @@ else
 
 __uninitialize (&$9);
 
-%root.user.call ("intro", "--pager");
-%root.user.call ("intro", "--pager";drawwind);
 root.user.call ("intro"; drawwind, send_break);

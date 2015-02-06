@@ -26,7 +26,7 @@ define main (self, frame)
 
     throw GotoPrompt;
     }
-  
+ 
   if (frame <= self.cur.frame)
     self.cur.frame --;
 

@@ -82,6 +82,6 @@ define main ()
       }
     }
  
-  array_map (Void_Type, print_norm, mp);
+  array_map (Void_Type, print_out, mp);
   return 0;
 }

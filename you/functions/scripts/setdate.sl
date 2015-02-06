@@ -27,7 +27,7 @@ define gethwclock ()
   () = fgets (&ref, fp);
   () = fclose (fp);
 
-  (@print_norm) (sprintf ("Hardware clock is: %s", ref));
+  (@print_out) (sprintf ("Hardware clock is: %s", ref));
 }
 
 define sethwclock ()
@@ -44,7 +44,7 @@ define sethwclock ()
 
 define main ()
 {
-  (@print_norm) ("Setting Date and Hardware Clock";dont_write_to_stdout, print_in_msg_line);
+  (@print_out) ("Setting Date and Hardware Clock";dont_write_to_stdout, print_in_msg_line);
 
   gethwclock ();
 
@@ -76,8 +76,8 @@ define main ()
   () = fgets (&ref, fp);
   () = fclose (fp);
 
-  (@print_norm) (sprintf ("Set date to: %s", ref));
-  (@print_norm) ("Changing hardware clock, wait 2 seconds ...";
+  (@print_out) (sprintf ("Set date to: %s", ref));
+  (@print_out) ("Changing hardware clock, wait 2 seconds ...";
     dont_write_to_stdout, print_in_msg_line);
 
   sethwclock ();

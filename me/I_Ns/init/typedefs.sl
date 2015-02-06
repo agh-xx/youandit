@@ -6,15 +6,15 @@ typedef struct
   } Frame_Type;
 
 typedef struct
- {
- stdin,
- stdout,
- stderr,
- status,
- pid,
- argv,
- retval,
- } Init_ProcType;
+  {
+  stdin,
+  stdout,
+  stderr,
+  status,
+  pid,
+  argv,
+  retval,
+  } Init_ProcType;
 
 typedef struct
   {

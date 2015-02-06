@@ -45,12 +45,12 @@ private define fetch (s, url)
 
     if (s.followlocation)
       curl_setopt (c, CURLOPT_FOLLOWLOCATION, 1);
-    
+ 
     ifnot (write_to_var)
       curl_setopt (c, CURLOPT_WRITEFUNCTION, s.write_callback, fp);
     else
       curl_setopt (c, CURLOPT_WRITEFUNCTION, s.write_callback, &s.output);
-    
+ 
     ifnot (NULL == s.progress_callback)
       curl_setopt (c, CURLOPT_PROGRESSFUNCTION, s.progress_callback, s);
  
@@ -73,7 +73,7 @@ private define fetch (s, url)
 
     return __get_exception_info.error;
     }
-  
+ 
   variable buf;
 
   ifnot (write_to_var)
@@ -129,7 +129,7 @@ define fetch_new ()
     output,
     followlocation = 1,
     useragent = "User-Agent: S-Lang cURL Module",
-    cacert = "/etc/ssl/certs/ca-certificates.crt", 
+    cacert = "/etc/ssl/certs/ca-certificates.crt",
     connectiontimeout = 0,
     };
 

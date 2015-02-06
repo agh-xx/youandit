@@ -117,7 +117,7 @@ define main ()
       if (stat_is ("dir", st.st_mode))
         if (NULL == recursive)
           {
-          (@print_warn) (sprintf ("%s: omitting directory", files[i]));
+          (@print_out) (sprintf ("%s: omitting directory", files[i]));
           files[i] = NULL;
           exit_code = 1;
           continue;
@@ -199,7 +199,7 @@ define main ()
 
         {
         case 'q':
-          (@print_norm) ("Aborting ...";print_in_msg_line);
+          (@print_out) ("Aborting ...";print_in_msg_line);
           return 0;
         }
 
@@ -223,7 +223,7 @@ define main ()
 
             {
             case 'q':
-              (@print_warn) ("Aborting ...";print_in_msg_line);
+              (@print_out) ("Aborting ...";print_in_msg_line);
               return 0;
             }
 
@@ -247,7 +247,7 @@ define main ()
 
     if ("exit" == interactive)
       {
-      (@print_norm) ("Quiting ...";print_in_msg_line);
+      (@print_out) ("Quiting ...";print_in_msg_line);
       return exit_code;
       }
     }

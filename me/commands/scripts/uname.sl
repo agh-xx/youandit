@@ -28,7 +28,7 @@ define main ()
 
   args = strjoin (list_to_array (args));
 
-  (@print_norm) (_uname (args));
+  (@print_out) (_uname (args));
 
   return 0;
 }

@@ -9,8 +9,7 @@ variable
   getch,
   highlight,
   print_err,
-  print_norm,
-  print_warn,
+  print_out,
   getchar_lang,
   print_in_new_wind,
   STDERRFP = NULL,
@@ -284,7 +283,7 @@ define proc_main ()
   EXIT_CODE = exec_ref (ref);
   sigprocmask (SIG_BLOCK, [SIGINT]);
 
-  if (NULL == EXIT_CODE)
+  if (NULL == EXIT_CODE || -1 == EXIT_CODE)
     EXIT_CODE = 1;
 
   exit_me ();

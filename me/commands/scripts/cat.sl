@@ -42,7 +42,7 @@ define main ()
     }
 
   if (length (ar))
-    array_map (Void_Type, print_norm, ar);
+    array_map (Void_Type, print_out, ar);
 
   return EXIT_CODE;
 }

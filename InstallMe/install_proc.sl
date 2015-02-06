@@ -82,7 +82,7 @@ define compilemodules (module, sourcedir, installdir, extraarg)
 
   variable exit_code = system (sprintf ("%s %s %s %s-module.c -o %s-module.so",
      CC, CCARG, extraarg, module, module));
-  
+ 
   if (exit_code)
     {
     () = fprintf (stderr,
@@ -188,7 +188,6 @@ define main ()
   INSTALL_MODULESDIR[*] = stdmoduledir;
   INSTALL_MODULESDIR[wherefirst ("curl" == MODULES)] = usrmoduledir;
   INSTALL_MODULESDIR[wherefirst ("iconv" == MODULES)] = usrmoduledir;
-  INSTALL_MODULESDIR[wherefirst ("json" == MODULES)] = persmoduledir;
 
   if (-1 == chdir (SOURCEDIR))
     {

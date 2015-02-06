@@ -17,17 +17,14 @@ define main ()
     repeats = NULL,
     argv = __pop_list (_NARGS - 1);
  
-  if (length (argv))
-    {
-    argv = list_to_array (argv);
+  argv = list_to_array (argv, String_Type);
 
-    index = proc->is_arg ("--pager", argv);
-    ifnot (NULL == index)
-      {
-      gotopager = 1;
-      argv[index] = NULL;
-      argv = argv[wherenot (_isnull (argv))];
-      }
+  index = proc->is_arg ("--pager", argv);
+  ifnot (NULL == index)
+    {
+    gotopager = 1;
+    argv[index] = NULL;
+    argv = argv[wherenot (_isnull (argv))];
     }
 
   ifnot (length (argv))

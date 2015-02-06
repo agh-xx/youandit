@@ -19,6 +19,41 @@ define main (self, argv)
 
       throw Break;
       }
+ 
+      {
+      case "trytofixbrokenwindow":
+        if (1 == length (argv))
+          {
+          srv->send_msg ("trytofixbrokenwindow: needs an argument (window name)", -1);
+          throw Break;
+          }
+
+        variable
+          name = wherefirst (list_to_array (root.windnames) == argv[1]);
+
+        if (NULL == name)
+          {
+          srv->send_msg (sprintf ("%s: No such window", argv[1]), -1);
+          throw Break;
+          }
+ 
+        name = root.windnames[name];
+        variable
+          wind = root.windows[name],
+          buffer = wind.buffers[wind.cur.frame],
+          buffname = buffer.fname,
+          windbuf = readfile (buffname);
+
+        if (NULL == windbuf || 0 == length (windbuf))
+          writefile (["Re initialize"], buffname);
+        else
+          {
+          variable st = stat_file (buffname);
+          () = utime (buffname, st.st_atime, _time ());
+          }
+
+        throw Break;
+      }
 
       {
       case "bytecompile":
@@ -47,22 +82,25 @@ define main (self, argv)
           throw Break;
           }
 
-      retval = proc->call (["synccurrenttree", "--nocl",
-           argv[1],
-           sprintf ("--execdir=%s/proc", path_dirname (__FILE__)),
-           sprintf ("--msgfname=%s", buf.fname),
-           sprintf ("--mainfname=%s", buf.fname)]);
-
-      retval = proc->call (["bytecompile", __argv[0], "--nocl",
-           sprintf ("--execdir=%s/proc", path_dirname (__FILE__)),
-           sprintf ("--msgfname=%s", buf.fname),
-           sprintf ("--mainfname=%s", buf.fname)]);
+        retval = proc->call (["synccurrenttree", "--nocl",
+          argv[1],
+          sprintf ("--execdir=%s/proc", path_dirname (__FILE__)),
+          sprintf ("--msgfname=%s", buf.fname),
+          sprintf ("--mainfname=%s", buf.fname)]);
  
-      if (retval)
-        writefile (sprintf ("ERROR\nEXIT_CODE: %d", retval), buf.fname;mode = "a");
-      else
-        writefile (["bytecompile completed with no errors", repeat ("_", COLUMNS)], buf.fname;
-          mode = "a");
+        ifnot (retval)
+          {
+          retval = proc->call (["bytecompile", __argv[0], "--nocl",
+            sprintf ("--execdir=%s/proc", path_dirname (__FILE__)),
+            sprintf ("--msgfname=%s", buf.fname),
+            sprintf ("--mainfname=%s", buf.fname)]);
+ 
+          if (retval)
+            writefile (sprintf ("ERROR\nEXIT_CODE: %d", retval), buf.fname;mode = "a");
+          else
+            writefile (["bytecompile completed with no errors", repeat ("_", COLUMNS)], buf.fname;
+              mode = "a");
+          }
       }
 
       {

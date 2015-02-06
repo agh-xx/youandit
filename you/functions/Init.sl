@@ -42,12 +42,19 @@ define main (self)
   keys["digraphs"] = {sprintf ("%s/digraphs", mydir), NULL,
    "Print the digraphs", NULL, NULL};
  
-  keys["calculator"] = {sprintf ("%s/calculator", mydir), NULL, "simple calculator",
+  keys["calculator"] = {sprintf ("%s/calculator", mydir), NULL, "simple calculator (NEEDS SOME CARE)",
     NULL, NULL};
 
   % if a key "intro" in pers/functions/Init.sl exists, this will be overriden
   keys["intro"] = {sprintf ("%s/intro", mydir), NULL,
     "Show intro, (currently the introduction to this program)", NULL, NULL};
+
+  keys["weather"] = {sprintf ("%s/weather", mydir), NULL, "Weather application",
+   ["--help void show help",
+    "--search= string Search for a place to find the Latitude, Longitude values",
+    "--dont-retrieve void Do not retrieve data from internet, instead use a local db",
+    "--days= int Get for num days instead of five (default)",
+    "--uselocation=  string Use this location instead of the default"], 1};
 
   throw Return, " ", struct
     {

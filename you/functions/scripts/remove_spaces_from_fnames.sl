@@ -83,7 +83,7 @@ define main ()
       {
       if (NULL == recursive)
         {
-        (@print_warn) (sprintf ("%s: is a directory and recursive is NULL", files[i]));
+        (@print_out) (sprintf ("%s: is a directory and recursive is NULL", files[i]));
         continue;
         }
 
@@ -121,7 +121,7 @@ define main ()
         errno_string (errno)));
       }
     else
-      (@print_norm) (sprintf ("%s: renamed to `%s'", source, destname));
+      (@print_out) (sprintf ("%s: renamed to `%s'", source, destname));
     }
 
   return exit_code;

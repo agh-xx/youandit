@@ -4,7 +4,141 @@ ineed ("makedir");
 ineed ("modetoint");
 ineed ("fileis");
 
-define clean (force, backup, backupfile, dest)
+variable Accept_All_As_Yes = 0;
+variable Accept_All_As_No = 0;
+
+private define rm_dir (dir)
+{
+  if (Accept_All_As_No)
+    return 0;
+ 
+  variable retval;
+
+  ifnot (Accept_All_As_Yes) {
+  % coding style violence
+ 
+  retval = (@ask) ([dir, "remove extra directory?",
+     "y[es]/Y[es to all]/n[no]/N[o to all] escape to abort (same as 'n')"],
+    ['y',  'Y',  'n',  'N'];header = "sync question");
+ 
+ 
+  if ('n' == retval || 'N' == retval || 033 == retval)
+    {
+    (@print_out) (sprintf (
+      "extra directory %s hasn't been removed: Not confirmed", dir));
+
+    Accept_All_As_No = 'N' == retval;
+    return 0;
+    }
+ 
+  Accept_All_As_Yes = 'Y' == retval;
+  }
+
+  if (-1 == rmdir (dir))
+    {
+    (@print_err) (sprintf ("%s: extra directory hasn't been removed", dir));
+    (@print_err) (sprintf ("Error: %s", errno_string (errno)));
+    return -1;
+    }
+  else
+    (@print_out) (sprintf ("%s: extra directory has been removed", dir));
+
+  return 0;
+}
+
+private define rmfile (file)
+{
+  if (Accept_All_As_No)
+    return -1;
+ 
+  variable retval;
+
+  ifnot (Accept_All_As_Yes) {
+ 
+  retval = (@ask) ([file, "remove extra file?",
+     "y[es]/Y[es to all]/n[no]/N[o to all] escape to abort (same as 'n')"],
+    ['y',  'Y', 'n',  'N'];header = "sync question");
+
+  if ('n' == retval || 'N' == retval || 033 == retval)
+    {
+    (@print_out) (sprintf (
+      "extra file %s hasn't been removed: Not confirmed", file));
+
+    Accept_All_As_No = 'N' == retval;
+    return 1;
+    }
+
+  Accept_All_As_Yes = 'Y' == retval;
+  }
+
+  if (-1 == remove (file))
+    {
+    (@print_err) (sprintf ("%s: extra file hasn't been removed", file));
+    (@print_err) (sprintf ("Error: %s", errno_string (errno)));
+    return -1;
+    }
+  else
+    (@print_out) (sprintf ("%s: extra file has been removed", file));
+
+  return 1;
+}
+
+private define file_callback_a (file, st, cur, other, exit_code)
+{
+  variable newfile = strreplace (file, other, cur);
+ 
+  if (-1 == access (newfile, F_OK) && 0 == access (file, F_OK))
+    if (-1 == rmfile (file))
+      {
+      @exit_code = 1;
+      return -1;
+      }
+
+  return 1;
+}
+
+private define dir_callback_a (dir, st, dirs, cur, other)
+{
+  variable newdir = strreplace (dir, other, cur);
+
+  if (-1 == access (newdir, F_OK) && 0 == access (dir, F_OK))
+    list_append (dirs, dir);
+
+  return 1;
+}
+
+private define rm_extra (s, cur, other)
+{
+  variable
+    exit_code = 0,
+    dirs = {},
+    fs = fswalk_new (&dir_callback_a, &file_callback_a;
+      dargs = {dirs, cur, other}, fargs = {cur, other, &exit_code});
+ 
+  if (s.interactive_extra)
+    Accept_All_As_Yes = 0;
+  else
+    Accept_All_As_Yes = 1;
+
+  fs.walk (other);
+
+  if (exit_code)
+    return 1;
+
+  if (length (dirs))
+    {
+    dirs = list_to_array (dirs);
+    dirs = dirs [array_sort (dirs;dir = -1)];
+    exit_code = array_map (Integer_Type, &rm_dir, dirs);
+    }
+
+  if (any (-1 == exit_code))
+    return 1;
+
+  return 0;
+}
+
+private define clean (force, backup, backupfile, dest)
 {
   if (force)
     {
@@ -62,7 +196,7 @@ private define _copy (s, source, dest, st_source, st_dest)
 
     if (any (['n', 033] == retval))
       {
-      (@print_norm) (sprintf ("%s aborting ...", source));
+      (@print_out) (sprintf ("%s aborting ...", source));
       return 1;
       }
 
@@ -87,7 +221,7 @@ private define _copy (s, source, dest, st_source, st_dest)
 
       backuptext = sprintf ("(backup: `%s')", backup);
       }
-  
+ 
   ifnot (NULL == st_dest)
     ifnot (st_dest.st_mode & S_IWUSR)
       if (NULL == s.force)
@@ -130,7 +264,7 @@ private define _copy (s, source, dest, st_source, st_dest)
       {
       (@print_err) (sprintf
         ("source `%s' points to the non existing file `%s', aborting ...", source, link));
-      
+ 
       clean (force, s.backup, backup, dest);
 
       return -1;
@@ -148,7 +282,7 @@ private define _copy (s, source, dest, st_source, st_dest)
   else if (any ([isfifo (source;st = st_source), issock (source;st = st_source),
         ischr (source;st = st_source), isblock (source;st = st_source)]))
     {
-    (@print_norm) (sprintf
+    (@print_out) (sprintf
       ("cannot copy special file `%s': Operation not permitted", source));
 
     clean (force, s.backup, backup, dest);
@@ -162,7 +296,7 @@ private define _copy (s, source, dest, st_source, st_dest)
 
       return -1;
       }
-  
+ 
   if (force && NULL == s.backup)
     () = remove (backup);
 
@@ -176,7 +310,7 @@ private define _copy (s, source, dest, st_source, st_dest)
     (@print_err) (sprintf ("ERRNO: %s", errno_string (errno)));
     return -1;
     }
-  
+ 
   if (s.preserve_time)
     if (-1 == utime (dest, st_source.st_atime, st_source.st_mtime))
       {
@@ -185,44 +319,61 @@ private define _copy (s, source, dest, st_source, st_dest)
       return -1;
       }
 
-  (@print_norm) (sprintf ("`%s' -> `%s' %s",
-    path_basename (source), path_basename (dest), backuptext));
+  (@print_out) (sprintf ("`%s' -> `%s' %s", source, path_basename (dest), backuptext));
 
   return 1;
 }
 
-private define file_callback (file, st, s, source, dest)
+private define file_callback (file, st, s, source, dest, exit_code)
 {
   (dest, ) = strreplace (file, source, dest, 1);
-  
+ 
   variable
     i,
+    retval,
     st_dest = stat_file (dest);
 
   if (NULL == st_dest)
-    return _copy (s, file, dest, st, st_dest);
+    {
+    retval = _copy (s, file, dest, st, st_dest);
+ 
+    if (-1 == retval)
+      @exit_code = 1;
+ 
+    return retval;
+    }
 
   % FIXME: miiiight be not right (Its not right)
   if (islnk (file;st = st))
     if (islnk (dest))
       if (-1 == remove (dest))
+        {
+        @exit_code = 1;
         return -1;
+        }
 
   _for i (0, length (s.methods) - 1)
     if ((@s.methods[i]) (st, st_dest))
-      return _copy (s, file, dest, st, st_dest);
+      {
+      retval = _copy (s, file, dest, st, st_dest);
+ 
+      if (-1 == retval)
+        @exit_code = 1;
+
+      return retval;
+      }
 
   return 1;
 }
 
-private define dir_callback (dir, st, s, source, dest)
+private define dir_callback (dir, st, s, source, dest, exit_code)
 {
   ifnot (NULL == s.ignoredir)
     {
     variable ldir = strtok (dir, "/");
     if (any (ldir[-1] == s.ignoredir))
       {
-      (@print_norm) (sprintf ("ignored dir: %s", dir));
+      (@print_out) (sprintf ("ignored dir: %s", dir));
       return 0;
       }
     }
@@ -231,13 +382,17 @@ private define dir_callback (dir, st, s, source, dest)
 
   if (NULL == stat_file (dest))
     if (-1 == makedir (dest, NULL))
+      {
+      @exit_code = 1;
       return -1;
+      }
 
   if (s.preserve_time)
     if (-1 == utime (dest, st.st_atime, st.st_mtime))
       {
       (@print_err) (sprintf ("%s: cannot change modification time", dest));
       (@print_err) (sprintf ("ERRNO: %s", errno_string (errno)));
+      @exit_code = 1;
       return -1;
       }
 
@@ -246,6 +401,8 @@ private define dir_callback (dir, st, s, source, dest)
 
 private define _sync (s, source, dest)
 {
+  variable exit_code = 0;
+
   ifnot (3 == _NARGS)
     {
     srv->send_msg ("sync: needs two arguments (directories)", -1);
@@ -254,15 +411,40 @@ private define _sync (s, source, dest)
 
   ifnot (isdirectory (source))
     {
-    srv->send_msg (sprintf ("sync: %s is not a directory", source), -1);
-    return -1;
-    }
-  
-  variable os = fswalk_new (&dir_callback, &file_callback;
-    dargs = {s, source, dest}, fargs = {s, source, dest});
+    if (-1 == access (source, F_OK))
+      {
+      (@print_err) (sprintf ("sync: %s source doesn't exists", source));
+      return -1;
+      }
 
-  os.walk (source);
-  return 0;
+    if (-1 == access (source, R_OK))
+      {
+      (@print_err) (sprintf ("sync: %s source is not readable", source));
+      return -1;
+      }
+ 
+    ifnot (access (dest, F_OK))
+      if (-1 == access (dest, W_OK))
+        {
+        (@print_err) (sprintf ("sync: %s is not writable", dest));
+        return -1;
+        }
+ 
+    () = file_callback (source, stat_file (source), s, source, dest, &exit_code);
+
+    return exit_code;
+    }
+ 
+  variable
+    fs = fswalk_new (&dir_callback, &file_callback;
+    dargs = {s, source, dest, &exit_code}, fargs = {s, source, dest, &exit_code});
+
+  fs.walk (source);
+  ifnot (exit_code)
+    if (s.rmextra)
+      exit_code = rm_extra (s, source, dest);
+
+  return exit_code;
 }
 
 define sync_new ()
@@ -279,11 +461,13 @@ define sync_new ()
       suffix = "~",
       preserve_time = 1,
       interactive,
+      interactive_extra,
       ignoredir,
+      rmextra = 1,
       methods
       },
     methods = qualifier ("methods", ["newer", "size"]);
-  
+ 
   refs["newer"] = &newer;
   refs["older"] = &older;
   refs["size"] = &size;
