@@ -1,9 +1,4 @@
-% the following two functions will be redefined later again
-define isdirectory (file)
-{
-  variable st = stat_file (file);
-  return NULL != st && stat_is ("dir", st.st_mode);
-}
+% the following function will be redefined later again
 
 define which (executable)
 {
@@ -43,8 +38,8 @@ if (NULL == which ("sudo"))
   }
 
 import ("fork");
-variable
-  $2 = which ("cc");
+
+$2 = which ("cc");
 
 if (NULL == $2)
   {
@@ -59,10 +54,11 @@ $4 = fork ();
 if ((0 == $4) && -1 == execv ($3, [$3,
   sprintf ("%s/InstallMe/install_proc.sl", SOURCEDIR),
   sprintf ("--rootdir=%s", ROOTDIR),
+  sprintf ("--bindir=%s", BINDIR),
   sprintf ("--sourcedir=%s", SOURCEDIR),
-  sprintf ("--stdmoduledir=%s/modules", STDNS),
-  sprintf ("--usrmoduledir=%s/modules", USRNS),
-  sprintf ("--persmoduledir=%s/modules", PERSNS),
+  sprintf ("--stdmoduledir=%s/std", MODULEDIR),
+  sprintf ("--usrmoduledir=%s/usr", MODULEDIR),
+  sprintf ("--persmoduledir=%s/local", MODULEDIR),
   sprintf ("--are_we_building_modules=%d", $1 ? 0 : 1),
   sprintf ("--cc=%s", $2)]))
   {
@@ -78,9 +74,5 @@ if ($1.exit_status)
   () = fputs ("failed to compile and install myself\n", stderr);
   exit ($1.exit_status);
   }
-
-() = fputs ("INSTALL DONE, HIT ANY KEY TO EXIT AND CONTINUE\n", stdout);
-
-() = fgets (&$1, stdin);
 
 array_map (Void_Type, &__uninitialize, [&$1, &$2, &$3, &$4]);

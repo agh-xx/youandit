@@ -11,6 +11,7 @@ signal (SIGINT, &sigint_handler);
 
 variable
   ROOTDIR,
+  BINDIR,
   SOURCEDIR,
   ARE_WE_BUILDING_MODULES,
   MODULES = [
@@ -25,9 +26,9 @@ variable
   CC,
   CCARG = "-shared -fPIC -g -O2 -lm",
   EXTRAARG = (EXTRAARG = String_Type[length (MODULES)], EXTRAARG[*] = "", EXTRAARG),
-  EXCLUDEFILESBASENAME = ["TODO", "stackfile.sl", "you.sl", ".gitignore"],
+  EXCLUDEFILESBASENAME = ["stackfile.sl", ".gitignore"],
   EXCLUDEFILESFULLPATH = [""],
-  EXCLUDEDIRS = ["C", "InstallMe", ".git", "about_me"];
+  EXCLUDEDIRS = ["C", "InstallMe", ".git"];
 
 EXTRAARG[wherefirst ("pcre" == MODULES)] = "-lpcre";
 EXTRAARG[wherefirst ("curl" == MODULES)] = "-lcurl";
@@ -98,11 +99,12 @@ define compilemodules (module, sourcedir, installdir, extraarg)
       exit (1);
       }
  
-  if (-1 == rename (sprintf ("%s/%s/%s-module.so", SOURCEDIR, sourcedir, module),
-      sprintf ("%s/%s-module.so", installdir, module)))
+  copyfile (sprintf ("%s/%s/%s-module.so", SOURCEDIR, sourcedir, module),
+      sprintf ("%s/%s-module.so", installdir, module));
+  if (-1 == remove (sprintf ("%s/%s/%s-module.so", SOURCEDIR, sourcedir, module)))
     {
     () = fprintf (stderr,
-      "failed\n%s/%s/%s-module.so: failed to move\n", ROOTDIR, sourcedir, module);
+      "failed\n%s/%s/%s-module.so: failed to move\n", SOURCEDIR, sourcedir, module);
     exit (1);
     }
 
@@ -119,7 +121,7 @@ define file_callback (file, st)
 
   variable
     ref,
-    newfile = sprintf ("%s/%s", ROOTDIR, file),
+    newfile = sprintf ("%s/%s", BINDIR, file),
     ext = path_extname (file);
  
   if (0 == strlen (ext) || ".sl" != ext)
@@ -137,7 +139,8 @@ define file_callback (file, st)
     exit (1);
     }
  
-  if (-1 == rename (sprintf ("%s/%sc", SOURCEDIR, file), sprintf ("%sc", newfile)))
+  copyfile ( sprintf ("%s/%sc", SOURCEDIR, file), sprintf ("%sc", newfile));
+  if (-1 == remove (sprintf ("%s/%sc", SOURCEDIR, file)))
     {
     () = fprintf (stderr, "Compiling slang sources ... failed\n%sc: failed to move\n", file);
     exit (1);
@@ -151,7 +154,7 @@ define dir_callback (dir, st)
   if (any (dir == EXCLUDEDIRS))
     return 0;
 
-  variable newdir = sprintf ("%s/%s", ROOTDIR, dir);
+  variable newdir = sprintf ("%s/%s", BINDIR, dir);
 
   ifnot (access (newdir, F_OK))
     return 1;
@@ -177,6 +180,7 @@ define main ()
 
   c.add ("cc", &CC;type = "string");
   c.add ("rootdir", &ROOTDIR;type = "string");
+  c.add ("bindir", &BINDIR;type = "string");
   c.add ("sourcedir", &SOURCEDIR;type = "string");
   c.add ("stdmoduledir", &stdmoduledir;type = "string");
   c.add ("usrmoduledir", &usrmoduledir;type = "string");
@@ -200,9 +204,12 @@ define main ()
  
   () = fprintf (stdout, "Trying to compile slang sources\n");
  
-  fs.walk ("me");
-  fs.walk ("you");
-  fs.walk ("she");
+  () = file_callback ("i.sl", NULL);
+
+  fs.walk ("std");
+  fs.walk ("usr");
+  fs.walk ("local");
+  fs.walk ("dev");
 
   () = fprintf (stdout, "Compiling slang sources ... done\n");
  

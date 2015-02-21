@@ -1,0 +1,348 @@
+[GENERAL DOCUMENT STATUS IS: FIRST DRAFT]
+
+                                 <*YouandIt*>
+_______________________________________________________________________
+
+This program is the implementation (coding result) of some intentions.
+Declared intentions is believed that is the best way to understand,
+speed up and improve the development of a product.
+
+<*INTENTIONS*>
+
+    When we are referring to intentions, in this particular context, we
+are reffering to:
+
+   a. interaction with the computer (me and it) (<|INTERFACE|>)
+   b. implementation of the above (<|IMPLEMENTATION|>)
+
+The root intention for this application is to provide the ability to run
+unlimited applications or functions on it, under a common interface,
+which is based on the personality of the human being.
+
+<*INTERFACE*>
+
+   The interface is inspired by maximized mouseless X window managers
+such ratpoison and musca, terminal multiplexers like gnu-screen,
+zsh shell, vim editor and pagers.
+The general idea is to devote the whole screen space to the running
+application, and which can be controlled with just the keyboard.
+
+What it actually means is: (for now)
+   a. Window drawing (<|DRAWING|>)
+   b. Input data (<|READLINE|>)
+   c. Output manipulation/navigation (<|PAGER|>) - with search
+      capabilities. For now output editing is being done throw
+      an external editor, which by default is vim but also jed
+      works the same way.
+      - at a very recent development, probably editing will be done
+        throw the application.
+
+<*DRAWING*>
+
+Drawing is simple (thin lines with no decorations).
+
+A window is splitted into frames (by default is one and maximum are
+      three, unless more or less defined throw the application).
+
+Default drawing:
+
+1. Topline
+A top line that shows some information about the current application
+which for now is:
+      WIND: [window name], MODE: [mode], PID: [pid] [time]
+
+2. Statusline
+A statusline that shows some information about the current frame
+to the bottom of each frame, which by default is:
+   path_basename (filename), [char (cursor position)],
+   (current line/total lines) current col, current file percent,
+   frame number
+
+3. Command line
+A command line which is reversed to the bottom line minus 1, started
+with : as the prompt char:
+If strlen (command line) > COLOUMNS, then it steals/borrows
+as many lines is neccecary from the last frame, which they are
+restored afterwards
+
+4. Message line
+A message line at the last line which is reserved for messages (short
+as possible), as there is no way to see it if strlen (msg) > COLUMNS
+-----------------------------------------------------------------------
+<*READLINE*>
+
+1. command autocompletion
+
+Triggered with [tab] when cursor is on the first token of command line.
+It should be specific to window application, where every application
+has its own default commands.
+By default the application starts a shell, where there are available
+the most basic (commands) found in Unix systems.
+However, shell commands can be accesible in every application (by
+default, unless is disabled), if ! is the first char in command
+line.
+
+2. arg autocompletion
+
+Triggered with [tab] when cursor is not on first token of command line
+and token starts with a -[dash]
+
+Hitting -[tab]
+ (autocompletion for arguments) [needs detailed explanation]
+      --arg void short message
+      --arg= filename short message (filename completion is triggered)
+      --arg= pcrepattern short message
+      --arg= string short
+
+3. filename completion
+
+Triggered with [tab] when cursor is not on first token of command line
+and first char of token is not a -[dash]
+
+4. history completion
+
+Triggered anywhere by hitting CTRL-R or uparrow
+
+5. last component completion
+
+Triggered by Alt-. or CTRL-_ in some terminals like st,
+which autocompletes the last components from previus commands
+
+6. keep the inserted command
+
+Triggered by Esc_q and holds the inserted so far line, receives input
+(new blank line), executes the command and re-enter the holded command
+
+7. window managment commands
+
+Triggered by CTRL-w and `key', where `key' is one of:
+   's' or 'v' split window and add another frame
+   'c' or 'd' to delete the current frame
+   'j' or 'w' or Down_arrow to jump to the next frame
+   'k' or Up_Arrow to go to the previous frame
+   [0:9] to jump to the nth window
+
+Motions are quite like emacs mode in common shells like bash/zsh
+-----------------------------------------------------------------------
+      <*IMPLEMENTATION*>
+
+The code is based on arrays.
+Structs are being used mainly to create objects.
+Lists to pass arguments arround or to store different types
+(although mixing types is discouraged with usage of violence).
+Associative arrays for mappings or to store named objects or RefType
+functions.
+
+Initialization.
+
+At the first instance and after some sanity checks, the distribution
+is byte compiled and builds the neccecary modules (unless of course
+is already installed).
+note: bin and tmp can be mounted in a tmpfs filesystem
+
+Hierarchy.
+
+you.sl         name of the root script (symbolic link to dist/you.sl)
+               (you name it)
+dist           (source code)
+  you.sl       root script (is not bytecompiled)
+  i.sl         the main script that is responsible to create and manage
+               the application environment
+  std
+    commands   (shell commands)
+      scripts  (the called commands)
+      info     (directories which corespond to commands)
+                 (help files and args)
+    types      (applications with their own window and settings)
+      A_Type   (its type has its own directory)
+      B_Type
+    ....       (many directories responsible for managing the application)
+  usr
+    commands   (copy of std/commands hierarchy)
+    types      (copy of std/types hierarchy)
+    functions  (common functions that send output to the hosted window)
+    lib        (needed libraries - is on the slang_load_path)
+  local        (this is a copy of the usr hierarchy, not published)
+  dev          (a copy of usr hierarchy (used for development, not published)
+modules
+  std          (modules that are being used by the std namespace)
+  usr          (modules that are being used by the usr namespace)
+  local        (modules that are being used by the local namespace)
+bin            (byte compiled code) (a copy of dist hierarchy)
+tmp            (temp dir)
+  username     (user name)
+    pid        (pid of the instance)
+data           (where the needed data is stored)
+  username     (user name)
+  share        (share data)
+
+Note: There is a question about data dir.
+
+
+During initialazion two processes are created:
+ 
+   the first is initializing the slsmg module and is responsible
+   for window drawing. Communication happens throw a Unix socket
+ 
+   the second is responsible to create and manage fore|background
+   processes. Communication happens throw a Unix socket. It has
+   also access to the slsmg process and inherits this ability to
+   the created processes.
+
+   (slsmg, fork and socket modules are being used so far)
+ 
+   next care is to initialize a getkey module (SLkp input routines)
+   and two public getch|getchar_lang variables which they are references
+   to getkey functions
+
+   next care is to create one object (a struct) for window
+   manipulation. The object is initialized by creating a new
+   copy everytime an application is created.
+   This gives the ability to applications to have access to common
+   functions to all applications, throw F1, a readline own copy,
+   where tab is being used for specific to application commands.
+   It lives in the "root" namespace and inherits an exec () function.
+   The object is a structure with references to functions and
+   variables. The called functions are executing by evalfil'ing
+   specific bytecompiled files, which they have defined a main ()
+   function which is not defined as private.
+
+   That is what the exec () function does.
+   Under a try/catch/finally statement:
+     - evaluates the bytecompiled file to the "root" namespace
+     - gets the main () function reference
+     - executes the main function, passing the object (self) and
+       any args on the stack
+     - redefine the main () to an empty body
+ 
+     It catches a ParseError exception, where:
+       it should be print in the screen, information about the
+         exception,
+       it should write also this message to "msgbuf" (the stderr
+       equalivant) field of the "i" object.
+       it goes to prompt again to receive input
+       (hint) sometimes and if the caller function fails, and while
+        waits output to be written in the "fname" field of the
+        buf|frame's struct (the stdout equalivant), to shows no input.
+       That was in the past the case of a recursive fault
+       where the only choise to get out of it, it was to kill the
+       application. This now should't be happen. At the worst case
+       it will throw you to the "i" window, where there is a available
+       the "fixbrokenwindow" command; when is called like
+          fixbrokenwindow windname
+          it simples change the mtime of the fname and forces the
+          draw_frame () function to reread the buffer (usually this fix it).
+       What if this happens
+       to the "i" window. Who will fix it? Thats why I found that is
+       a good idea not to give the availability to run shell commands
+       or functions to that window, except those that are to
+       adminastrate the distribution and those with care.
+ 
+     It catches a Return exception, where the value is the
+     __get_exception_info.object and returns that value.
+     the throw'ing statement signature is:
+        throw Return, " ", retval;
+ 
+     It catches a Break execption which does nothing, it serves
+     to the called main () to return (break the execution) without
+     a usefull value.
+     the throw'ing statement signature is:
+        throw Break;
+ 
+     It catches a GotoPrompt exception which breaks the execution
+     and redirects the program to receive input again from the command line
+     the throw'ing statement signature is:
+       throw GotoPrompt;
+ 
+     finally it catches any other Error, usually runtime errors, which
+     the behavior is exactly like the ParseError
+
+    speaking about the exec () and main ()
+    Very few standard libs (that are not changing much) are loaded during
+    initialization. What it really runs, is always  a main () function
+    which get empty after the execution.
+    There are objects with a lot of references. Func references are
+    great. It permits to temporarly choose the best method, to
+    change the function without interfere with the other objects.
+    I believe its the best method for abstraction, I think thats how
+    they call it. It permits development without thinking too much
+    for the compatibility.
+    Beacuse of this approach (a function is a file), that permits
+    throw bytecompiling the distribution to develop a function or
+    a fix for it, without to restart the application.
+    Also this a cheap way to profile functions. There is even now the
+    ability for this, by starting the application with --dev.
+    Profile files are written in TEMPDIR (still code needs to
+    be written to initialize the provided information)
+
+ 
+   So, two such windows (applications/objects) are created by default
+   and cannot be deleted.
+ 
+   The first one (named i) is dedicated for distribution managment.
+   The second one (named main) application is a shell, where by hitting
+   tab there is access to many common Unix commands, which they work in
+   most cases like the gnu ones, with some extensions.
+
+   The shell window is always available
+   throw CTRL-w-1
+   or CTRL-n, CTRL-p (for next|prev window) (if more than one
+         window),
+   and similar with CTRL-o which triggers (a tab window completion) using a
+      (kinda) pop-up (which needs to change)
+ 
+   Those shell commands can be available in any window-application and
+   is accessible with ! which then creates a new frame for the shell output
+ 
+  The distribution managment window is available throw F5 or CTRL-w-0
+  (and for now) you get out of it with CTRL-[npo]
+
+  (for now) two applications are available.
+   A git application that is a wrapper around git (wish a git module based
+   on libgit)
+   A media application that uses mplayer (old mplayer works perfectly, the
+   mplayer2 which is named also mplayer and is found in Debian distributions
+   it might froze the application due to a bug (I dont know), the whole
+   communication happens with a fifo file, so ... (I dont know)
+
+   Also there is a special window which is like the quickfix window
+   found in vim and is being used by the `search' command to display
+   the results. By hitting enter you jump to the specifix line, and
+   you have the option to open the file with your editor.
+
+   A question about the sudo.
+   sudo close all file descriptors above stderr (2), thats why
+
+   ....
+-----------------------------------------------------------------------
+<*PAGER*>
+
+Motions are quite like less pager and vim editor.
+NOTE. Pager is going to be running in another process (under
+development). This file should be displayed in that process and search
+and other facilities doesn't work like in the default pager do.
+For to reach the stable pager, when in command line press @
+
+-----------------------------------------------------------------------
+<*S-Lang*>
+
+The language of choice is S-Lang.
+   http://www.jedsoft.org/
+
+    S-Lang has a C-like syntax, is extremely fast (compared with other
+interpreted languages) and with a very small memory footprint.
+
+It has all the expected common DataTypes, is UTF-8 compatible, has
+low level screen mangment routines, comes with the most common low
+level C/POSIX functions and bindings to two regexp machines
+(PCRE and ONIGURAMA), curl and other specific usage modules.
+
+But!!! the real power of the language is the array manipulation, which
+exceeds any other known Programming Language.
+
+This project (good, bad or ugly) is dedicated to everybody contributed to
+S-Lang Programming Language and primarly to its author (John E. Davis),
+but also to everybody else who offered in the Open Source Programming
+Universe.
+
+...

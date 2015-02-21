@@ -1,4 +1,0 @@
-/home/aga/gitrepos/slang/
-/home/aga/youandit/sources/
-/home/aga/repos/slang/
-/home/share/youandit/sources/

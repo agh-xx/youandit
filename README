@@ -13,8 +13,8 @@ It offers:
 Its interface is almost like vim's editor.
 
 It was written in S-Lang mainly because the language is simple (it uses a C-like
-syntax) with a small memory footprint and because probably is one of the fasted
-dynamic languages.
+syntax) with a small memory footprint, great array manipulation and because
+probably is one of the fasted dynamic languages.
 
 This is a work in progress and it should be regarded like this in eternity, as one
 of the basic reasons which this project was started, is to be used to teach basic
@@ -53,7 +53,7 @@ cd slang
 # with another libslang installed by a package manager
 
 ./configure &&
-# check if picked up pcre, otherwise install pcre headers and libs and rerun
+# check if has picked up pcre, otherwise install pcre headers and libs and rerun
 # configure
 make &&
 sudo make install &&
@@ -72,27 +72,23 @@ sudo make install
 mkdir somedir
 cd somedir
 
-# IMPORTANT NOTE: it should be sources for the name of the repo,
+# IMPORTANT NOTE: it should be dist for the name of the repo,
 # otherwise nothing will work
-git clone https://github.com/agh-xx/youandit.git sources
-ln -sv sources/me/I_Ns/you.sl
+git clone https://github.com/agh-xx/youandit.git dist
+ln -sv dist/you.sl
 
 # create the personal hierarchy
-mkdir -p sources/she/modules
-mkdir sources/she/data
-mkdir sources/she/data/bytecompile
-mkdir -p sources/she/functions/scripts
-mkdir sources/she/functions/data
-mkdir sources/she/functions/info
-mkdir sources/she/types
-mkdir sources/she/lib
-mkdir -p sources/she/commands/scripts
-mkdir sources/she/commands/info
+mkdir -p dist/local/functions/scripts
+mkdir dist/local/functions/info
+mkdir dist/local/types
+mkdir dist/local/lib
+mkdir -p dist/local/commands/scripts
+mkdir dist/local/commands/info
 
 # End of installation commands
 
 # PREREQUISITY to make sudo work properly and it wont break the application
-# sudo it closes all file integer descriptors above stderr
+# sudo it closes all file integer descriptors above stderr file descriptor (2)
 
 # so add the following three lines to your sudoers
 # replace USER with your username
@@ -100,6 +96,13 @@ mkdir sources/she/commands/info
 Defaults:USER closefrom_override
 Defaults:USER !tty_tickets
 Defaults:USER timestamp_timeout=1
+
+#optionally add to /etc/fstab a tmpfs to tmp and bin, like,
+# none      somedir/tmp  tmpfs   size=100M,user  0      0
+# none      somedir/bin  tmpfs   size=15M,user,noatime,exec 0 0
+# in the last occation then everytime installation will executed at the
+# first invocation
+# note: bin and tmp should exist if mounted like this
 
 # Now run
 /usr/bin/local/slsh ./you.sl
