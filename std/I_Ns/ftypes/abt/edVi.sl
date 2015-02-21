@@ -490,6 +490,9 @@ define edVi (self)
 
   _chr_ = (@getch);
 
+  srv->write_ar_dr ([repeat (" ", COLUMNS), repeat (" ", COLUMNS)],
+    [0, 0], [0, 1], [0, 0], [s_.ptr[0], s_.ptr[1]]);
+
   while (_chr_ != 'q')
     {
     if (any (_keys_ == _chr_))

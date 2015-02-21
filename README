@@ -59,6 +59,7 @@ make &&
 sudo make install &&
 # run ldconfig
 sudo ldconfig -v
+cd ../
 
 # install curl module
 git clone git://git.jedsoft.org/git/slcurl.git
@@ -77,13 +78,18 @@ cd somedir
 git clone https://github.com/agh-xx/youandit.git dist
 ln -sv dist/you.sl
 
-# create the personal hierarchy
+# create the personal/development hierarchy
 mkdir -p dist/local/functions/scripts
 mkdir dist/local/functions/info
 mkdir dist/local/types
 mkdir dist/local/lib
 mkdir -p dist/local/commands/scripts
 mkdir dist/local/commands/info
+mkdir -p dist/dev/functions/scripts
+mkdir dist/dev/functions/info
+mkdir dist/dev/types
+mkdir dist/dev/lib
+mkdir -p dist/dev/commands/scripts
 
 # End of installation commands
 
@@ -98,7 +104,7 @@ Defaults:USER !tty_tickets
 Defaults:USER timestamp_timeout=1
 
 #optionally add to /etc/fstab a tmpfs to tmp and bin, like,
-# none      somedir/tmp  tmpfs   size=100M,user  0      0
+# none      somedir/tmp  tmpfs   size=200M,user  0      0
 # none      somedir/bin  tmpfs   size=15M,user,noatime,exec 0 0
 # in the last occation then everytime installation will executed at the
 # first invocation
