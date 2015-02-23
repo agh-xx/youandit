@@ -2,22 +2,24 @@ if (length (where ("--help" == __argv)))
   {
   () = array_map (Integer_Type, &fprintf, stdout, "%s\n",
     [path_basename (__argv[0]) + " [Option]", "",
-    "Options:", "--debug  Debug this program",
-    "--install install this program",
-    "--no-modules don't build modules when use --install",
-    "--app=appname:Some_Type start programm with `app'"]);
+    "Options:",
+    "--debug  debug this program",
+    "--dev  turn on development features",
+    "--install  install this program",
+    "--no-modules  don't build modules when use --install",
+    "--app=appname:Some_Type  start program with `app'"]);
   exit (0);
-  }
-
-if (NULL == getenv ("TERM"))
-  {
-  () = fputs ("TERM ENVIRONMENT VARIABLE isn't set\n", stderr);
-  exit (1);
   }
 
 ifnot (getuid ())
   {
   () = fputs ("You can't run this script as root\n", stderr);
+  exit (1);
+  }
+
+if (NULL == getenv ("TERM"))
+  {
+  () = fputs ("TERM environment variable isn't set\n", stderr);
   exit (1);
   }
 
@@ -294,6 +296,25 @@ if (-1 == $8)
   exit (1);
   }
 
+ifnot (isdirectory (sprintf ("%s/_edVi", TEMPDIR)))
+  if (-1 == mkdir (sprintf ("%s/_edVi", TEMPDIR)))
+    {
+    () = fprintf (stderr, "Cannot create directory %s/_edVi, ERRNO: %s\n",
+      TEMPDIR, errno_string (errno));
+    exit (1);
+    }
+  else
+    $8 = chmod (sprintf ("%s/_edVi", TEMPDIR), 0700);
+else
+  $8 = chmod (sprintf ("%s/_edVi", TEMPDIR), 0700);
+
+if (-1 == $8)
+  {
+  () = fprintf (stderr, "%s/_edVi: cannot change mode, ERRNO: %s\n",
+    TEMPDIR, errno_string (errno));
+  exit (1);
+  }
+
 ifnot (isdirectory (sprintf ("%s/data", ROOTDIR)))
   if (-1 == mkdir (sprintf ("%s/data", ROOTDIR)))
     {
@@ -336,7 +357,7 @@ ifnot (isdirectory (DATADIR))
  
 if (-1 == $8)
   {
-  () = fprintf (stderr, "%s/_scratch: cannot change mode, ERRNO: %s\n",
+  () = fprintf (stderr, "%s: cannot change mode, ERRNO: %s\n",
     DATADIR, errno_string (errno));
   exit (1);
   }

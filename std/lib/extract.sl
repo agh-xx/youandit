@@ -9,12 +9,12 @@ private define print (fd, func)
 private define untar (archive, file, verbose, tar)
 {
   variable
-    stderrr,
-    stderrw,
     pid,
-    status,
     num,
     buf,
+    status,
+    stderrr,
+    stderrw,
     out_fd = verbose ? dup_fd (fileno (stdout)) : NULL,
     err_fd = dup_fd (fileno (stderr)),
     ar = String_Type[0];
@@ -63,13 +63,13 @@ private define untar (archive, file, verbose, tar)
 private define func_z (archive, verbose, type)
 {
   variable
+    pid,
+    num,
+    buf,
+    status,
     stdoutw,
     stderrr,
     stderrw,
-    pid,
-    status,
-    num,
-    buf,
     err_fd = dup_fd (fileno (stderr)),
     tar = which ("tar"),
     exec = which (type == ".xz" ? "xz" : type == ".bz2" ? "bzip2" : "gzip");
@@ -118,16 +118,16 @@ private define func_unrar (archive, verbose, type)
 {
   variable
     pid,
+    buf,
+    num,
+    status,
     stdoutw,
-    unrar = [which ("unrar")],
     stdoutr,
     stderrr,
     stderrw,
-    status,
-    buf,
+    unrar = [which ("unrar")],
     err_fd = dup_fd (fileno (stderr)),
     out_fd = verbose ? dup_fd (fileno (stdout)) : NULL,
-    num,
     ar = String_Type[0];
 
   if (NULL == unrar[0])
@@ -178,16 +178,16 @@ private define func_unzip (archive, verbose, type)
 {
   variable
     pid,
+    buf,
+    num,
+    status,
     stdoutw,
-    unzip = [which ("unzip")],
     stdoutr,
     stderrr,
     stderrw,
+    unzip = [which ("unzip")],
     err_fd = dup_fd (fileno (stderr)),
     out_fd = verbose ? dup_fd (fileno (stdout)) : NULL,
-    status,
-    buf,
-    num,
     ar = String_Type[0];
 
   if (NULL == unzip[0])
@@ -237,11 +237,11 @@ private define func_unzip (archive, verbose, type)
 define extract (archive, verbose, dir, strip)
 {
   variable
-    type = path_extname (archive),
     retval,
-    methods = [&func_z, &func_z, &func_z, &func_z, &func_unzip, &func_unrar],
     method,
     newdir,
+    type = path_extname (archive),
+    methods = [&func_z, &func_z, &func_z, &func_z, &func_unzip, &func_unrar],
     bsname = path_basename_sans_extname (archive),
     saveddir = getcwd ();
 
@@ -262,7 +262,7 @@ define extract (archive, verbose, dir, strip)
       if (2 < length (strchop (strjoin (bsname[[1:]]), '.', 0)))
         newdir += sprintf ("-%s", strjoin (strchop (strjoin (bsname[[1:]]), '.', 0)[[0:1]], "."));
       }
-    % easy fallback (I don't really care), this program is based in unix standards
+    % easy fallback (I don't really care), this program is based on unix standards
     else
       {
       newdir = bsname;

@@ -4,7 +4,6 @@
 % This file is part of the S-Lang Library and may be distributed under the
 % terms of the GNU General Public License.  See the file COPYING for
 % more information.
-variable f = fopen ("/tmp/deb", "a+");
 private define process_dir (w, dir, dir_st);
 private define process_dir (w, dir, dir_st)
 {
@@ -23,7 +22,7 @@ private define process_dir (w, dir, dir_st)
 	variable st = (@w.stat_func)(file);
 	if (st == NULL)
 	  {
-	     () = fprintf (f, "Unable to stat %s: %s\n", file, errno_string (errno));
+	     () = fprintf (stderr, "Unable to stat %s: %s\n", file, errno_string (errno));
 	     continue;
 	  }
 	if (stat_is ("dir", st.st_mode))

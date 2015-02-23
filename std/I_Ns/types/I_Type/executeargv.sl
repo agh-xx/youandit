@@ -63,10 +63,11 @@ define main (self, argv)
            sprintf ("--mainfname=%s", buf.fname)]);
  
       if (retval)
-        writefile (sprintf ("ERROR\nEXIT_CODE: %d", retval), buf.fname;mode = "a");
+        writefile ([repeat ("_", COLUMNS), sprintf ("ERROR\nEXIT_CODE: %d", retval)],
+          buf.fname;mode = "a");
       else
-        writefile (["bytecompile completed with no errors", repeat ("_", COLUMNS)], buf.fname;
-          mode = "a");
+        writefile ([repeat ("_", COLUMNS), "bytecompile completed with no errors"],
+          buf.fname;mode = "a");
       }
  
       {
@@ -96,10 +97,11 @@ define main (self, argv)
             sprintf ("--mainfname=%s", buf.fname)]);
  
           if (retval)
-            writefile (sprintf ("ERROR\nEXIT_CODE: %d", retval), buf.fname;mode = "a");
+            writefile ([repeat ("_", COLUMNS), sprintf ("ERROR\nEXIT_CODE: %d", retval)],
+              buf.fname;mode = "a");
           else
-            writefile (["bytecompile completed with no errors", repeat ("_", COLUMNS)], buf.fname;
-              mode = "a");
+            writefile ([repeat ("_", COLUMNS), "bytecompile completed with no errors"],
+              buf.fname;mode = "a");
           }
       }
 
@@ -131,6 +133,11 @@ define main (self, argv)
            sprintf ("--execdir=%s/proc", path_dirname (__FILE__)),
            sprintf ("--msgfname=%s", buf.fname),
            sprintf ("--mainfname=%s", buf.fname)]);
+      }
+
+      {
+      case "q!":
+        root.func.call ("q!");
       }
     }
   catch Break:

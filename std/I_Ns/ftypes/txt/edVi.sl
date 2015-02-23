@@ -15,9 +15,9 @@ private variable
   _hcolors_ = [6, 6],
   _rows_,
   _cols_,
+  _colors_,
   _linenrs_,
   _lines_,
-  _colors_,
   _line_,
   _linlen_,
   _plinlen_,
@@ -69,10 +69,7 @@ private define draw_head ()
 
 private define draw ()
 {
-  _rows_ = Integer_Type[0];
   _linenrs_ = LLong_Type[0];
-  _cols_ = LLong_Type[0];
-  _colors_ = LLong_Type[0];
   _ar_ = String_Type[0];
   _lines_ = String_Type[0];
 
@@ -83,36 +80,31 @@ private define draw ()
   while (_i_ <= _len_ && __i__ <= _avlines_)
     {
     _line_ = s_.js_._lines[_i_];
-    _row_ = Integer_Type[length (_line_[0])];
-    _row_[*] = __i__;
-    _rows_ = [_rows_, _row_];
-    _linenrs_ = [_linenrs_, list_to_array (_line_[0])];
-    _cols_ = [_cols_, list_to_array (_line_[1])];
-    _colors_ = [_colors_, list_to_array (_line_[2])];
-    _ar_ = [_ar_, list_to_array (_line_[3])];
-    _lines_ = [_lines_, strjoin (list_to_array (_line_[3]))];
+    _linenrs_ = [_linenrs_, _line_[0][0]];
+    _lines_ = [_lines_, _line_[1][0]];
     _i_++;
     __i__++;
     }
  
-  _vlines_ = [2:_rows_[-1]];
+  _vlines_ = [2:length (_lines_) - 1 + 2];
 
   _i_ = _i_ - (__i__) + 2;
 
   if (-1 == _i_)
     _i_ = 0;
 
-  _cols_ = array_map (Integer_Type, &int, _cols_);
-  _colors_ = array_map (Integer_Type, &int, _colors_);
   _linenrs_ = array_map (Integer_Type, &int, _linenrs_);
   
-  if (s_.ptr[0] > _rows_[-1])
-    s_.ptr[0] = _rows_[-1];
+  if (s_.ptr[0] > __i__)
+    s_.ptr[0] = __i__;
   
-  _ar_ = array_map (String_Type, &substr, _ar_, 1, s_._maxlen);
+  _ar_ = [array_map (String_Type, &substr, _lines_, 1, s_._maxlen), tail];
+  _cols_ = Integer_Type[length (_ar_)] + 1;
+  _colors_ = Integer_Type[length (_ar_)] + 1;
+  _cols_[*] = 0;
+  _colors_[*]  = 0;
 
-  srv->draw_wind ([_ar_, tail], [_colors_, 0],
-    [_rows_, LINES - 1], [_cols_, 0], [s_.ptr[0], s_.ptr[1]]);
+  srv->draw_wind (_ar_, _colors_, [_vlines_, LINES - 1], _cols_, [s_.ptr[0], s_.ptr[1]]);
 }
 
 private define reparse ()
@@ -471,6 +463,7 @@ private define delete ()
 }
 
 _funcs_[string ('d')] = &delete;
+
 define edVi (self)
 {
   s_ = self;
@@ -486,7 +479,7 @@ define edVi (self)
     + WHOAMI + ", access " + s_._access, "m " + ctime (s_.st_.st_mtime) +
     " - a " + ctime (s_.st_.st_atime) + " - c " + ctime (s_.st_.st_ctime) + " - size "
     + string (s_.st_.st_size)];
-  
+
   draw ();
   draw_head ();
 

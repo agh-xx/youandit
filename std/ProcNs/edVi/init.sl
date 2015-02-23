@@ -19,7 +19,7 @@ private define getpwuid (uid, err_func)
 
   if (NULL == $5)
     return (@err_func) ("/etc/passwd is not readable, this shouldn't be happen", NULL);
- 
+  
   while (-1 != fgets (&$6, $5))
     {
     $7 = strchop ($6, ':', 0);
@@ -29,7 +29,8 @@ private define getpwuid (uid, err_func)
 
   array_map (Void_Type, &__uninitialize, [&$5, &$6, &$7]);
 
-  return (@err_func) (sprintf ("cannot find your UID %d in /etc/passwd, who are you?", uid), NULL);
+  return (@err_func) (sprintf ("cannot find your UID %d in /etc/passwd, who are you?", uid),
+    NULL);
 }
 
 if (NULL == WHOAMI)
@@ -41,7 +42,7 @@ private define getgrgid (gid, err_func)
 
   if (NULL == $5)
     return (@err_func) ("/etc/group is not readable, this shouldn't be happen", NULL);
- 
+  
   while (-1 != fgets (&$6, $5))
     {
     $7 = strchop ($6, ':', 0);
@@ -59,9 +60,12 @@ variable TEMPDIR = getenv ("TEMPDIR");
 private variable
   ROOTDIR = getenv ("ROOTDIR"),
   STDNS = getenv ("STDNS"),
-  ALARM = NULL;
+  EDVIDIR = sprintf ("%s/_edVi", TEMPDIR),
+  EDVI_SOCKADDR = sprintf ("%s/_pipes/edVi.sock", TEMPDIR),
+  EDVI_SOCKET,
+  SAVEJS;
 
-public variable
+variable
   COLUMNS = atoi (getenv ("COLUMNS")),
   LINES = atoi (getenv ("LINES")),
   SRV_SOCKADDR = getenv ("SRV_SOCKADDR"),
@@ -110,10 +114,51 @@ getchar_lang = &input->en_getch;
 
 init_tty (-1, 0, 0);
 
+private variable s_ = @Struct_Type ("");
+
+private define savestate ();
+
 define exit_me ()
 {
+  ifnot (SAVEJS)
+    {
+    ifnot (NULL == struct_field_exists (s_, "_jsfn"))
+      ifnot (access (s_._jsfn, F_OK|W_OK))
+        () = remove (s_._jsfn);
+    }
+  else if (0 == qualifier_exists ("dontsave"))
+    savestate ();
+  
+  if (length (s_._err))
+    () = array_map (Integer_Type, &fprintf, stderr, "%s\n", list_to_array (s_._err));
+
+  sock->send_int (EDVI_SOCKET, 111);
   sigprocmask (SIG_BLOCK, [SIGINT]);
   exit (EXIT_CODE);
+}
+
+EDVI_SOCKET = socket (PF_UNIX, SOCK_STREAM, 0);
+
+forever
+  {
+  try
+    connect (EDVI_SOCKET, EDVI_SOCKADDR);
+  catch AnyError:
+    continue;
+
+   break;
+  }
+
+SAVEJS = sock->get_bit (EDVI_SOCKET);
+
+define send_ans (ans)
+{
+  sock->send_int (EDVI_SOCKET, ans);
+}
+
+define get_ans ()
+{
+  return sock->get_int (EDVI_SOCKET);
 }
 
 define ineed (lib)
@@ -129,15 +174,26 @@ define ineed (lib)
     }
 }
 
-ineed ("json");
+if (1 == __argc)
+  {
+  EXIT_CODE = 1;
+  () = fprintf (stderr, "Wrong number of args, a filename is needed\n");
+  exit_me (;dontsave);
+  }
 
-private variable s_ = FTYPES["abt"].init ();
+ineed ("json");
 
 private variable
   _buf_,
   _len_,
-  _state_,
   js_;
+
+_buf_ = substr (path_extname (__argv[1]), 2, -1);
+
+if (any (_buf_ == assoc_get_keys (FTYPES)))
+  s_ = FTYPES[_buf_].init ();
+else
+  s_ = FTYPES["txt"].init ();
 
 private define encode (s)
 {
@@ -155,7 +211,7 @@ private define encode (s)
     _uown = s_._uown,
     _indent = s_._indent,
     @s_.js_
-    };
+    };  
 
   try
     {
@@ -165,7 +221,7 @@ private define encode (s)
     _len_ += (length (s_.jslinlen) ? s_.jslinlen[0] : 0);
     _len_ += strlen (string (_len_)) + 1;
     list_insert (s_.jslinlen, _len_);
-    _buf_ = json_encode (struct {@enc, jslinlen = s_.jslinlen});
+    _buf_ = json_encode (struct {@enc, jslinlen = s_.jslinlen}); 
     _len_ = fprintf (s_._jsfp, "%s\n", _buf_);
     s_._states++;
 
@@ -181,7 +237,7 @@ private define encode (s)
 
 s_.encode = &encode;
 
-private define getjs (s)
+private define getjsline ()
 {
   if (s_._state + 1 >= s_._states || 1 == length (s_.jslinlen))
     _len_ = 0;
@@ -190,11 +246,46 @@ private define getjs (s)
 
   () = fseek (s_._jsfp, _len_, SEEK_SET);
   () = fgets (&_buf_, s_._jsfp);
+}
 
+private define getjs (s)
+{
+  getjsline ();
   return json_decode (_buf_);
 }
 
 s_.getjs = &getjs;
+
+private define savestate ()
+{
+  variable enc = struct
+    {
+    st_ = s_.st_,
+    ptr = s_.ptr,
+    _modified = s_._modified,
+    _states = 1,
+    _state = 0,
+    _fname = s_._fname,
+    _access = s_._access,
+    _gown = s_._gown,
+    _uown = s_._uown,
+    _indent = s_._indent,
+    @s_.js_,
+    jslinlen = {},
+    };  
+
+  () = fclose (s_._jsfp);
+  s_._jsfp = fopen (s_._jsfn, "w");
+
+  _buf_ = json_encode (enc); 
+  _len_ = strlen (_buf_);
+  _len_ += strlen (string (_len_)) + 1;
+  list_insert (enc.jslinlen, _len_);
+  _buf_ = json_encode (enc);
+
+  () = fprintf (s_._jsfp, "%s\n", _buf_);
+  () = fclose (s_._jsfp);
+}
 
 private define parse_file ()
 {
@@ -209,7 +300,7 @@ private define decode_js (s)
 {
   try
     {
-    ifnot (stat_file (s_._jsfn).st_size)
+    if (0 == stat_file (s_._jsfn).st_size || qualifier_exists ("reparse"))
       {
       js_ = parse_file ();
       s_._states = js_._states;
@@ -218,8 +309,8 @@ private define decode_js (s)
     else
       {
       js_ = s_.getjs ();
- 
-      s_.st_ = lstat_file (s_._fname);
+      
+      s_.st_ = lstat_file (s_._fname); 
 
       if (js_.st_.st_size != s_.st_.st_size || js_.st_.st_mtime != s_.st_.st_mtime)
         {
@@ -230,7 +321,8 @@ private define decode_js (s)
       }
 
     s_.js_._lines = js_._lines;
-    s_.js_._links = js_._links;
+    if (struct_field_exists (s_.js_, "_links"))
+      s_.js_._links = js_._links;
     }
   catch Json_Parse_Error:
     {
@@ -245,7 +337,7 @@ s_.decode = &decode_js;
 
 private define app_err (msg)
 {
-  list_append (s_.err, msg);
+  list_append (s_._err, msg);
 }
 
 private define gid_err (msg, retval)
@@ -283,7 +375,7 @@ if (s_._jsfn == NULL == s_._fname)
   {
   () = fprintf (stderr, "%s: No such filename\n", s_._fname);
   EXIT_CODE = 1;
-  exit_me ();
+  exit_me (;dontsave);
   }
 
 if (NULL == s_._fname)
@@ -298,7 +390,7 @@ if (NULL == s_._fnfp)
   {
   () = fprintf (stderr, "%s: cant open, ERRNO:\n", s_._fnfp);
   EXIT_CODE = 1;
-  exit_me ();
+  exit_me (;dontsave);
   }
 
 if (NULL == s_._jsfn)
@@ -313,7 +405,7 @@ if (NULL == s_._jsfp)
   {
   () = fprintf (stderr, "%s: cant open, ERRNO:\n", s_._jsfp);
   EXIT_CODE = 1;
-  exit_me ();
+  exit_me (;dontsave);
   }
 
 s_.st_ = lstat_file (s_._fname);
@@ -336,7 +428,8 @@ else
       if (js_.st_.st_size == s_.st_.st_size && js_.st_.st_mtime == s_.st_.st_mtime)
         {
         s_.js_._lines = js_._lines;
-        s_.js_._links = js_._links;
+        if (struct_field_exists (s_.js_, "_links"))
+          s_.js_._links = js_._links;
         }
       else
         s_.decode ();
@@ -345,12 +438,16 @@ else
       {
       () = fprintf (stderr, "%s: Error Parsing json format\n", s_._jsfn);
       EXIT_CODE = 1;
-      exit_me ();
+      exit_me (;dontsave);
       }
   }
 
 sigprocmask (SIG_UNBLOCK, [SIGINT]);
+
+send_ans (0);
+
 s_.edVi ();
+
 sigprocmask (SIG_BLOCK, [SIGINT]);
 
 exit_me ();

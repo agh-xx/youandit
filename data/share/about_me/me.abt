@@ -132,6 +132,9 @@ Lists to pass arguments arround or to store different types
 (although mixing types is discouraged with usage of violence).
 Associative arrays for mappings or to store named objects or RefType
 functions.
+Extensive usage of qualifiers.
+First choice for array operations is array_map.
+First choice for loop operations is _for.
 
 Initialization.
 
@@ -271,7 +274,7 @@ During initialazion two processes are created:
     throw bytecompiling the distribution to develop a function or
     a fix for it, without to restart the application.
     Also this a cheap way to profile functions. There is even now the
-    ability for this, by starting the application with --dev.
+    ability for this, by starting the application with --debug.
     Profile files are written in TEMPDIR (still code needs to
     be written to initialize the provided information)
 
@@ -297,23 +300,75 @@ During initialazion two processes are created:
   The distribution managment window is available throw F5 or CTRL-w-0
   (and for now) you get out of it with CTRL-[npo]
 
-  (for now) two applications are available.
-   A git application that is a wrapper around git (wish a git module based
-   on libgit)
+  (for now) two published applications are available.
+   A git application that is a wrapper around git (wish for a git module
+   based on libgit2)
    A media application that uses mplayer (old mplayer works perfectly, the
    mplayer2 which is named also mplayer and is found in Debian distributions
    it might froze the application due to a bug (I dont know), the whole
-   communication happens with a fifo file, so ... (I dont know)
+   communication happens with a fifo file (see -slave and -input in
+   mplayer command options), so ... (I dont know, I'm using the old good
+   mplayer, vlc is somewhat works the same way, but I'm happy with
+   mplayer)
 
    Also there is a special window which is like the quickfix window
    found in vim and is being used by the `search' command to display
    the results. By hitting enter you jump to the specifix line, and
-   you have the option to open the file with your editor.
+   you have the option to open the file with your editor in that line.
+      Hitting 'e' while you are in the pager it gives you the option to
+      open the file with the editor.
+      Also the `edthisfile' function found in F1, does the same.
+      If given without argument, opens the bufname (or stdout), otherwise
+      opens the filename which is given as an argument.
+      The editor can be changed if you edit the usr/conf/etc/env.sl
+      Jed works exactly the same way as vim and this an example how
+      
 
-   A question about the sudo.
-   sudo close all file descriptors above stderr (2), thats why
+   A question about sudo.
+   First, all the commands can be invoked with sudo rights, if the
+   option --sudo is given.
+   But normally sudo close all file descriptors above stderr (2), so
+   when a command  is invoked with --sudo, then sudo closes the opened
+   socket fds and the application stops working.
+   The only way I've found is the option -C in sudo, which forces sudo
+   to close fds above the given option, which is plus one than the last
+   opened socket fd. However it needs the "closefrom_override" option in
+   sudoers.
+   
+   Functions and commands have the following priority. First the
+   interpeter is looking at the personal (local) hierarchy, then at usr
+   hierarhy and last at the standard (std) hierarhy.
+   Functions are declared as Assoc_Type, so any function that is sourced
+   last (which is the local hierarhy) overides  previus declarations.
+   It's the Assoc_Type datatype that permits this behavior.
+   (High priority intention: The code is trying to initiazize
+   (without mercy), all the features of the language, and is always
+   trying to find the best method and the cheapest one. To be readable
+   is not always a consern)
+     For example you see this file, because there is no intro function
+     declared/initialized in local/functions/Init.sl. See the prototype
+     in usr/functions/Init.sl
+     Note: You can add functions during runtime. After you add a key
+     in the Associated Array, you bytecompile the distribution (throw
+     the "i" window), and when you go back to the previus window, use
+     the `rehash' command to create the new hash table (the new function
+     will be available for happy use) Isn't that great?
+     For now only the Initialization scripts that create structures are
+     not "rehashed", as this can be break things, but is not impossible.
+     The idea of an eternal development without restarting is
+     challenging and attractive.
 
-   ....
+   The program is assume and expects a UTF-8 locale. End of story. The
+   pathetic iso's is thing of the histrory and it should be never been
+   invented. It's a historical mistake that caused slow down, headaches,
+   bad, ugly code that even today is included in programs for
+   compatibility. This program has included code to write in english and
+   greek (this can be toogled with f10). To create a map is redicously
+   trivial and is indepentently if you are in X enviroment or behind
+   a limux terminal. I'm telling this because for years that was the
+   case of anger of international users. Why the things could't be more
+   simpler? Anyway the code lives in std/InputNs/input.sl.
+   That's the reason of the existance of the getchar_lang variable.
 -----------------------------------------------------------------------
 <*PAGER*>
 

@@ -43,7 +43,6 @@ variable Ftype_Type = struct
   js_ = struct
     {
     _lines,
-    _links,
     },
   parseline,
   parsearray,
@@ -65,4 +64,5 @@ private define add (ftype)
   return type;
 }
 
+FTYPES["txt"] = add ("txt");
 FTYPES["abt"] = add ("abt");

@@ -57,9 +57,9 @@ define main (self)
     "--uselocation=  string Use this location instead of the default"], 1};
 
   keys["about"] = {sprintf ("%s/about", mydir), NULL, "about",
-    ["--me       void about code and intentions",
-     "--aera     void era",
-     "--develop  void development - track file",
+    ["--me          void about code and intentions",
+     "--develop     void development - track file",
+     "--savejs      void save json file (default no)", 
     ], NULL};
 
   throw Return, " ", struct

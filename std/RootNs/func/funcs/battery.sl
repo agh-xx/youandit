@@ -49,10 +49,10 @@ define main (self)
     }
  
   if (qualifier_exists ("dont_goto_prompt"))
-    throw Return, " ", [sprintf ("[battery is %S, remaining %S]", charging, remain),
+    throw Return, " ", [sprintf ("[Battery is %S, remaining %S]", charging, remain),
       sprintf ("%d", 'C' == charging[0] ? 0 : -1)];
 
-  srv->send_msg_and_refresh (sprintf ("[battery is %S, remaining %S]", charging, remain),
+  srv->send_msg_and_refresh (sprintf ("[Battery is %S, remaining %S]", charging, remain),
     'C' == charging[0] ? 0 : -1);
  
   throw GotoPrompt;

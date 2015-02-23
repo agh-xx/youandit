@@ -3,18 +3,21 @@ define main ()
   variable
     retval,
     fname,
+    index,
+    savejs = 0,
     docs = Assoc_Type[String_Type, "null"],
     argv = __pop_list (_NARGS - 1);
 
+  argv = list_to_array (argv, String_Type);
+
   ifnot (length (argv))
     {
-    srv->send_msg ("ARG ERROR", -1);
+    srv->send_msg ("ARG ERROR, a filename is needed", -1);
     throw GotoPrompt;
     }
-
+  
   docs["--me"] = sprintf ("%s/about_me/me.abt", DATASHAREDIR);
   docs["--develop"] = sprintf ("%s/about_me/develop.abt", DATASHAREDIR);
-  docs["--aera"] = sprintf ("%s/about_ag/aera.abt", DATADIR);
 
   fname = docs[argv[0]];
 
@@ -40,8 +43,15 @@ define main ()
 
     fname = argv[0];
     }
+  else
+    savejs = 1;
 
-  retval = proc->edVi (fname);
+  index = proc->is_arg ("--savejs", argv);
+  ifnot (NULL == index)
+    savejs = 1; 
+
+  retval = proc->edVi (fname, savejs);
+
   CW.drawwind (;reread_buf);
   throw GotoPrompt;
 }

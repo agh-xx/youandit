@@ -221,6 +221,11 @@ define init (self)
   variable s_ = struct
     {
     @self,
+    js_ = struct
+      {
+      _lines,
+      _links,
+      },
     _jumpchar = '|',
     _entrychar = '*',
     dlmcolor = Assoc_Type[Integer_Type],

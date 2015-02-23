@@ -166,6 +166,13 @@ static define send_int_get_bit (fd, i)
   return get_bit (fd);
 }
 
+%% send_int_get_int Integer_Type [0-9] (fd, Integer_Type)
+static define send_int_get_int (fd, i)
+{
+  send_int (fd, i);
+  return get_int (fd);
+}
+
 %% get_str_send_bit String_Type (fd, Integer_Type[0-9])
 static define get_str_send_bit (fd, i)
 {

@@ -16,6 +16,8 @@ define main ()
     return 1;
     }
 
+  (@print_out) (repeat ("_", COLUMNS));
+
   tree = strtrim_end (tree, "/");
  
   exit_code = sync.run (cur, tree);
@@ -25,7 +27,5 @@ define main ()
   else
     (@print_err) (sprintf ("sync failed, EXIT_CODE: %d", exit_code);dont_write_to_stdout);
  
-  (@print_out) (repeat ("_", COLUMNS));
-
   return exit_code;
 }

@@ -3,17 +3,17 @@ ineed ("extract");
 define main ()
 {
   variable
-    strip = NULL,
-    files,
-    exit_code = 0,
     i,
+    files,
     dir = NULL,
+    strip = NULL,
+    exit_code = 0,
     noverbose = NULL,
     c = cmdopt_new (&_usage);
 
   c.add ("no-verbose", &noverbose);
   c.add ("to-dir", &dir;type = "string");
-  c.add ("--strip", &strip);
+  c.add ("strip", &strip);
   c.add ("help", &_usage);
   c.add ("info", &info);
 

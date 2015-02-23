@@ -14,7 +14,7 @@ define main (self)
       }
     }
 
-  _for name (0,length (root.windnames)-1)
+  _for name (0, length (root.windnames) - 1)
     {
     cw = root.windows[root.windnames[name]];
     cw.history.write ();

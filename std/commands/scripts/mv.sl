@@ -52,7 +52,7 @@ define main ()
 
   opts.ignoredir = NULL;
 
-  dest = __argv[-1];
+  dest = eval_dir (__argv[-1]);
   files = __argv[[i:__argc-2]];
 
   st_dest = stat_file (dest);

@@ -9,6 +9,8 @@ variable
   SRV_SOCKET,
   SRV_PID = NULL,
   SRV_SOCKADDR = sprintf ("%s/_pipes/srv.sock", TEMPDIR),
+  EDVI_SOCKET,
+  EDVI_SOCKADDR = sprintf ("%s/_pipes/edVi.sock", TEMPDIR),
   LINES = (LINES = getenv ("LINES"), NULL == LINES ? 3 : atoi (LINES)),
   COLUMNS = (COLUMNS = getenv ("COLUMNS"), NULL == COLUMNS ? 3 : atoi (COLUMNS)),
   AVAILABLE_LINES = NULL != LINES ? LINES - 3 : 0,

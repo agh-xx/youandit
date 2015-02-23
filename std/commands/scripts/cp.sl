@@ -91,7 +91,7 @@ define main ()
   else
     opts.ignoredir = NULL;
 
-  dest = __argv[-1];
+  dest = eval_dir (__argv[-1]);
   stat_dest = stat_file (dest);
 
   files = __argv[[i:__argc - 2]];
