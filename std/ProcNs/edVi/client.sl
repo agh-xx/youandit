@@ -30,7 +30,7 @@ static define write_wrapped_str_dr (str, clr, upcorn, drdc, fill, pos)
   () = sock->get_bit (SRV_SOCKET);
 }
 
-static define gotorc_dr (row, col)
+static define gotorc_draw (row, col)
 {
   sock->send_str (SRV_SOCKET, _function_name ());
 

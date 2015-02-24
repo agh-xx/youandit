@@ -321,8 +321,9 @@ During initialazion two processes are created:
       If given without argument, opens the bufname (or stdout), otherwise
       opens the filename which is given as an argument.
       The editor can be changed if you edit the usr/conf/etc/env.sl
-      Jed works exactly the same way as vim and this an example how
-      
+      Jed works exactly the same way as vim and this a bright example,
+      how different applications which they do the same job, can be coded
+      with a way that respect the standards and each other.
 
    A question about sudo.
    First, all the commands can be invoked with sudo rights, if the

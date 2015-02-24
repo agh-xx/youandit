@@ -1,7 +1,6 @@
 ineed ("json");
 
 private variable
-  s_,
   _i_,
   __i__,
   _prev_i_,
@@ -35,6 +34,9 @@ private variable
 
 private define linlen (r)
 {
+  if ('.' == r)
+    return strlen (_lines_[s_.ptr[0] - 2]) - s_._indent;
+
   return strlen (_lines_[r - 2]) - s_._indent;
 }
 
@@ -87,10 +89,10 @@ private define draw ()
     _row_[*] = __i__;
     _rows_ = [_rows_, _row_];
     _linenrs_ = [_linenrs_, list_to_array (_line_[0])];
-    _cols_ = [_cols_, list_to_array (_line_[1])];
-    _colors_ = [_colors_, list_to_array (_line_[2])];
-    _ar_ = [_ar_, list_to_array (_line_[3])];
-    _lines_ = [_lines_, strjoin (list_to_array (_line_[3]))];
+    _ar_ = [_ar_, list_to_array (_line_[1])];
+    _lines_ = [_lines_, strjoin (list_to_array (_line_[1]))];
+    _cols_ = [_cols_, list_to_array (_line_[2])];
+    _colors_ = [_colors_, list_to_array (_line_[3])];
     _i_++;
     __i__++;
     }
@@ -102,10 +104,6 @@ private define draw ()
   if (-1 == _i_)
     _i_ = 0;
 
-  _cols_ = array_map (Integer_Type, &int, _cols_);
-  _colors_ = array_map (Integer_Type, &int, _colors_);
-  _linenrs_ = array_map (Integer_Type, &int, _linenrs_);
-  
   if (s_.ptr[0] > _rows_[-1])
     s_.ptr[0] = _rows_[-1];
   
@@ -167,7 +165,7 @@ private define down ()
       s_.ptr[1] = s_._indent;
     else
       if ((0 != _plinlen_ && s_.ptr[1] - s_._indent == _plinlen_ - 1)
-       || (s_.ptr[1] - s_._indent && s_.ptr[1] - s_._indent > _linlen_))
+       || (s_.ptr[1] - s_._indent && s_.ptr[1] - s_._indent >= _linlen_))
          s_.ptr[1] = _linlen_ - 1 + s_._indent;
 
     draw_tail ();
@@ -189,17 +187,17 @@ private define up ()
 {
   if (s_.ptr[0] > _vlines_[0])
     {
-    _plinlen_ = linlen (s_.ptr[0]);
+    _plinlen_ = linlen ('.');
 
     s_.ptr[0]--;
     
-    _linlen_ = linlen (s_.ptr[0]);
+    _linlen_ = linlen ('.');
 
     ifnot (_linlen_)
       s_.ptr[1] = s_._indent;
     else
       if ((0 != _plinlen_ && s_.ptr[1] - s_._indent == _plinlen_ - 1)
-       || (s_.ptr[1] - s_._indent && s_.ptr[1] - s_._indent > _linlen_))
+       || (s_.ptr[1] - s_._indent && s_.ptr[1] - s_._indent >= _linlen_))
          s_.ptr[1] = _linlen_ - 1 + s_._indent;
     
     draw_tail ();
@@ -300,6 +298,8 @@ private define eos ()
 
   if (_linlen_ > s_._maxlen)
     s_.ptr[1] = s_._maxlen - 1;
+  else if (0 == _linlen_)
+    s_.ptr[1] = s_._indent;
   else
     s_.ptr[1] = _linlen_ + s_._indent - 1;
 
@@ -416,7 +416,7 @@ private define delete ()
       
       _for i (0, length (s_.js_._lines) - 1)
         {
-        line = strjoin (list_to_array (s_.js_._lines[i][3]));
+        line = strjoin (list_to_array (s_.js_._lines[i][1]));
         if (line_ == line)
           {
           s_.js_._lines = list_concat (s_.js_._lines[[0:i - 1]], s_.js_._lines[[i + 1:]]);
@@ -461,8 +461,8 @@ private define delete ()
       catch Json_Parse_Error:
         {
         () = fprintf (stderr, "Error encoding edVi struct\n");
-        %EXIT_CODE = 1;
-        %exit_me ();
+        EXIT_CODE = 1;
+        exit_me ();
         }
       }
   _i_ = 0;
@@ -471,10 +471,9 @@ private define delete ()
 }
 
 _funcs_[string ('d')] = &delete;
+
 define edVi (self)
 {
-  s_ = self;
-
   _len_ = length (s_.js_._lines) - 1;
 
   s_.ptr[0] = 2;

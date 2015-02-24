@@ -1,7 +1,7 @@
 ineed ("json");
+ineed ("edViInitFuncs");
 
 private variable
-  s_,
   _i_,
   __i__,
   _index_,
@@ -10,37 +10,11 @@ private variable
   _buf_,
   _len_,
   _color_,
-  _dec_,
-  _list_,
   _delim_,
   _optok_,
   _cltok_,
   _jump_,
   _entry_;
-
-private define decode_str ()
-{
-  _list_ = {};
-  _i_ = 0;
-
-  forever
-    {
-    (_i_, _dec_) = strskipchar (_buf_, _i_);
-    if (_dec_)
-      list_append (_list_, _dec_);
-    else
-      break;
-
-    _len_ ++;
-    }
-
-  _buf_ =  length (_list_) ? list_to_array (_list_) : ['\n'];
-}
-
-private define encode_str (dec_str)
-{
-  return strjoin (array_map (String_Type, &sprintf, "%c", dec_str));
-}
 
 private define append (dec_str)
 {
@@ -49,21 +23,21 @@ private define append (dec_str)
     : Integer_Type[0];
 
   if (length (s_.js_._lines) - 1 < _linenr_)
-    list_append (s_.js_._lines, {[_linenr_], [_col_],
-        [_color_], [encode_str (dec_str)], _jump_});
+    list_append (s_.js_._lines, {[_linenr_], [encode_str (dec_str)], [_col_],
+        [_color_], _jump_});
   else
     {
     s_.js_._lines[_linenr_][0] = [s_.js_._lines[_linenr_][0], _linenr_];
-    s_.js_._lines[_linenr_][1] = [s_.js_._lines[_linenr_][1], _col_];
-    s_.js_._lines[_linenr_][2] = [s_.js_._lines[_linenr_][2], _color_];
-    s_.js_._lines[_linenr_][3] = [s_.js_._lines[_linenr_][3], encode_str (dec_str)];
+    s_.js_._lines[_linenr_][1] = [s_.js_._lines[_linenr_][1], encode_str (dec_str)];
+    s_.js_._lines[_linenr_][2] = [s_.js_._lines[_linenr_][2], _col_];
+    s_.js_._lines[_linenr_][3] = [s_.js_._lines[_linenr_][3], _color_];
     s_.js_._lines[_linenr_][4] = [s_.js_._lines[_linenr_][4], _jump_];
     }
  
   ifnot (qualifier_exists ("linksoff"))
     if (_delim_ == s_._entrychar)
       {
-      s_.js_._links[0] = [s_.js_._links[0], s_.js_._lines[-1][3][-1]];
+      s_.js_._links[0] = [s_.js_._links[0], s_.js_._lines[-1][1][-1]];
       s_.js_._links[1] = [s_.js_._links[1], _linenr_];
       }
 
@@ -144,6 +118,7 @@ private define parseline (self, line, linenr)
   _color_ = 0;
   _index_ = 0;
   _len_ = 0;
+
   s_.js_._lines[_linenr_][0] = Integer_Type[0];
   s_.js_._lines[_linenr_][1] = Integer_Type[0];
   s_.js_._lines[_linenr_][2] = Integer_Type[0];
@@ -155,8 +130,6 @@ private define parseline (self, line, linenr)
 
 private define parsefile (self)
 {
-  s_ = self;
-
   variable indent = repeat (" ", s_._indent);
 
   s_.js_._links = {String_Type[0], Integer_Type[0]};
@@ -175,7 +148,7 @@ private define parsefile (self)
 
     _buf_ = sprintf ("%s%s", indent, strtrim_end (_buf_));
 
-    decode_str ();
+    decode_str (&_buf_, &_len_);
 
     parse_line ();
     }
@@ -187,8 +160,6 @@ private define parsefile (self)
 
 private define parsearray (self, ar)
 {
-  s_ = self;
-
   variable
     i,
     indent = repeat (" ", s_._indent);
@@ -208,7 +179,7 @@ private define parsearray (self, ar)
 
     _buf_ = sprintf ("%s%s", indent, ar[i]);
 
-    decode_str ();
+    decode_str (&_buf_, &_len_);
 
     parse_line ();
     }
@@ -218,7 +189,7 @@ private define parsearray (self, ar)
 
 define init (self)
 {
-  variable s_ = struct
+  variable s = struct
     {
     @self,
     js_ = struct
@@ -234,12 +205,12 @@ define init (self)
     _maxlen = COLUMNS - 4,
     };
  
-  s_.parseline = &parseline;
-  s_.parsearray = &parsearray;
-  s_.parsefile = &parsefile;,
+  s.parseline = &parseline;
+  s.parsearray = &parsearray;
+  s.parsefile = &parsefile;,
 
-  s_.dlmcolor["|"] = 4;
-  s_.dlmcolor["*"] = 5;
+  s.dlmcolor["|"] = 4;
+  s.dlmcolor["*"] = 5;
  
-  return s_;
+  return s;
 }

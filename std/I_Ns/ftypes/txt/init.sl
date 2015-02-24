@@ -1,43 +1,17 @@
 ineed ("json");
+ineed ("edViInitFuncs");
 
 private variable
-  s_,
   _i_,
   __i__,
-  _index_,
-  _linenr_,
   _buf_,
   _len_,
-  _dec_,
-  _list_;
-
-private define decode_str ()
-{
-  _list_ = {};
-  _i_ = 0;
-
-  forever
-    {
-    (_i_, _dec_) = strskipchar (_buf_, _i_);
-    if (_dec_)
-      list_append (_list_, _dec_);
-    else
-      break;
-
-    _len_ ++;
-    }
-
-  _buf_ =  length (_list_) ? list_to_array (_list_) : ['\n'];
-}
-
-private define encode_str (dec_str)
-{
-  return strjoin (array_map (String_Type, &sprintf, "%c", dec_str));
-}
+  _index_,
+  _linenr_;
 
 private define append (dec_str)
 {
-    list_append (s_.js_._lines, {[_linenr_], [encode_str (dec_str)]});
+  list_append (s_.js_._lines, {[_linenr_], [encode_str (dec_str)], [0], [0]});
 }
 
 private define parse_line ()
@@ -69,8 +43,6 @@ private define parseline (self, line, linenr)
 
 private define parsefile (self)
 {
-  s_ = self;
-
   variable indent = repeat (" ", s_._indent);
 
   s_.js_._lines = {};
@@ -86,7 +58,7 @@ private define parsefile (self)
 
     _buf_ = sprintf ("%s%s", indent, strtrim_end (_buf_));
 
-    decode_str ();
+    decode_str (&_buf_, &_len_);
 
     parse_line ();
     }
@@ -98,8 +70,6 @@ private define parsefile (self)
 
 private define parsearray (self, ar)
 {
-  s_ = self;
-
   variable
     i,
     indent = repeat (" ", s_._indent);
@@ -116,7 +86,7 @@ private define parsearray (self, ar)
 
     _buf_ = sprintf ("%s%s", indent, ar[i]);
 
-    decode_str ();
+    decode_str (&_buf_, &_len_);
 
     parse_line ();
     }
@@ -126,16 +96,16 @@ private define parsearray (self, ar)
 
 define init (self)
 {
-  variable s_ = struct
+  variable s = struct
     {
     @self,
     _indent = 4,
     _maxlen = COLUMNS - 4,
     };
  
-  s_.parseline = &parseline;
-  s_.parsearray = &parsearray;
-  s_.parsefile = &parsefile;
+  s.parseline = &parseline;
+  s.parsearray = &parsearray;
+  s.parsefile = &parsefile;
 
-  return s_;
+  return s;
 }

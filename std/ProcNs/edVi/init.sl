@@ -1,10 +1,10 @@
 sigprocmask (SIG_BLOCK, [SIGINT]);
 
 private variable
-  EXIT_CODE = 0,
   MYPATH = path_dirname (__FILE__);
 
 public variable
+  EXIT_CODE = 0,
   WHOAMI = 0 == getuid () ? "root" : NULL;
 
 define exit_me (msg, retval)
@@ -73,12 +73,16 @@ variable
   TTY_INITED = 0;
 
 set_import_module_path (getenv ("IMPORT_PATH"));
-set_slang_load_path (sprintf ("%s/lib", STDNS));
+set_slang_load_path (sprintf ("%s/lib%c%s/I_Ns/ftypes/share",
+  STDNS, path_get_delimiter (),
+  STDNS));
 
 import ("socket");
 import ("getkey");
 
 variable getch, getchar_lang;
+
+variable s_ = @Struct_Type ("");
 
 try
   {
@@ -113,8 +117,6 @@ getch = &input->getchar;
 getchar_lang = &input->en_getch;
 
 init_tty (-1, 0, 0);
-
-private variable s_ = @Struct_Type ("");
 
 private define savestate ();
 
@@ -262,7 +264,7 @@ private define savestate ()
     {
     st_ = s_.st_,
     ptr = s_.ptr,
-    _modified = s_._modified,
+    _modified = 0,
     _states = 1,
     _state = 0,
     _fname = s_._fname,
