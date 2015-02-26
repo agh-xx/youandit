@@ -126,15 +126,30 @@ Motions are quite like emacs mode in common shells like bash/zsh
 -----------------------------------------------------------------------
       <*IMPLEMENTATION*>
 
+The root implementation intention (naturally) is the application to be
+responsive and without to result to endless loops or hanging.
+That means in case of error, it should throw a detailed message about the
+file/function/line that caused the error.
+And even, and at the worst case the responsible function or application
+can fail to complete, however and for any reason it should never be in the
+need to kill the root application. (even though this seems an utopic dream,
+the exceptions model is a very powerfull mechanism ang is being used
+extensible and with good results. However when developing s. happens).
+
 The code is based on arrays.
 Structs are being used mainly to create objects.
 Lists to pass arguments arround or to store different types
 (although mixing types is discouraged with usage of violence).
 Associative arrays for mappings or to store named objects or RefType
 functions.
-Extensive usage of qualifiers.
-First choice for array operations is array_map.
-First choice for loop operations is _for.
+There is an extensive usage of qualifiers.
+The first choice for any (mainly array) operation is array_map ().
+The first choice for loop operations is _for.
+The first choice for concat'ing objects is sprintf ().
+The first choice for printing is fprintf ().
+Namespaces are being used extensively.
+syntax meaning - braces - i dont like to open braces (nothing to do
+with braces system)
 
 Initialization.
 
@@ -370,6 +385,20 @@ During initialazion two processes are created:
    case of anger of international users. Why the things could't be more
    simpler? Anyway the code lives in std/InputNs/input.sl.
    That's the reason of the existance of the getchar_lang variable.
+   
+   <*IMPLEMENTATION DETAILS*>
+   Command arg declarations, adopts fully the gnu conventions for two dashes
+   "--", the one dash is avoided. note: however and because there is always
+   a respective help line, some long common options can be shorter, like say
+   "recursive" can become "rec".
+
+   <*FUTURE INTENTIONS*>
+   
+   A self contained application, that means statically builded liblang
+   and interpreter.
+   Specific builded interpreters for specialized jobs.
+
+   Reduce code from root process.
 -----------------------------------------------------------------------
 <*PAGER*>
 

@@ -123,6 +123,9 @@ maybe move this feature to search
 search: match dangling symbolic links
 [DONE] in 56a9e90
 
+mkdir:
+  --parents - stop, when first directory exists
+
 searchandreplace: search and replace for files in a given patterm
 _________________________________________________________________________________
 I:
@@ -184,8 +187,12 @@ add a sync lib -- interesting [Done ... partly]
 _________________________________________________________________________________
 edVi
 
-parse - check for no length,
-draw - check for no length
+parse - check for no length,| 
+                            |- DONE
+draw - check for no length  |
+
+state of drawing - settings
+
 _________________________________________________________________________________
 Root_Type
 add a sync option [Done] works good (needs a little more love)

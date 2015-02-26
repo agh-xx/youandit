@@ -32,14 +32,17 @@ variable Ftype_Type = struct
   _indent = 0,
   _states = 0,
   _state = 0,
-  _modified = 0,
-  _err = {},
+  _flags = 0,
+  err = {},
   jslinlen = {},
   ptr = Integer_Type[2],
   st_,
-  js_ = struct
+  p_ = struct
     {
-    _lines,
+    lnrs,
+    lins,
+    cols,
+    clrs,
     },
   parseline,
   parsearray,

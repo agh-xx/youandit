@@ -22,24 +22,20 @@ private define append (dec_str)
     ? [_col_:_col_ + length (dec_str)]
     : Integer_Type[0];
 
-  if (length (s_.js_._lines) - 1 < _linenr_)
-    list_append (s_.js_._lines, {[_linenr_], [encode_str (dec_str)], [_col_],
-        [_color_], _jump_});
-  else
-    {
-    s_.js_._lines[_linenr_][0] = [s_.js_._lines[_linenr_][0], _linenr_];
-    s_.js_._lines[_linenr_][1] = [s_.js_._lines[_linenr_][1], encode_str (dec_str)];
-    s_.js_._lines[_linenr_][2] = [s_.js_._lines[_linenr_][2], _col_];
-    s_.js_._lines[_linenr_][3] = [s_.js_._lines[_linenr_][3], _color_];
-    s_.js_._lines[_linenr_][4] = [s_.js_._lines[_linenr_][4], _jump_];
-    }
- 
-  ifnot (qualifier_exists ("linksoff"))
-    if (_delim_ == s_._entrychar)
-      {
-      s_.js_._links[0] = [s_.js_._links[0], s_.js_._lines[-1][1][-1]];
-      s_.js_._links[1] = [s_.js_._links[1], _linenr_];
-      }
+   if (length (s_.p_.lins) - 1 < _linenr_)
+     {
+     list_append (s_.p_.lins, [encode_str (dec_str)]);
+     list_append (s_.p_.cols, [_col_]);
+     list_append (s_.p_.lnrs, [_linenr_]);
+     list_append (s_.p_.clrs, [_color_]);
+     }
+   else
+     {
+     s_.p_.lins[-1] = [s_.p_.lins[-1], encode_str (dec_str)];
+     s_.p_.cols[-1] = [s_.p_.cols[-1], _col_];
+     s_.p_.lnrs[-1] = [s_.p_.lnrs[-1], _linenr_];
+     s_.p_.clrs[-1] = [s_.p_.clrs[-1], _color_];
+     }
 
   _col_ += length (dec_str);
   _index_ = NULL == _cltok_ ? _index_ + length (dec_str) : _cltok_ + 1;
@@ -109,33 +105,16 @@ private define parse_line ()
   parse_line ();
 }
 
-private define parseline (self, line, linenr)
-{
-  variable indent = repeat (" ", s_._indent);
-  _buf_ = sprintf ("%s%s", indent, line);
-  _linenr_ = linenr;
-  _col_ = 0;
-  _color_ = 0;
-  _index_ = 0;
-  _len_ = 0;
-
-  s_.js_._lines[_linenr_][0] = Integer_Type[0];
-  s_.js_._lines[_linenr_][1] = Integer_Type[0];
-  s_.js_._lines[_linenr_][2] = Integer_Type[0];
-  s_.js_._lines[_linenr_][3] = String_Type[0];
-  s_.js_._lines[_linenr_][4] = Integer_Type[0];
-
-  parse_line ();
-}
-
 private define parsefile (self)
 {
   variable indent = repeat (" ", s_._indent);
 
-  s_.js_._links = {String_Type[0], Integer_Type[0]};
-  s_.js_._lines = {};
- 
   _linenr_ = -1;
+
+  s_.p_.lnrs = {};
+  s_.p_.lins = {};
+  s_.p_.cols = {};
+  s_.p_.clrs = {};
 
   s_._fnfp = fopen (s_._fname, "r");
   while (-1 != fgets (&_buf_, s_._fnfp))
@@ -164,11 +143,8 @@ private define parsearray (self, ar)
     i,
     indent = repeat (" ", s_._indent);
 
-  s_.js_._links = {String_Type[0], Integer_Type[0]};
-  s_.js_._lines = {};
- 
   _linenr_ = -1;
-
+  
   _for i (0, length (ar) - 1)
     {
     _linenr_ ++;
@@ -192,10 +168,12 @@ define init (self)
   variable s = struct
     {
     @self,
-    js_ = struct
+    p_ = struct
       {
-      _lines,
-      _links,
+      lnrs = {},
+      lins = {},
+      cols = {},
+      clrs = {},
       },
     _jumpchar = '|',
     _entrychar = '*',
@@ -205,7 +183,6 @@ define init (self)
     _maxlen = COLUMNS - 4,
     };
  
-  s.parseline = &parseline;
   s.parsearray = &parsearray;
   s.parsefile = &parsefile;,
 

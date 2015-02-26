@@ -223,7 +223,6 @@ define edVi ()
     file = sock->get_str_send_bit (PROC_FD, 0),
     term = sock->get_str_send_bit (PROC_FD, 0),
     lang = sock->get_str_send_bit (PROC_FD, 0),
-    flags = sock->get_int_ar_send_bit (PROC_FD, 0),
     dim = sock->get_int_ar_send_bit (PROC_FD, 0);
 
   argv = [argv, file];
@@ -264,19 +263,43 @@ define edVi ()
   () = dup2_fd (outfds, 1);
   () = dup2_fd (errdfs, 2);
  
-  variable out = read_fd (outfdr);
+  variable
+    ERR = 0x042,
+    GOTO_EXIT = 0x06f,
+    READ_STDOUT = 0x0B,
+    READ_STDERR = 0x016,
+    out = read_fd (outfdr),
+    err = read_fd (errfdr);
+
+variable f = fopen ("/tmp/ddd", "w");
+() = fprintf (f, "EX %S\n", status.exit_status);
+() = fclose (f);
+  if (ERR == status.exit_status)
+    {
+    variable EDVI_SOCKADDR = sprintf ("%s/_pipes/edVi.sock", TEMPDIR);
+    variable EDVI_SOCKET = socket (PF_UNIX, SOCK_STREAM, 0);
+    forever
+      {
+      try
+        connect (EDVI_SOCKET, EDVI_SOCKADDR);
+      catch AnyError:
+        continue;
+
+       break;
+      }
+
+    sock->get_bit_send_int (EDVI_SOCKET, GOTO_EXIT);
+    }
 
   ifnot (NULL == out)
     {
-    () = sock->get_bit_send_int (PROC_FD, 11);
+    () = sock->get_bit_send_int (PROC_FD, READ_STDOUT);
     () = sock->get_bit_send_str_ar (PROC_FD, strchop (out, '\n', 0));
     }
 
-  variable err = read_fd (errfdr);
-
   ifnot (NULL == err)
     {
-    () = sock->get_bit_send_int (PROC_FD, 22);
+    () = sock->get_bit_send_int (PROC_FD, READ_STDERR);
     () = sock->get_bit_send_str_ar (PROC_FD, strchop (err, '\n', 0));
     }
 

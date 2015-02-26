@@ -1,25 +1,22 @@
-private variable
-  _list_,
-  _dec_,
-  _i_;
-
 define decode_str (buf, len)
 {
-  _list_ = {};
-  _i_ = 0;
+  variable
+    d,
+    i = 0,
+    l = {};
 
   forever
     {
-    (_i_, _dec_) = strskipchar (@buf, _i_);
-    if (_dec_)
-      list_append (_list_, _dec_);
+    (i, d) = strskipchar (@buf, i);
+    if (d)
+      list_append (l, d);
     else
       break;
 
     @len++;
     }
 
-  @buf = length (_list_) ? list_to_array (_list_) : ['\n'];
+  @buf = length (l) ? list_to_array (l) : ['\n'];
 }
 
 define encode_str (dec_str)
