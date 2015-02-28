@@ -394,9 +394,10 @@ During initialazion two processes are created:
 
    <*FUTURE INTENTIONS*>
    
-   A self contained application, that means statically builded liblang
+   A self contained application; that means statically builted liblang
    and interpreter.
-   Specific builded interpreters for specialized jobs.
+
+   Specific builted interpreters for specialized jobs.
 
    Reduce code from root process.
 -----------------------------------------------------------------------

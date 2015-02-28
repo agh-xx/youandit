@@ -14,26 +14,20 @@ private variable
 
 define v_linlen (r)
 {
-  r = (r == '.' ? s_.ptr[0] : r) - 2;
-  r = strlen (_lines_[r]) - s_._indent;
-  return r;
-  %r = (r > s_._maxlen
+  r = (r == '.' ? w_.ptr[0] : r) - 2;
+  return strlen (w_.lins[r]) - s_._indent;
 }
 
 define v_lin (r)
 {
-  if ('.' == r)
-    return _lines_[s_.ptr[0] - 2];
-
-  return _lines_[r - 2];
+  r = (r == '.' ? w_.ptr[0] : r) - 2;
+  return w_.lins[r];
 }
 
 define v_lnr (r)
 {
-  if ('.' == r)
-    return _linenrs_[s_.ptr[0] - 2];
-
-  return _linenrs_[r - 2];
+  r = (r == '.' ? w_.ptr[0] : r) - 2;
+  return w_.lnrs[r];
 }
 
 define tail ()
@@ -43,20 +37,16 @@ define tail ()
   % or slsmg_write_nstring
   
   variable t = sprintf ("(virt row %d) (col %d) (linenr %d) (length %d) (strlen %d) state %d, states %d",
-    s_.ptr[0], s_.ptr[1] - s_._indent + 1, _linenrs_[s_.ptr[0] - 2] + 1,
-    _len_ + 1, v_linlen ('.'), s_._state + 1, s_._states);
+    w_.ptr[0], w_.ptr[1] - s_._indent + 1, v_lnr ('.') + 1,
+    w_._len + 1, v_linlen ('.'), s_._state + 1, s_._states);
   
   t += repeat (" ", COLUMNS - strlen (t));
   return t;
-
-  return sprintf ("(virt row %d) (col %d) (linenr %d) (length %d) (strlen %d) state %d, states %d",
-    s_.ptr[0], s_.ptr[1] - s_._indent + 1, _linenrs_[s_.ptr[0] - 2] + 1,
-    _len_ + 1, v_linlen ('.'), s_._state + 1, s_._states);
 }
 
 define draw_tail ()
 {
-  srv->write_nstring_dr (tail, COLUMNS, 0, [LINES - 1, 0, s_.ptr[0], s_.ptr[1]]);
+  srv->write_nstring_dr (tail, COLUMNS, 0, [LINES - 1, 0, w_.ptr[0], w_.ptr[1]]);
 }
 
 define draw_head ()
@@ -66,154 +56,153 @@ define draw_head ()
     " - a " + ctime (s_.st_.st_atime) + " - c " + ctime (s_.st_.st_ctime) + " - size "
     + string (s_.st_.st_size)];
 
-  srv->write_ar_dr (head, _hcolors_, [0, 1], [0, 0], [s_.ptr[0], s_.ptr[1]]);
+  srv->write_ar_dr (head, _hcolors_, [0, 1], [0, 0], [w_.ptr[0], w_.ptr[1]]);
 }
 
 define reparse ()
 {
   s_.decode (;;__qualifiers ()); 
 
-  _len_ = length (s_.p_.lins) - 1;
+  w_._len = length (s_.p_.lins) - 1;
 
-  _i_ = 0;
+  w_._i = 0;
 
   draw ();
 }
 
 define down ()
 {
-  if (s_.ptr[0] < _vlines_[-1])
+  if (w_.ptr[0] < w_.vlins[-1])
     {
     _plinlen_ = v_linlen ('.');
 
-    s_.ptr[0]++;
+    w_.ptr[0]++;
     
     _linlen_ = v_linlen ('.');
    
     ifnot (_linlen_)
-      s_.ptr[1] = s_._indent;
+      w_.ptr[1] = s_._indent;
     else if (_linlen_ > s_._maxlen)
-      s_.ptr[1] = s_._maxlen - 1;
+      w_.ptr[1] = s_._maxlen - 1;
     else
-      if ((0 != _plinlen_ && s_.ptr[1] - s_._indent == _plinlen_ - 1)
-       || (s_.ptr[1] - s_._indent && s_.ptr[1] - s_._indent >= _linlen_))
-         s_.ptr[1] = _linlen_ - 1 + s_._indent;
+      if ((0 != _plinlen_ && w_.ptr[1] - s_._indent == _plinlen_ - 1)
+       || (w_.ptr[1] - s_._indent && w_.ptr[1] - s_._indent >= _linlen_))
+         w_.ptr[1] = _linlen_ - 1 + s_._indent;
 
     draw_tail ();
 
     return; 
     }
 
-  if (_linenrs_[-1] == _len_)
+  if (w_.lnrs[-1] == w_._len)
     return;
 
-  _i_++;
+  w_._i++;
   
   draw ();
 }
 
 define up ()
 {
-  if (s_.ptr[0] > _vlines_[0])
+  if (w_.ptr[0] > w_.vlins[0])
     {
     _plinlen_ = v_linlen ('.');
 
-    s_.ptr[0]--;
+    w_.ptr[0]--;
     
     _linlen_ = v_linlen ('.');
 
     ifnot (_linlen_)
-      s_.ptr[1] = s_._indent;
+      w_.ptr[1] = s_._indent;
     else if (_linlen_ > s_._maxlen)
-      s_.ptr[1] = s_._maxlen - 1;
+      w_.ptr[1] = s_._maxlen - 1;
     else
-      if ((0 != _plinlen_ && s_.ptr[1] - s_._indent == _plinlen_ - 1)
-       || (s_.ptr[1] - s_._indent && s_.ptr[1] - s_._indent >= _linlen_))
-         s_.ptr[1] = _linlen_ - 1 + s_._indent;
+      if ((0 != _plinlen_ && w_.ptr[1] - s_._indent == _plinlen_ - 1)
+       || (w_.ptr[1] - s_._indent && w_.ptr[1] - s_._indent >= _linlen_))
+         w_.ptr[1] = _linlen_ - 1 + s_._indent;
     
     draw_tail ();
     
     return;
     }
 
-  ifnot (_linenrs_[0])
+  ifnot (w_.lnrs[0])
     return;
 
-  _i_--;
+  w_._i--;
 
   draw ();
 }
 
 define eof ()
 {
-  _i_ = _len_ - _avlines_ + 2;
+  w_._i = w_._len - w_._avlins + 2;
 
-  s_.ptr[1] = s_._indent;
+  w_.ptr[1] = s_._indent;
 
-  if (length (_lines_) < _avlines_ - 1)
+  if (length (w_.lins) < w_._avlins - 1)
     {
-    s_.ptr[0] = _vlines_[-1];
-    srv->gotorc_draw (s_.ptr[0], s_.ptr[1]);
+    w_.ptr[0] = w_.vlins_[-1];
+    srv->gotorc_draw (w_.ptr[0], w_.ptr[1]);
     return;
     }
 
   draw ();
 
-  s_.ptr[0] = _vlines_[-1];
+  w_.ptr[0] = w_.vlins[-1];
 
-  srv->gotorc_draw (s_.ptr[0], s_.ptr[1]);
+  srv->gotorc_draw (w_.ptr[0], w_.ptr[1]);
 }
 
 define bof ()
 {
-  _i_ = 0;
+  w_._i = 0;
   
-  s_.ptr[0] = 2;
-  s_.ptr[1] = s_._indent;
+  w_.ptr[0] = 2;
+  w_.ptr[1] = s_._indent;
   
   draw ();
 }
 
 define page_down ()
 {
-  if (_i_ + _avlines_ > _len_)
+  if (w_._i + w_._avlins > w_._len)
     return;
 
-  _i_ += (_avlines_ - 2);
+  w_._i += (w_._avlins - 2);
 
-  s_.ptr[1] = s_._indent;
+  w_.ptr[1] = s_._indent;
 
   draw ();
 }
 
 define page_up ()
 {
-  ifnot (_linenrs_[0] - 1)
+  ifnot (w_.lnrs[0] - 1)
     return;
   
-  if (_linenrs_[0] >= _avlines_)
-    _i_ = _linenrs_[0] - _avlines_ + 2;
+  if (w_.lnrs[0] >= w_._avlins)
+    w_._i = w_.lnrs[0] - w_._avlins + 2;
   else
-    _i_ = 0;
+    w_._i = 0;
 
-  s_.ptr[1] = s_._indent;
+  w_.ptr[1] = s_._indent;
 
   draw ();
 }
 
 define right ()
 {
-  _linlen_ = v_linlen (s_.ptr[0]);
+  _linlen_ = v_linlen (w_.ptr[0]);
 
-  if (s_.ptr[1] - s_._indent < _linlen_ - 1 && s_.ptr[1] < s_._maxlen - 1)
-   (s_.ptr[1]++, draw_tail ());
-  else if (_linlen_ + s_._indent > s_._maxlen && s_.ptr[1] + 1 == s_._maxlen)
+  if (w_.ptr[1] - s_._indent < _linlen_ - 1 && w_.ptr[1] < s_._maxlen - 1)
+   (w_.ptr[1]++, draw_tail ());
+  else if (_linlen_ + s_._indent > s_._maxlen && w_.ptr[1] + 1 == s_._maxlen)
     srv->write_wrapped_str_dr (substr (v_lin ('.'), s_._indent + 1, -1),
-     11, [s_.ptr[0], _linlen_ >= COLUMNS ? 0 : s_._indent],
+     11, [w_.ptr[0], _linlen_ >= COLUMNS ? 0 : s_._indent],
      [_linlen_ / s_._maxlen + (_linlen_ mod s_._maxlen ? 1 : 0),
       COLUMNS],
-      %s_._maxlen - s_._indent + (COLUMNS - s_._maxlen)],
-      1, [s_.ptr[0], s_.ptr[1]]);
+      1, [w_.ptr[0], w_.ptr[1]]);
 }
 
 define eos ()
@@ -221,59 +210,59 @@ define eos ()
   _linlen_ = v_linlen ('.');
 
   if (_linlen_ > s_._maxlen)
-    s_.ptr[1] = s_._maxlen - 1;
+    w_.ptr[1] = s_._maxlen - 1;
   else if (0 == _linlen_)
-    s_.ptr[1] = s_._indent;
+    w_.ptr[1] = s_._indent;
   else
-    s_.ptr[1] = _linlen_ + s_._indent - 1;
+    w_.ptr[1] = _linlen_ + s_._indent - 1;
 
   draw_tail ();
 }
 
 define eol ()
 {
-  _linlen_ = v_linlen (s_.ptr[0]);
+  _linlen_ = v_linlen (w_.ptr[0]);
 
   if (_linlen_ < s_._maxlen)
-    s_.ptr[1] = _linlen_ + s_._indent - 1;
+    w_.ptr[1] = _linlen_ + s_._indent - 1;
   else
     srv->write_wrapped_str_dr (substr (v_lin ('.'), s_._indent + 1, -1),
-     11, [s_.ptr[0], _linlen_ >= COLUMNS ? 0 : s_._indent],
+     11, [w_.ptr[0], _linlen_ >= COLUMNS ? 0 : s_._indent],
      [_linlen_ / s_._maxlen + (_linlen_ mod s_._maxlen ? 1 : 0),
       s_._maxlen - s_._indent + (COLUMNS - s_._maxlen)],
-      1, [s_.ptr[0], s_.ptr[1]]);
+      1, [w_.ptr[0], w_.ptr[1]]);
   
   draw_tail ();
 }
 
 define left ()
 {
-  ifnot (s_.ptr[1] - s_._indent)
+  ifnot (w_.ptr[1] - s_._indent)
     return;
 
-  s_.ptr[1]--;
+  w_.ptr[1]--;
 
   draw_tail ();
 }
 
 define bol ()
 {
-  s_.ptr[1] = s_._indent;
+  w_.ptr[1] = s_._indent;
   draw_tail ();
 }
 
 define bolnblnk ()
 {
-  s_.ptr[1] = s_._indent;
+  w_.ptr[1] = s_._indent;
 
   _linlen_ = v_linlen ('.');
 
   loop (_linlen_)
     {
-    ifnot (isblank (_lines_[s_.ptr[0] - 2][s_.ptr[1]]))
+    ifnot (isblank (w_.lins[w_.ptr[0] - 2][w_.ptr[1]]))
       break;
 
-    s_.ptr[1]++;
+    w_.ptr[1]++;
     }
 
   draw_tail ();
@@ -288,8 +277,8 @@ define undo ()
 
   s_.p_ = s_.getjs ().p_;
 
-  _len_ = length (s_.p_.lins) - 1;
-  _i_ = 0;
+  w_._len = length (s_.p_.lins) - 1;
+  w_._i = 0;
 
   draw ();
 }
@@ -303,8 +292,8 @@ define redo ()
 
   s_.p_ = s_.getjs ().p_;
 
-  _len_ = length (s_.p_.lins) - 1;
-  _i_ = 0;
+  w_._len = length (s_.p_.lins) - 1;
+  w_._i = 0;
 
   draw ();
 }
@@ -315,7 +304,7 @@ define indent_out ()
     return;
 
   s_._indent += 4;
-  s_.ptr[1] = s_._indent;
+  w_.ptr[1] = s_._indent;
 
   reparse (;reparse);
 }
@@ -326,7 +315,7 @@ define indent_in ()
     return;
 
   s_._indent -= 4;
-  s_.ptr[1] = s_._indent;
+  w_.ptr[1] = s_._indent;
 
   reparse (;reparse);
 }
@@ -338,7 +327,7 @@ private define del_line ()
     i = v_lnr ('.'),
     line_ = v_lin ('.');
 
-  if (-1 == _len_)
+  if (-1 == w_._len)
     return;
 
   s_.p_.lins = list_concat (s_.p_.lins[[0:i - 1]], s_.p_.lins[[i + 1:]]);
@@ -357,20 +346,20 @@ private define del_line ()
   
   ifnot (length (s_.p_.lins))
     {
-    s_.ptr = [2, s_._indent];
+    w_.ptr = [2, s_._indent];
 
     s_.p_.lins = {repeat (" ", s_._indent)};
     s_.p_.cols = {0};
     s_.p_.clrs = {0};
     s_.p_.lnrs = {0};
 
-    _lines_ = [repeat (" ", s_._indent)];
-    _len_ = -1;
+    w_.lins = [repeat (" ", s_._indent)];
+    w_._len = -1;
     s_.st_.st_size = 0;
     }
   else
     {
-    _len_--;
+    w_._len--;
     s_.st_.st_size -= strbytelen (line_) - s_._indent + 1;
     }
 
@@ -378,10 +367,10 @@ private define del_line ()
   
   s_.encode ();
 
-  _i_ = _prev_i_;
+  w_._i = w_._ii;
 
-  if (_i_ > _len_)
-    _i_ = _len_;
+  if (w_._i > w_._len)
+    w_._i = w_._len;
 }
 
 define del ()

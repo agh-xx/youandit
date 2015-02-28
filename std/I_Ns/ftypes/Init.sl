@@ -44,6 +44,17 @@ variable Ftype_Type = struct
     cols,
     clrs,
     },
+  w_ = struct
+    {
+    _i,
+    _ii,
+    _len,
+    _avlins,
+    ptr = Integer_Type[2],
+    lins,
+    vlins,
+    lnrs
+    },
   parseline,
   parsearray,
   parsefile,

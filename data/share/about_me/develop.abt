@@ -191,8 +191,16 @@ parse - check for no length,|
                             |- DONE
 draw - check for no length  |
 
-state of drawing - settings
+hold drawing instances - settings
 
+keep the process idled
+   different sockets
+
+func in host for requested dimensions
+
+are we in wrapmode?
+different colors for repeated wraps?
+function to create wrapped wind
 _________________________________________________________________________________
 Root_Type
 add a sync option [Done] works good (needs a little more love)

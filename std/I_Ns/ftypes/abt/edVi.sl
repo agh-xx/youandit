@@ -1,12 +1,8 @@
 variable
-  _i_,
-  _chr_,
-  _len_,
-  _lines_,
-  _prev_i_,
-  _linenrs_,
-  _avlines_ = LINES - 4,
-  _vlines_ = [2:LINES - 4];
+  w_ = s_.w_,
+  _chr_;
+
+w_._avlins = LINES - 4;
 
 define draw ();
 
@@ -14,13 +10,17 @@ ineed ("edViFuncs");
 
 define draw ()
 {
-  if (-1 == _len_)
+  if (-1 == w_._len)
     {
     srv->write_ar_dr ([repeat (" ", COLUMNS), tail ()], [0, 0], [2, LINES - 1], [0],
-      [s_.ptr[0], s_.ptr[1]]);
-
+      [w_.ptr[0], w_.ptr[1]]);
     return;
     }
+
+  w_.lnrs = LLong_Type[0];
+  w_.lins = String_Type[0];
+
+  w_._ii = w_._i;
 
   variable
     row,
@@ -32,66 +32,61 @@ define draw ()
     clrs = LLong_Type[0],
     rows = Integer_Type[0];
 
-  _linenrs_ = LLong_Type[0];
-  _lines_ = String_Type[0];
-
-  _prev_i_ = _i_;
-  
-  if (typeof (s_.p_.lins[_i_]) == List_Type)
-    while (_i_ <= _len_ && i <= _avlines_)
+  if (typeof (s_.p_.lins[w_._i]) == List_Type)
+    while (w_._i <= w_._len && i <= w_._avlins)
       {
-      line = s_.p_.lins[_i_];
+      line = s_.p_.lins[w_._i];
       row = Integer_Type[length (line)];
       row[*] = i;
       rows = [rows, row];
       ar = [ar, list_to_array (line)];
-      _lines_ = [_lines_, strjoin (list_to_array (line))];
-      _linenrs_ = [_linenrs_, list_to_array (s_.p_.lnrs[_i_])];
-      cols = [cols, list_to_array (s_.p_.cols[_i_])];
-      clrs = [clrs, list_to_array (s_.p_.clrs[_i_])];
-      _i_++;
+      w_.lins = [w_.lins, strjoin (list_to_array (line))];
+      w_.lnrs = [w_.lnrs, list_to_array (s_.p_.lnrs[w_._i])];
+      cols = [cols, list_to_array (s_.p_.cols[w_._i])];
+      clrs = [clrs, list_to_array (s_.p_.clrs[w_._i])];
+      w_._i++;
       i++;
       }
   else
-    while (_i_ <= _len_ && i <= _avlines_)
+    while (w_._i <= w_._len && i <= w_._avlins)
       {
-      line = s_.p_.lins[_i_];
+      line = s_.p_.lins[w_._i];
       row = Integer_Type[length (line)];
       row[*] = i;
       rows = [rows, row];
       ar = [ar, line];
-      _lines_ = [_lines_, strjoin (line)];
-      _linenrs_ = [_linenrs_, s_.p_.lnrs[_i_]];
-      cols = [cols, s_.p_.cols[_i_]];
-      clrs = [clrs, s_.p_.clrs[_i_]];
-      _i_++;
+      w_.lins = [w_.lins, strjoin (line)];
+      w_.lnrs = [w_.lnrs, s_.p_.lnrs[w_._i]];
+      cols = [cols, s_.p_.cols[w_._i]];
+      clrs = [clrs, s_.p_.clrs[w_._i]];
+      w_._i++;
       i++;
       }
  
-  _vlines_ = [2:rows[-1]];
+  w_.vlins = [2:rows[-1]];
 
-  _i_ = _i_ - (i) + 2;
+  w_._i = w_._i - (i) + 2;
 
-  if (-1 == _i_)
-    _i_ = 0;
+  if (-1 == w_._i)
+    w_._i = 0;
 
-  if (s_.ptr[0] >= i)
-    s_.ptr[0] = i - 1;
+  if (w_.ptr[0] >= i)
+    w_.ptr[0] = i - 1;
   
   ar = array_map (String_Type, &substr, ar, 1, s_._maxlen);
 
   srv->draw_wind ([ar, tail ()], [clrs, 0],
-    [rows, LINES - 1], [cols, 0], [s_.ptr[0], s_.ptr[1]]);
+    [rows, LINES - 1], [cols, 0], [w_.ptr[0], w_.ptr[1]]);
 }
 
 define edVi (self)
 {
-  _len_ = length (s_.p_.lins) - 1;
+  w_._len = length (s_.p_.lins) - 1;
 
-  s_.ptr[0] = 2;
-  s_.ptr[1] = s_._indent;
+  w_.ptr[0] = 2;
+  w_.ptr[1] = s_._indent;
 
-  _i_ = 0;
+  w_._i = 0;
 
   draw ();
   draw_head ();
@@ -99,7 +94,7 @@ define edVi (self)
   _chr_ = get_ans ();
 
   srv->write_ar_dr ([repeat (" ", COLUMNS), repeat (" ", COLUMNS)], [0, 0], [0, 1],
-    [0, 0], [s_.ptr[0], s_.ptr[1]]);
+    [0, 0], [w_.ptr[0], w_.ptr[1]]);
 
   while (_chr_ != 'q')
     {

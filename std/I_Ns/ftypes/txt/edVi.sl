@@ -1,12 +1,8 @@
 variable
-  _i_,
-  _chr_,
-  _len_,
-  _lines_,
-  _prev_i_,
-  _linenrs_,
-  _avlines_ = LINES - 4,
-  _vlines_ = [2:LINES - 4];
+  w_ = s_.w_,
+  _chr_;
+
+w_._avlins = LINES - 4;
 
 define draw ();
 
@@ -14,41 +10,41 @@ ineed ("edViFuncs");
 
 define draw ()
 {
-  if (-1 == _len_)
+  if (-1 == w_._len)
     {
     srv->write_ar_dr ([repeat (" ", COLUMNS), tail ()], [0, 0], [2, LINES - 1], [0],
-      [s_.ptr[0], s_.ptr[1]]);
+      [w_.ptr[0], w_.ptr[1]]);
     return;
     }
 
-  _linenrs_ = LLong_Type[0];
-  _lines_ = String_Type[0];
+  w_.lnrs = LLong_Type[0];
+  w_.lins = String_Type[0];
 
   variable
     i = 2,
     ar = String_Type[0];
   
-  _prev_i_ = _i_;
+  w_._ii = w_._i;
 
-  while (_i_ <= _len_ && i <= _avlines_)
+  while (w_._i <= w_._len && i <= w_._avlins)
     {
-    _linenrs_ = [_linenrs_, s_.p_.lnrs[_i_]];
-    _lines_ = [_lines_, s_.p_.lins[_i_]];
-    _i_++;
+    w_.lnrs = [w_.lnrs, s_.p_.lnrs[w_._i]];
+    w_.lins = [w_.lins, s_.p_.lins[w_._i]];
+    w_._i++;
     i++;
     }
-  
-  _vlines_ = [2:length (_lines_) - 1 + 2];
 
-  _i_ = _i_ - (i) + 2;
+  w_.vlins = [2:length (w_.lins) - 1 + 2];
 
-  if (-1 == _i_)
-    _i_ = 0;
+  w_._i = w_._i - (i) + 2;
 
-  if (s_.ptr[0] >= i)
-    s_.ptr[0] = i - 1;
-  
-  ar = [array_map (String_Type, &substr, _lines_, 1, s_._maxlen), tail ()];
+  if (-1 == w_._i)
+    w_._i = 0;
+
+  if (w_.ptr[0] >= i)
+    w_.ptr[0] = i - 1;
+
+  ar = [array_map (String_Type, &substr, w_.lins, 1, s_._maxlen), tail ()];
 
   variable
     cols = Integer_Type[length (ar)] + 1,
@@ -57,17 +53,17 @@ define draw ()
   cols[*] = 0;
   clrs[*] = 0;
 
-  srv->draw_wind (ar, clrs, [_vlines_, LINES - 1], cols, [s_.ptr[0], s_.ptr[1]]);
+  srv->draw_wind (ar, clrs, [w_.vlins, LINES - 1], cols, [w_.ptr[0], w_.ptr[1]]);
 }
 
 define edVi (self)
 {
-  _len_ = length (s_.p_.lins) - 1;
+  w_._len = length (s_.p_.lins) - 1;
 
-  s_.ptr[0] = 2;
-  s_.ptr[1] = s_._indent;
+  w_.ptr[0] = 2;
+  w_.ptr[1] = s_._indent;
 
-  _i_ = 0;
+  w_._i = 0;
 
   draw ();
   draw_head ();
@@ -75,7 +71,7 @@ define edVi (self)
   _chr_ = get_ans ();
 
   srv->write_ar_dr ([repeat (" ", COLUMNS), repeat (" ", COLUMNS)], [0, 0], [0, 1],
-    [0, 0], [s_.ptr[0], s_.ptr[1]]);
+    [0, 0], [w_.ptr[0], w_.ptr[1]]);
 
   while (_chr_ != 'q')
     {
