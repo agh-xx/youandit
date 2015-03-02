@@ -1,5 +1,5 @@
---no-verbose void   don't be verbose
---to-dir=    string extract into `dir'
---strip      void   extract archive without the leading directory
---help       void   show help
---info       void   show information
+--no-verbose void      don't be verbose
+--to-dir=    directory extract into `dir'
+--strip      void      extract archive without the leading directory
+--help       void      show help
+--info       void      show information

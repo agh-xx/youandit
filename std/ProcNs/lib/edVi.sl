@@ -10,6 +10,25 @@ private define get_line ()
   return sock->send_int_get_int (EDVI_SOCKET, chr);
 }
 
+private define get_chr_from_array ()
+{
+  variable ar = sock->send_bit_get_int_ar (EDVI_SOCKET, 0);
+  variable chr = (@getch);
+  while (0 == any (ar == chr))
+    chr = (@getch);
+
+  return sock->send_int_get_int (EDVI_SOCKET, chr);
+}
+
+private define getyn ()
+{
+  variable chr = (@getch);
+  while (0 == any (['y', 'n'] == chr))
+    chr = (@getch);
+ 
+  return sock->send_int_get_int (EDVI_SOCKET, 'y' == chr);
+}
+
 define edVi (file, savejs)
 {
   () = sock->send_str_ar_get_bit (PROC_SOCKET, ["edVi"]);
@@ -40,8 +59,8 @@ define edVi (file, savejs)
   () = sock->send_str_get_bit (PROC_SOCKET, file);
   () = sock->send_str_get_bit (PROC_SOCKET, getenv ("TERM"));
   () = sock->send_str_get_bit (PROC_SOCKET, getenv ("LANG"));
-  () = sock->send_int_ar_get_bit (PROC_SOCKET, [LINES, COLUMNS]); 
-  
+  () = sock->send_int_ar_get_bit (PROC_SOCKET, [LINES, COLUMNS]);
+ 
   variable
     chr,
     line,
@@ -50,11 +69,15 @@ define edVi (file, savejs)
     READ_STDERR = 0x016,
     RLINE_GETCH = 0x021,
     RLINE_GETLINE = 0x02C,
+    RLINE_GETYN = 0x01BC,
+    RLINE_GETFROMARRAY = 0x022b,
     funcs = Assoc_Type[Ref_Type],
     edvi_fd = socket (PF_UNIX, SOCK_STREAM, 0);
 
   funcs[string (RLINE_GETCH)] = &get_chr;
   funcs[string (RLINE_GETLINE)] = &get_line;
+  funcs[string (RLINE_GETYN)] = &getyn;
+  funcs[string (RLINE_GETFROMARRAY)] = &get_chr_from_array;
 
   bind (edvi_fd, EDVI_SOCKADDR);
   listen (edvi_fd, 2);
@@ -80,16 +103,16 @@ define edVi (file, savejs)
     out = sock->send_bit_get_str_ar (PROC_SOCKET, 0);
     exit_stat = sock->send_bit_get_int (PROC_SOCKET, 0);
     }
-  
+ 
   if (READ_STDERR == exit_stat)
     {
-    err = sock->send_bit_get_str_ar (PROC_SOCKET, 0);  
+    err = sock->send_bit_get_str_ar (PROC_SOCKET, 0);
     exit_stat = sock->send_bit_get_int (PROC_SOCKET, 0);
     }
 
   ifnot (NULL == out)
     writefile (out, CW.buffers[CW.cur.frame].fname);
-    
+ 
   ifnot (NULL == err)
     {
     writefile (err, CW.buffers[CW.cur.frame].fname);

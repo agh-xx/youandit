@@ -88,11 +88,29 @@ Triggered with [tab] when cursor is not on first token of command line
 and token starts with a -[dash]
 
 Hitting -[tab]
- (autocompletion for arguments) [needs detailed explanation]
-      --arg void short message
-      --arg= filename short message (filename completion is triggered)
-      --arg= pcrepattern short message
-      --arg= string short
+ (autocompletion for arguments)
+  In the case of commands the args declared in info/command/args.txt.
+  In the case of functions the args declared in the coresponding Init.sl
+  and in the assosiated array named keys.
+  In both cases they are following the gnu convention for tho dashes
+  and can be declared like:
+      --arg  void      short message (no completion)
+      --arg= filename  short message (filename completion is triggered)
+      --arg= directory short message (directory completion is triggered)
+      --arg= pcrepattern short message (a pcre help message is shown in
+         the screen, which needs impovement)
+      --arg= string short message (no completion but a short message is
+         printed in the screen to remind that the option should be a string,
+         no error checking for now)
+      --arg= int short message (no completion but a short message is
+         printed in the screen to remind that the option should be an
+         integer, no error checking for now)
+ 
+   in those cases that an option is required after an arg which is
+   declared as "--arg=", then (for now) completion process is being
+   shown in the top row in the screen, and navigation happens with
+   the arrow keys, space and tab key, and is accepted by a carriage
+   return (Enter or CTRL-m)
 
 3. filename completion
 
@@ -101,7 +119,7 @@ and first char of token is not a -[dash]
 
 4. history completion
 
-Triggered anywhere by hitting CTRL-R or uparrow
+Triggered anywhere by hitting CTRL-r or uparrow
 
 5. last component completion
 
@@ -122,7 +140,89 @@ Triggered by CTRL-w and `key', where `key' is one of:
    'k' or Up_Arrow to go to the previous frame
    [0:9] to jump to the nth window
 
+
+In all cases except (--arg=) command line is accepted by a carriage return.
+
+Escape aborts and clears the line.
+
+Print.
+A shell command prints the output in the stdout buffer and always
+the verbosity is on (for now)
+   Note:
+   error messages have their own stderr buf, every window has this
+   buffer by default, and unless is defined differently throw command or
+   function are printed also and in the stdout buffer.
+
+Functions and only them accept a --pager switch (to jump to the pager),
+otherwise output is printed throw a scratch buffer which is cleared after
+another command or function and can not be navigated. To be permanent
+when in pager 'w' writes the output in the stdout buffer.
+   Note:
+   Screen can be cleared through the clear function (F1).
+   Message buffer can be cleared through the clearmsgs function (F1).
+
+commands/functions accept a --sudo switch, so the command/function can
+be executed with sudo rights. sudo asks in every execution the user
+password (this cannot be changed and it wouldn't).
+
+commands/functions accept a --fg and --bg switch, so the command/function
+can be a foreground or background process. Default is foreground
+execution (unless is defined differently through the function).
+
+Completion mode.
+Navigation in the completion mode can be done throw arrow keys or
+tab and the accepted option is being done throw space. The only
+exception (for now) is the last component case where the completion
+is being done to the command line and is accepted by a space (it
+seems like a freeze but its not (this is rather confusing
+abd probably needs to change))
+
+Pressing a char limits the matches and autocompletes completion
+components if there are no differences between then, at the point
+where matches differs.
+
+
+Motions.
 Motions are quite like emacs mode in common shells like bash/zsh
+with exception of CTRL-w which deletes the whole argument and not
+a word and they are:
+
+  backspace or CTRL-h deletes the previus char
+ 
+  delete deletes the right to the cursor char
+
+  left arrow/CTRL-b right arrow/CTRL-f keys walk the line left or
+    right respectively
+ 
+  home/CTRL-a positions the cursor in the first column
+
+  end/CTRL-e positions the cursor in the last column
+ 
+  CTRL-w deletes the argument
+
+  CTRL-u deletes the line after the cursor to the end of line
+
+When @ is the first char in line, the application is entered in pager
+mode. You can escape from the pager by an escape, q or :
+
+when ! is the first char, triggers anytime a shell command and opens
+a new frame (unless is disabled throw the application)
+
+when CTRL-w and line is empty is triggered the window mode.
+
+When CTRL-o a windowgoto completion is triggered (unless only one window
+exists)
+
+When CTRL-n a window go to the next window function executed (unless
+only one window exists)
+
+When CTRL-p a window go to the previus window function executed (unless
+only one window exists)
+
+
+Note:
+One space is allowed between tokens and can not be inserted (unless
+is defined differently throw functions, like in the cases of --arg=.
 -----------------------------------------------------------------------
       <*IMPLEMENTATION*>
 
@@ -131,10 +231,10 @@ responsive and without to result to endless loops or hanging.
 That means in case of error, it should throw a detailed message about the
 file/function/line that caused the error.
 And even, and at the worst case the responsible function or application
-can fail to complete, however and for any reason it should never be in the
+can fail to complete, however and for any reason there should never be the
 need to kill the root application. (even though this seems an utopic dream,
 the exceptions model is a very powerfull mechanism ang is being used
-extensible and with good results. However when developing s. happens).
+extensible and with good results. However when developing ... happens).
 
 The code is based on arrays.
 Structs are being used mainly to create objects.
@@ -143,7 +243,7 @@ Lists to pass arguments arround or to store different types
 Associative arrays for mappings or to store named objects or RefType
 functions.
 There is an extensive usage of qualifiers.
-The first choice for any (mainly array) operation is array_map ().
+The first choice for any array operation is array_map ().
 The first choice for loop operations is _for.
 The first choice for concat'ing objects is sprintf ().
 The first choice for printing is fprintf ().
@@ -155,46 +255,89 @@ Initialization.
 
 At the first instance and after some sanity checks, the distribution
 is byte compiled and builds the neccecary modules (unless of course
-is already installed).
-note: bin and tmp can be mounted in a tmpfs filesystem
+the distribution is already installed).
+note: bin and tmp can be mounted in a tmpfs filesystem.
+The advantage for mounting bin is that reading bytecompiled files is
+faster.
+The advantage for mounting tmp is that writting/reading is faster and
+nothing persists after a halt/reboot. Keep in mind that when the
+application exits, it also deletes the tmp directories.
 
 Hierarchy.
 
 you.sl         name of the root script (symbolic link to dist/you.sl)
-               (you name it)
-dist           (source code)
-  you.sl       root script (is not bytecompiled)
+               (the user is the godfather of the invoked script)
+dist           source code
+
+  you.sl       root script (is the only script that is not bytecompiled)
   i.sl         the main script that is responsible to create and manage
                the application environment
-  std
-    commands   (shell commands)
-      scripts  (the called commands)
-      info     (directories which corespond to commands)
-                 (help files and args)
-    types      (applications with their own window and settings)
-      A_Type   (its type has its own directory)
-      B_Type
-    ....       (many directories responsible for managing the application)
-  usr
-    commands   (copy of std/commands hierarchy)
-    types      (copy of std/types hierarchy)
-    functions  (common functions that send output to the hosted window)
-    lib        (needed libraries - is on the slang_load_path)
-  local        (this is a copy of the usr hierarchy, not published)
-  dev          (a copy of usr hierarchy (used for development, not published)
-modules
-  std          (modules that are being used by the std namespace)
-  usr          (modules that are being used by the usr namespace)
-  local        (modules that are being used by the local namespace)
-bin            (byte compiled code) (a copy of dist hierarchy)
-tmp            (temp dir)
-  username     (user name)
-    pid        (pid of the instance)
-data           (where the needed data is stored)
-  username     (user name)
-  share        (share data)
 
-Note: There is a question about data dir.
+  std          standard directory
+    std/commands   shell commands directory
+    std/scripts    shell commands
+    std/info       (directories which corespond to shell commands)
+                   (help files and args)
+ 
+    std/types  standard applications with their own window and settings
+    std/types/A_Type   any type has its own directory
+    std/types/B_Type   ...
+
+    std/conf  configuration directory
+    std/conf/colors  colors configuration
+    std/conf/KeysNs  keys configuration (keys namespace)
+    std/conf/env     any other variable
+ 
+    std/lib    this directory is the first element on the slang_load_path
+               and holds all the required libs for the standard
+               commands, functions and applications
+ 
+   std/data   its usage is limited and probably will be in this state if
+              it doesn't removed completelly in future
+ 
+   std/scripts its usage is limited and probably will be in this state if
+              it doesn't removed completelly in future
+ 
+   std/InputNs libs that are being used for getting input (input namespace)
+
+   std/SockNs  libs that are being used for communication throw sockets
+                (sock namespace)
+
+   std/SrvNs   libs that are being used for drawing (srv namespace)
+
+   std/ProcNs  libs that are being used for process managment (proc namespace)
+
+   std/RootNs  libs that are being used for window manipulation (root namespace)
+
+   std/I_Ns    libs that are being used for application managment (i namespace)
+
+  usr
+  usr/commands   (copy of std/commands hierarchy)
+  usr/types      (copy of std/types hierarchy)
+  usr/functions  (common functions that send output to the hosted window)
+  usr/lib        (needed libraries, the second element on the slang_load_path)
+
+  local        (this is a copy of the usr hierarchy, not published)
+
+  dev          (a copy of usr hierarchy (used for development, not published)
+
+modules
+  modules/std    modules that are being used by the std namespace
+  modules/usr    modules that are being used by the usr namespace
+  modules/local  modules that are being used by the local namespace
+
+bin            (byte compiled code) (a copy of dist hierarchy)
+
+tmp             temporary dir
+  tmp/(user)      user name (strict access)
+  tmp/(user)/pid  pid of the instance
+
+data           where the needed data is stored
+  data/(user)  user name (personal data) (stirct access)
+  data/share   share data (data that can be shared) a symbolic link to
+               dist/data/share
+
+Note: There is a couple of questions about data directory.
 
 
 During initialazion two processes are created:
@@ -215,7 +358,7 @@ During initialazion two processes are created:
 
    next care is to create one object (a struct) for window
    manipulation. The object is initialized by creating a new
-   copy everytime an application is created.
+   copy everytime an application/window is created.
    This gives the ability to applications to have access to common
    functions to all applications, throw F1, a readline own copy,
    where tab is being used for specific to application commands.
@@ -350,7 +493,7 @@ During initialazion two processes are created:
    to close fds above the given option, which is plus one than the last
    opened socket fd. However it needs the "closefrom_override" option in
    sudoers.
-   
+ 
    Functions and commands have the following priority. First the
    interpeter is looking at the personal (local) hierarchy, then at usr
    hierarhy and last at the standard (std) hierarhy.
@@ -385,15 +528,15 @@ During initialazion two processes are created:
    case of anger of international users. Why the things could't be more
    simpler? Anyway the code lives in std/InputNs/input.sl.
    That's the reason of the existance of the getchar_lang variable.
-   
+ 
    <*IMPLEMENTATION DETAILS*>
-   Command arg declarations, adopts fully the gnu conventions for two dashes
+   Command arg declarations, adopts fully the Gnu conventions for two dashes
    "--", the one dash is avoided. note: however and because there is always
    a respective help line, some long common options can be shorter, like say
    "recursive" can become "rec".
 
    <*FUTURE INTENTIONS*>
-   
+ 
    A self contained application; that means statically builted liblang
    and interpreter.
 
@@ -403,12 +546,44 @@ During initialazion two processes are created:
 -----------------------------------------------------------------------
 <*PAGER*>
 
-Motions are quite like less pager and vim editor.
-NOTE. Pager is going to be running in another process (under
-development). This file should be displayed in that process and search
-and other facilities doesn't work like in the default pager do.
-For to reach the stable pager, when in command line press @
+Motions are quite like less pager and vim editor and they are:
 
+g/HOME to go to the first line of buffer
+G/END  to go to the last  line of buffer
+h/left arrow to go the previus char from cursor position
+l/right arrow to go the next char from cursor position
+k/up arrow to go to the previus line
+j/down arrow to go to the next line
+PageDown/CTRL-f to scroll one page down
+PageUp/CTRL-b to scroll one page up
+0 to go the first column of line
+^ to go the first no blank char of line
+- to go to the last char of line (even if strlen (line) > COLUMNS)
+$ to go to the last char of screen line
+%nr up to 100, to go to the percentage of buffer
+
+Motions accept a count prefix.
+
+Also:
+
+w writes (if the viewed buffer is a scratch buffer to the stdout buffer)
+e opens the filename associated with the currently viewed buffer
+  with the EDITOR (default vim) in the current line
+* jumps to the next WORD and no word in vim interpetation
+# jumps to the previus WORD
+/ search forward for the given pattern (it doesn't jumps to the match)
+  How it works (for now). The pattern completion happens in the
+  last line in the screen minus one. It prints some information
+  about the current match - line and column - and only jumps
+  with a carriage return. Aborts with an escape. CTRL-n continues
+  searching. The idea is good the implementation is horrible.
+? search backward
+CTRL-w jumps to the previus frame (if more than one)
+
+
+DEVELOPMENT NOTE. Pager is going to be running in another process (under
+development). This same file should be displayed in that process and
+search and other facilities doesn't work like in the default pager do.
 -----------------------------------------------------------------------
 <*S-Lang*>
 

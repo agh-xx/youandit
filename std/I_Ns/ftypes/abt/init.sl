@@ -144,7 +144,7 @@ private define parsearray (self, ar)
     indent = repeat (" ", s_._indent);
 
   _linenr_ = -1;
-  
+ 
   _for i (0, length (ar) - 1)
     {
     _linenr_ ++;

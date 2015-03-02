@@ -59,7 +59,7 @@ define main (self)
   keys["about"] = {sprintf ("%s/about", mydir), NULL, "about",
     ["--me          void about code and intentions",
      "--develop     void development - track file",
-     "--savejs      void save json file (default no)", 
+     "--savejs      void save json file (default no)",
     ], NULL};
 
   throw Return, " ", struct

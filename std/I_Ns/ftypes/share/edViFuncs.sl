@@ -35,11 +35,11 @@ define tail ()
   % is a bug in slsmg?
   % last line is not cleared, even with slsmg_cls, or slsmg_erase_eos,
   % or slsmg_write_nstring
-  
+ 
   variable t = sprintf ("(virt row %d) (col %d) (linenr %d) (length %d) (strlen %d) state %d, states %d",
     w_.ptr[0], w_.ptr[1] - s_._indent + 1, v_lnr ('.') + 1,
     w_._len + 1, v_linlen ('.'), s_._state + 1, s_._states);
-  
+ 
   t += repeat (" ", COLUMNS - strlen (t));
   return t;
 }
@@ -61,7 +61,7 @@ define draw_head ()
 
 define reparse ()
 {
-  s_.decode (;;__qualifiers ()); 
+  s_.decode (;;__qualifiers ());
 
   w_._len = length (s_.p_.lins) - 1;
 
@@ -77,9 +77,9 @@ define down ()
     _plinlen_ = v_linlen ('.');
 
     w_.ptr[0]++;
-    
+ 
     _linlen_ = v_linlen ('.');
-   
+ 
     ifnot (_linlen_)
       w_.ptr[1] = s_._indent;
     else if (_linlen_ > s_._maxlen)
@@ -91,14 +91,14 @@ define down ()
 
     draw_tail ();
 
-    return; 
+    return;
     }
 
   if (w_.lnrs[-1] == w_._len)
     return;
 
   w_._i++;
-  
+ 
   draw ();
 }
 
@@ -109,7 +109,7 @@ define up ()
     _plinlen_ = v_linlen ('.');
 
     w_.ptr[0]--;
-    
+ 
     _linlen_ = v_linlen ('.');
 
     ifnot (_linlen_)
@@ -120,9 +120,9 @@ define up ()
       if ((0 != _plinlen_ && w_.ptr[1] - s_._indent == _plinlen_ - 1)
        || (w_.ptr[1] - s_._indent && w_.ptr[1] - s_._indent >= _linlen_))
          w_.ptr[1] = _linlen_ - 1 + s_._indent;
-    
+ 
     draw_tail ();
-    
+ 
     return;
     }
 
@@ -157,10 +157,10 @@ define eof ()
 define bof ()
 {
   w_._i = 0;
-  
+ 
   w_.ptr[0] = 2;
   w_.ptr[1] = s_._indent;
-  
+ 
   draw ();
 }
 
@@ -180,7 +180,7 @@ define page_up ()
 {
   ifnot (w_.lnrs[0] - 1)
     return;
-  
+ 
   if (w_.lnrs[0] >= w_._avlins)
     w_._i = w_.lnrs[0] - w_._avlins + 2;
   else
@@ -231,7 +231,7 @@ define eol ()
      [_linlen_ / s_._maxlen + (_linlen_ mod s_._maxlen ? 1 : 0),
       s_._maxlen - s_._indent + (COLUMNS - s_._maxlen)],
       1, [w_.ptr[0], w_.ptr[1]]);
-  
+ 
   draw_tail ();
 }
 
@@ -272,7 +272,7 @@ define undo ()
 {
   if (s_._state + 1 >= s_._states || s_._states == 1)
     return;
-  
+ 
   s_._state++;
 
   s_.p_ = s_.getjs ().p_;
@@ -332,10 +332,14 @@ private define del_line ()
 
   s_.p_.lins = list_concat (s_.p_.lins[[0:i - 1]], s_.p_.lins[[i + 1:]]);
   s_.p_.lnrs = list_concat (s_.p_.lnrs[[0:i - 1]], s_.p_.lnrs[[i + 1:]]);
-  s_.p_.cols = list_concat (s_.p_.cols[[0:i - 1]], s_.p_.cols[[i + 1:]]);
-  s_.p_.clrs = list_concat (s_.p_.clrs[[0:i - 1]], s_.p_.clrs[[i + 1:]]);
 
-  if (length (s_.p_.lnrs)) 
+  ifnot (s_._type == "txt")
+    {
+    s_.p_.cols = list_concat (s_.p_.cols[[0:i - 1]], s_.p_.cols[[i + 1:]]);
+    s_.p_.clrs = list_concat (s_.p_.clrs[[0:i - 1]], s_.p_.clrs[[i + 1:]]);
+    }
+
+  if (length (s_.p_.lnrs))
     if (typeof (s_.p_.lnrs[0]) == List_Type)
       _for i (i, length (s_.p_.lnrs) - 1)
         _for i_ (0, length (s_.p_.lnrs[i]) - 1)
@@ -343,7 +347,7 @@ private define del_line ()
    else
       _for i (i, length (s_.p_.lnrs) - 1)
         s_.p_.lnrs[i]--;
-  
+ 
   ifnot (length (s_.p_.lins))
     {
     w_.ptr = [2, s_._indent];
@@ -363,14 +367,17 @@ private define del_line ()
     s_.st_.st_size -= strbytelen (line_) - s_._indent + 1;
     }
 
-  s_._flags = s_._flags | MODIFIED;
-  
+  ifnot (s_._flags & MODIFIED)
+    s_._flags = s_._flags | MODIFIED;
+ 
   s_.encode ();
 
   w_._i = w_._ii;
 
   if (w_._i > w_._len)
     w_._i = w_._len;
+
+  w_.ptr[1] = s_._indent;
 }
 
 define del ()

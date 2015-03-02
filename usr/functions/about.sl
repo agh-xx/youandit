@@ -15,7 +15,7 @@ define main ()
     srv->send_msg ("ARG ERROR, a filename is needed", -1);
     throw GotoPrompt;
     }
-  
+ 
   docs["--me"] = sprintf ("%s/about_me/me.abt", DATASHAREDIR);
   docs["--develop"] = sprintf ("%s/about_me/develop.abt", DATASHAREDIR);
 
@@ -48,7 +48,7 @@ define main ()
 
   index = proc->is_arg ("--savejs", argv);
   ifnot (NULL == index)
-    savejs = 1; 
+    savejs = 1;
 
   retval = proc->edVi (fname, savejs);
 

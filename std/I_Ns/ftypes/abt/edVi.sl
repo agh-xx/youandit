@@ -72,7 +72,7 @@ define draw ()
 
   if (w_.ptr[0] >= i)
     w_.ptr[0] = i - 1;
-  
+ 
   ar = array_map (String_Type, &substr, ar, 1, s_._maxlen);
 
   srv->draw_wind ([ar, tail ()], [clrs, 0],
@@ -100,7 +100,7 @@ define edVi (self)
     {
     if (any (_keys_ == _chr_))
       (@_funcs_[string (_chr_)]);
-     
+ 
     send_ans (RLINE_GETCH);
     _chr_ = get_ans ();
     }

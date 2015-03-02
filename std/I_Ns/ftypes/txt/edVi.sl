@@ -7,6 +7,8 @@ w_._avlins = LINES - 4;
 define draw ();
 
 ineed ("edViFuncs");
+ineed ("f_");
+ineed ("rl_");
 
 define draw ()
 {
@@ -23,7 +25,7 @@ define draw ()
   variable
     i = 2,
     ar = String_Type[0];
-  
+ 
   w_._ii = w_._i;
 
   while (w_._i <= w_._len && i <= w_._avlins)
@@ -77,7 +79,10 @@ define edVi (self)
     {
     if (any (_keys_ == _chr_))
       (@_funcs_[string (_chr_)]);
-     
+
+    if (_chr_ == ':')
+      rl_.getcom ();
+ 
     send_ans (RLINE_GETCH);
     _chr_ = get_ans ();
     }
