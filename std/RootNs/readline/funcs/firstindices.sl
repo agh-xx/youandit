@@ -23,7 +23,7 @@ define main (self, str, ar, pat)
     if (length (ar) == length (where (indices)))
       {
       @str += char (new_str[-1]);
-      index ++;
+      index++;
       new_str = len > index ? ar[0][[0:index]] : NULL;
       }
     else

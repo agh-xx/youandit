@@ -144,7 +144,7 @@ static define cls ()
 static define set_color_in_region (color, row, col, dr, dc)
 {
   sock->send_str (SRV_SOCKET, _function_name ());
-  () = sock->get_bit_send_int_ar (SRV_SOCKET, [color, row, col, dr, dc]);
+  () = sock->get_bit_send_int_ar (SRV_SOCKET, [color, row, col, dr, dc, qualifier_exists ("redraw")]);
   () = sock->get_bit (SRV_SOCKET);
 }
 

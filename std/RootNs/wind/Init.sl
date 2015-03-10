@@ -100,7 +100,7 @@ private define getbufpart (self, buf, fp, lines)
     i++;
     }
 
-  line ++;
+  line++;
   }
 
   return got;

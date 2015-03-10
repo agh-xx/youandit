@@ -78,6 +78,13 @@ private define f_write (str, color, row, col)
   slsmg_write_string (str);
 }
 
+private define f_write_nstr (str, color, row, col, len)
+{
+  slsmg_gotorc (row, col);
+  slsmg_set_color (color);
+  slsmg_write_nstring (str, len);
+}
+
 private define f_erase_eol_at (row, col)
 {
   slsmg_gotorc (row, col);
@@ -93,6 +100,26 @@ define f_send_msg (str, color, row, col)
   [COLOR.msgsuccess, COLOR.msgwarn, COLOR.prompt, COLOR.msgerror][color],
     row, 0, 1, col);
 }
+
+private define write_ar_nstr_dr ()
+{
+  variable
+    ar = sock->send_bit_get_str_ar (SRV_FD, 0),
+    colors = sock->send_bit_get_int_ar (SRV_FD, 0),
+    rows = sock->send_bit_get_int_ar (SRV_FD, 0),
+    cols = sock->send_bit_get_int_ar (SRV_FD, 0),
+    pos = sock->send_bit_get_int_ar (SRV_FD, 0),
+    len = sock->send_bit_get_int (SRV_FD, 0);
+
+  array_map (Void_Type, &f_write_nstr, ar, colors, rows, cols, len);
+ 
+  slsmg_gotorc (pos[0], pos[1]);
+  slsmg_refresh ();
+
+  sock->send_bit (SRV_FD, 0);
+}
+
+funcs["write_ar_nstr_dr"] = &write_ar_nstr_dr;
 
 private define write_ar_dr ()
 {
@@ -130,6 +157,22 @@ private define write_wrapped_str_dr ()
 
 funcs["write_wrapped_str_dr"] = &write_wrapped_str_dr;
 
+private define write_ar_nstr_at ()
+{
+  variable
+    ar = sock->send_bit_get_str_ar (SRV_FD, 0),
+    colors = sock->send_bit_get_int_ar (SRV_FD, 0),
+    rows = sock->send_bit_get_int_ar (SRV_FD, 0),
+    cols = sock->send_bit_get_int_ar (SRV_FD, 0),
+    len = sock->send_bit_get_int (SRV_FD, 0);
+
+  array_map (Void_Type, &f_write_nstr, ar, colors, rows, cols, len);
+
+  sock->send_bit (SRV_FD, 0);
+}
+
+funcs["write_ar_nstr_at"] = &write_ar_nstr_at;
+
 private define write_ar_at ()
 {
   variable
@@ -139,6 +182,7 @@ private define write_ar_at ()
     cols = sock->send_bit_get_int_ar (SRV_FD, 0);
 
   array_map (Void_Type, &f_write, ar, colors, rows, cols);
+
   sock->send_bit (SRV_FD, 0);
 }
 
@@ -433,6 +477,8 @@ private define set_color_in_region ()
 {
   variable ar = sock->send_bit_get_int_ar (SRV_FD, 0);
   slsmg_set_color_in_region (ar[0], ar[1], ar[2], ar[3], ar[4]);
+  if (ar[5])
+    slsmg_refresh ();
   sock->send_bit (SRV_FD, 0);
 }
 
@@ -454,6 +500,37 @@ private define cls ()
 }
 
 funcs["cls"] = &cls;
+
+private define get_img ()
+{
+  variable
+    i,
+    ii,
+    ar,
+    line,
+    rows = sock->send_bit_get_int_ar (SRV_FD, 0),
+    cols = sock->send_bit_get_int (SRV_FD, 0);
+  
+  ar = String_Type[length (rows)];
+
+  _for i (0, length (ar) - 1)
+    {
+    line = Integer_Type[cols];
+    slsmg_gotorc (rows[i], 0);
+    line[0] = slsmg_char_at ();
+    _for ii (1, cols - 1)
+      {
+      slsmg_forward (1);
+      line[ii] = slsmg_char_at ();
+      }
+
+    ar[i] = strjoin (array_map (String_Type, &char, line));
+    }
+
+  sock->send_str_ar (SRV_FD, ar);
+}
+
+funcs["get_img"] = &get_img;
 
 define main ()
 {

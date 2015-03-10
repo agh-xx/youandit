@@ -1,4 +1,8 @@
 variable
+  pk,
+  pf = Assoc_Type[Ref_Type],
+  com,
+  cf = Assoc_Type[Ref_Type],
   w_ = s_.w_,
   _chr_;
 
@@ -7,6 +11,9 @@ w_._avlins = LINES - 4;
 define draw ();
 
 ineed ("edViFuncs");
+ineed ("f_");
+ineed ("rl_");
+ineed ("com");
 
 define draw ()
 {
@@ -21,6 +28,8 @@ define draw ()
   w_.lins = String_Type[0];
 
   w_._ii = w_._i;
+
+  w_.state = List_Type[0];
 
   variable
     row,
@@ -44,6 +53,7 @@ define draw ()
       w_.lnrs = [w_.lnrs, list_to_array (s_.p_.lnrs[w_._i])];
       cols = [cols, list_to_array (s_.p_.cols[w_._i])];
       clrs = [clrs, list_to_array (s_.p_.clrs[w_._i])];
+      w_.state = [w_.state, {ar[-1], clrs[-1], rows[-1], cols[-1]}]; 
       w_._i++;
       i++;
       }
@@ -59,6 +69,7 @@ define draw ()
       w_.lnrs = [w_.lnrs, s_.p_.lnrs[w_._i]];
       cols = [cols, s_.p_.cols[w_._i]];
       clrs = [clrs, s_.p_.clrs[w_._i]];
+      w_.state = [w_.state, {ar[-1], clrs[-1], rows[-1], cols[-1]}]; 
       w_._i++;
       i++;
       }
@@ -96,10 +107,13 @@ define edVi (self)
   srv->write_ar_dr ([repeat (" ", COLUMNS), repeat (" ", COLUMNS)], [0, 0], [0, 1],
     [0, 0], [w_.ptr[0], w_.ptr[1]]);
 
-  while (_chr_ != 'q')
+  forever
     {
-    if (any (_keys_ == _chr_))
-      (@_funcs_[string (_chr_)]);
+    if (any (pk == _chr_))
+      (@pf[string (_chr_)]);
+
+    if (_chr_ == ':')
+      rl_.read ();
  
     send_ans (RLINE_GETCH);
     _chr_ = get_ans ();

@@ -35,7 +35,7 @@ define main ()
     if (any (ar[i] == randar))
      continue;
     randar[index] = ar[i];
-    index ++;
+    index++;
     if (index > num)
       break;
     }

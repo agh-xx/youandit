@@ -53,7 +53,8 @@ variable Ftype_Type = struct
     ptr = Integer_Type[2],
     lins,
     vlins,
-    lnrs
+    lnrs,
+    state,
     },
   getjs,
   decode,

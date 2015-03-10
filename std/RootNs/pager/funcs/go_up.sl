@@ -25,8 +25,8 @@ define main (self, row, col, buf, frame, frame_size, len)
       throw Break;
     else
       {
-      buf.indices --;
-      buf.linefirst --;
+      buf.indices--;
+      buf.linefirst--;
       srv->clear_frame (frame_size, self.dim[frame].rowfirst,
         self.dim[frame].rowlast, COLOR.normal, qualifier_exists ("clear_infoline"));
 

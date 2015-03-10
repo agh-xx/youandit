@@ -248,7 +248,7 @@ define search_and_replace (file)
 
         finished += sprintf ("%s%s", fpart, replace);
         str = lpart;
-        NUMCHANGES ++;
+        NUMCHANGES++;
         }
       while (found = pcre_exec (PAT, str, 0), found && NULL != GLOBAL);
 

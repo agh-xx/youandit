@@ -28,7 +28,7 @@ define main (self, frame)
     }
  
   if (frame <= self.cur.frame)
-    self.cur.frame --;
+    self.cur.frame--;
 
   if (0 > self.cur.frame)
     self.cur.frame = 0;

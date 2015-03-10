@@ -71,7 +71,7 @@ define hlitem (self, ar, base, acol, item)
       icol = 0;
 
       if (len)
-        page ++;
+        page++;
 
       len = length (bar);
 
@@ -106,7 +106,7 @@ define hlitem (self, ar, base, acol, item)
           (page) * ((lines - 4) * items);
       else
         {
-        irow --;
+        irow--;
         index -= items;
         }
 
@@ -118,14 +118,14 @@ define hlitem (self, ar, base, acol, item)
           page * ((lines - 4) * items);
       else
         {
-        irow ++;
+        irow++;
         index += items;
         }
 
     if (keys->LEFT == chr)
       {
-      icol --;
-      index --;
+      icol--;
+      index--;
 
       if (-1 == index)
         if (length (car) < lines - 3)
@@ -138,14 +138,14 @@ define hlitem (self, ar, base, acol, item)
 
       if (-1 == icol)
         {
-        irow --;
+        irow--;
         icol = items - 1;
         }
 
       ifnot (irow)
         if (lines - 3 > length (car))
           {
-          irow ++;
+          irow++;
           icol = 0;
           index++;
           }
@@ -165,9 +165,9 @@ define hlitem (self, ar, base, acol, item)
       else if (icol + 1 == items)
         ifnot (irow + 4 > lines)
           {
-          irow ++;
+          irow++;
           icol = 0;
-          index ++;
+          index++;
           }
         else
           (irow, icol, index) =
@@ -176,8 +176,8 @@ define hlitem (self, ar, base, acol, item)
             (page) * ((lines - 4) * items);
       else
         {
-        index ++;
-        icol ++;
+        index++;
+        icol++;
         }
  
     if (keys->PPAGE== chr)
@@ -186,24 +186,25 @@ define hlitem (self, ar, base, acol, item)
         {
         if (length (car) > lines - 3)
           page = 0;
-          form_ar (items, fmt, ar, &car);
-          len = length (car);
-          while (len > lines - 3)
-            {
-            page ++;
-            car = car[[lines - 4:]];
-            bar = car;
-            len = length (car);
-            }
 
-          (irow, icol, index) =
-            1,
-            0,
-            (page) * ((lines - 4) * items);
+        form_ar (items, fmt, ar, &car);
+        len = length (car);
+        while (len > lines - 3)
+          {
+          page++;
+          car = car[[lines - 4:]];
+          bar = car;
+          len = length (car);
+          }
+
+        (irow, icol, index) =
+          1,
+          0,
+          (page) * ((lines - 4) * items);
         }
       else
         {
-        page --;
+        page--;
         form_ar (items, fmt, ar, &car);
         loop (page)
           {

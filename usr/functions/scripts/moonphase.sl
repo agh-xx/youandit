@@ -15,15 +15,15 @@ define increase_tf (tim)
   if (day == months[mon])
     {
     (@tim).tm_mday = 1;
-    (@tim).tm_mon ++;
+    (@tim).tm_mon++;
     if (12 == (@tim).tm_mon)
       {
-      (@tim).tm_year ++;
+      (@tim).tm_year++;
       (@tim).tm_mon = 0;
       }
     }
   else
-    (@tim).tm_mday ++;
+    (@tim).tm_mday++;
 
 }
 

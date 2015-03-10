@@ -271,9 +271,6 @@ define edVi ()
     out = read_fd (outfdr),
     err = read_fd (errfdr);
 
-variable f = fopen ("/tmp/ddd", "w");
-() = fprintf (f, "EX %S\n", status.exit_status);
-() = fclose (f);
   if (ERR == status.exit_status)
     {
     variable EDVI_SOCKADDR = sprintf ("%s/_pipes/edVi.sock", TEMPDIR);

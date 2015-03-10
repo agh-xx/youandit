@@ -39,7 +39,7 @@ define main (self)
       lines = LINES - (strlen (self.cur.line) / COLUMNS),
       row = PROMPTROW - (strlen (self.cur.line) / COLUMNS) + i);
 
-    index ++;
+    index++;
 
     self.my_prompt ();
 
@@ -50,7 +50,7 @@ define main (self)
  
     if (any (keys->cmap.histdown == chr))
       {
-      index --;
+      index--;
       continue;
       }
 

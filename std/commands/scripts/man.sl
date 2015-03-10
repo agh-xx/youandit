@@ -347,7 +347,7 @@ define main ()
       return 1;
       }
 
-    retval --;
+    retval--;
 
     man_page = man_page[retval];
 

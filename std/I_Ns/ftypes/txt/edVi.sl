@@ -1,4 +1,8 @@
 variable
+  pk,
+  pf = Assoc_Type[Ref_Type],
+  com,
+  cf = Assoc_Type[Ref_Type],
   w_ = s_.w_,
   _chr_;
 
@@ -9,6 +13,7 @@ define draw ();
 ineed ("edViFuncs");
 ineed ("f_");
 ineed ("rl_");
+ineed ("com");
 
 define draw ()
 {
@@ -56,6 +61,11 @@ define draw ()
   clrs[*] = 0;
 
   srv->draw_wind (ar, clrs, [w_.vlins, LINES - 1], cols, [w_.ptr[0], w_.ptr[1]]);
+  
+  w_.state = List_Type[length (w_.vlins)];
+
+  _for i (0, length (w_.vlins) - 1)
+    w_.state[i] = {[ar[i]], [clrs[i]], [w_.vlins[i]], [cols]};
 }
 
 define edVi (self)
@@ -75,13 +85,13 @@ define edVi (self)
   srv->write_ar_dr ([repeat (" ", COLUMNS), repeat (" ", COLUMNS)], [0, 0], [0, 1],
     [0, 0], [w_.ptr[0], w_.ptr[1]]);
 
-  while (_chr_ != 'q')
+  forever
     {
-    if (any (_keys_ == _chr_))
-      (@_funcs_[string (_chr_)]);
+    if (any (pk == _chr_))
+      (@pf[string (_chr_)]);
 
     if (_chr_ == ':')
-      rl_.getcom ();
+      rl_.read ();
  
     send_ans (RLINE_GETCH);
     _chr_ = get_ans ();

@@ -82,7 +82,7 @@ private define exec ()
     failed_rout ("Runtime Error");
   finally
     {
-    executions ++;
+    executions++;
     profile_func (path_basename (file), toc ());
     eval ("define main ();", "root");
     }

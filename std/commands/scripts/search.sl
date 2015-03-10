@@ -67,7 +67,7 @@ private define exec (file)
       (@print_err) (sprintf ("line that occured: %S", ar[i]));
       }
 
-    INDEX ++;
+    INDEX++;
     }
 }
 

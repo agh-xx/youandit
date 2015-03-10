@@ -144,14 +144,14 @@ define main ()
       if (any ([symbols, 'd'] == rline.cur.line[rline.cur.col - 2])
         || any ([symbols, 'd'] == rline.cur.line[rline.cur.col - 3]) %fix (put an if to catch ws
           || 0 == strlen (rline.cur.line))
-        isopen ++;
+        isopen++;
       else
         continue;
 
     if (')' == rline.cur.chr)
       if (isopen)
         if (any ([['1':'9'], ' '] == rline.cur.argv[rline.cur.index - 1][0]))
-          isopen --;
+          isopen--;
         else
           continue;
       else

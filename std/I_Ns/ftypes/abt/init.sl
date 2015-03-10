@@ -16,25 +16,25 @@ private variable
   _jump_,
   _entry_;
 
-private define append (dec_str)
+private define append (p, dec_str)
 {
   _jump_ = _delim_ == s_._jumpchar
     ? [_col_:_col_ + length (dec_str)]
     : Integer_Type[0];
 
-   if (length (s_.p_.lins) - 1 < _linenr_)
+   if (length (p.lins) - 1 < _linenr_)
      {
-     list_append (s_.p_.lins, [encode_str (dec_str)]);
-     list_append (s_.p_.cols, [_col_]);
-     list_append (s_.p_.lnrs, [_linenr_]);
-     list_append (s_.p_.clrs, [_color_]);
+     list_append (p.lins, [encode_str (dec_str)]);
+     list_append (p.cols, [_col_]);
+     list_append (p.lnrs, [_linenr_]);
+     list_append (p.clrs, [_color_]);
      }
    else
      {
-     s_.p_.lins[-1] = [s_.p_.lins[-1], encode_str (dec_str)];
-     s_.p_.cols[-1] = [s_.p_.cols[-1], _col_];
-     s_.p_.lnrs[-1] = [s_.p_.lnrs[-1], _linenr_];
-     s_.p_.clrs[-1] = [s_.p_.clrs[-1], _color_];
+     p.lins[-1] = [p.lins[-1], encode_str (dec_str)];
+     p.cols[-1] = [p.cols[-1], _col_];
+     p.lnrs[-1] = [p.lnrs[-1], _linenr_];
+     p.clrs[-1] = [p.clrs[-1], _color_];
      }
 
   _col_ += length (dec_str);
@@ -65,7 +65,7 @@ private define find_close_tok ()
 }
 
 private define parse_line ();
-private define parse_line ()
+private define parse_line (p)
 {
   _cltok_ = NULL;
   _optok_ = NULL;
@@ -74,7 +74,7 @@ private define parse_line ()
   if (_index_ >= _len_)
     {
     ifnot (_len_)
-      append ([0]);
+      append (p, [0]);
 
     return;
     }
@@ -83,7 +83,7 @@ private define parse_line ()
   if (NULL == _optok_ || _optok_ == _len_)
     {
     _delim_ = NULL;
-    append (_buf_[[_index_:]]);
+    append (p, _buf_[[_index_:]]);
     return;
     }
 
@@ -92,34 +92,37 @@ private define parse_line ()
   if (NULL == _cltok_)
     {
     _delim_ = NULL;
-    append (_buf_[[_index_:]]);
+    append (p, _buf_[[_index_:]]);
     return;
     }
  
   if (_optok_)
-    append (_buf_[[_index_:_optok_ - 1]];linksoff);
+    append (p, _buf_[[_index_:_optok_ - 1]];linksoff);
 
-  _color_ = s_.dlmcolor[char (_delim_)];
-  append (_buf_[[_optok_+ 2:_cltok_ - 2]]);
+  _color_ = s_.dlmcolor[wherefirst_eq (s_.dlm, _delim_)];
+  append (p, _buf_[[_optok_+ 2:_cltok_ - 2]]);
  
-  parse_line ();
+  parse_line (p);
 }
 
-private define parsefile (self)
+private define parsefile (s)
 {
   variable indent = repeat (" ", s_._indent);
 
   _linenr_ = -1;
-
-  s_.p_.lnrs = {};
-  s_.p_.lins = {};
-  s_.p_.cols = {};
-  s_.p_.clrs = {};
+  
+  variable p = struct
+    {
+    lnrs = {},
+    lins = {},
+    cols = {},
+    clrs = {}
+    };
 
   s_._fnfp = fopen (s_._fname, "r");
   while (-1 != fgets (&_buf_, s_._fnfp))
     {
-    _linenr_ ++;
+    _linenr_++;
     _col_ = 0;
     _color_ = 0;
     _index_ = 0;
@@ -129,15 +132,19 @@ private define parsefile (self)
 
     decode_str (&_buf_, &_len_);
 
-    parse_line ();
+    parse_line (p);
     }
 
-  () = fclose (s_._fnfp);
+  s_.p_.lnrs = p.lnrs;
+  s_.p_.lins = p.lins;
+  s_.p_.cols = p.cols;
+  s_.p_.clrs = p.clrs;
 
+  () = fclose (s_._fnfp);
   return 0;
 }
 
-private define parsearray (self, ar)
+private define parsearray (s, ar)
 {
   variable
     i,
@@ -145,9 +152,17 @@ private define parsearray (self, ar)
 
   _linenr_ = -1;
  
+  variable p = struct
+    {
+    lnrs = {},
+    lins = {},
+    cols = {},
+    clrs = {}
+    };
+
   _for i (0, length (ar) - 1)
     {
-    _linenr_ ++;
+    _linenr_++;
     _col_ = 0;
     _color_ = 0;
     _index_ = 0;
@@ -157,17 +172,50 @@ private define parsearray (self, ar)
 
     decode_str (&_buf_, &_len_);
 
-    parse_line ();
+    parse_line (p);
     }
 
-  return 0;
+  return p;
 }
 
-define init (self)
+private define writeline (s, index)
 {
-  variable s = struct
+  variable
+    line = "";
+
+  if (1 == length (s.p_.lins[index]))
+    line = s.p_.lins[index][0];
+  else
     {
-    @self,
+    variable
+      i = 0,
+      dlm;
+
+    while (i < length (s.p_.clrs[index]))
+      {
+      ifnot (s.p_.clrs[index][i])
+        line += s.p_.lins[index][i];
+      else
+        {
+        dlm = char (s.dlm[wherefirst_eq (s.dlmcolor, s.p_.clrs[index][i])]);
+        line += "<" + dlm + s.p_.lins[index][i] + dlm + ">";
+        }
+
+      i++;
+      }
+
+    }
+
+  line = substr (line, s._indent + 1, -1);
+  () = fprintf (s._fnfp, "%s\n", line);
+  () = fflush (s._fnfp);
+}
+
+define init (s)
+{
+  s = struct
+    {
+    @s,
     p_ = struct
       {
       lnrs = {},
@@ -177,17 +225,15 @@ define init (self)
       },
     _jumpchar = '|',
     _entrychar = '*',
-    dlmcolor = Assoc_Type[Integer_Type],
-    dlm = ['|', '$', '*'],
+    dlmcolor = [4, 5],
+    dlm = ['|', '*'],
     _indent = 4,
     _maxlen = COLUMNS - 4,
+    writeline = &writeline,
     };
  
   s.parsearray = &parsearray;
-  s.parsefile = &parsefile;,
+  s.parsefile = &parsefile;
 
-  s.dlmcolor["|"] = 4;
-  s.dlmcolor["*"] = 5;
- 
   return s;
 }

@@ -44,7 +44,7 @@ private define parse_args (self)
             {
             found = NULL;
             self.cur.argv[i] = NULL;
-            self.cur.col --;
+            self.cur.col--;
             }
 
   self.cur.argv = self.cur.argv[wherenot (_isnull (self.cur.argv))];
@@ -253,12 +253,6 @@ private define getsingleline (self)
   return self.cur.line;
 }
 
-private define funccompletion (self)
-{
-  self.exec (sprintf ("%s/funcs/%s", path_dirname (__FILE__), _function_name ())
-    ;;__qualifiers);
-}
-
 define main (self)
 {
   throw Return, " ", struct
@@ -295,7 +289,6 @@ define main (self)
     argcompletion = &argcompletion,
     listdirectory = &listdirectory,
     shell_routine = &shell_routine,
-    funccompletion = &funccompletion,
     commandroutine = &commandroutine,
     nolength_routine = &nolength_routine,
     precommandroutine = &precommandroutine,

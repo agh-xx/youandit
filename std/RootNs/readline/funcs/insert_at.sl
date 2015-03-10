@@ -6,7 +6,7 @@ define main (self)
     len = 0,
     chr = char (qualifier ("chr", self.cur.chr));
 
-  self.cur.col ++;
+  self.cur.col++;
  
   _for i (0, self.cur.index)
     {

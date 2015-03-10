@@ -29,7 +29,7 @@ define julian_day_nr (tim)
     jdn = tim.tm_mday + (153 * newmonth + 2) / 5 + newyear * 365 + newyear / 4 - 32083;
 
   if (12 > lhour >= 0)
-    jdn --;
+    jdn--;
  
   return jdn;
 }

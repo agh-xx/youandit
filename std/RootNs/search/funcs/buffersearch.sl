@@ -78,7 +78,7 @@ define main (self, row, col, buf, frame, frame_size, len)
 
   if (any (keys->cmap.histup == chr))
     {
-    histindex --;
+    histindex--;
     if (0 > histindex)
       {
       chr = (@getch);

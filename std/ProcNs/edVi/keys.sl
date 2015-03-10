@@ -55,3 +55,25 @@ ifnot (strncmp ("st-", getenv ("TERM"), 3))
   PPAGE = 0x10a;
   HOME = 0x109;
   }
+
+variable rmap = struct
+  {
+  battery = [F9],
+  changelang = [F10],
+  % navigation
+  home = [HOME, CTRL_a],
+  end = [END, CTRL_e],
+  left = [LEFT, CTRL_b],
+  right = [RIGHT, CTRL_f],
+  backspace = [BACKSPACE, CTRL_h],
+  delete = [DELETE],
+  delword = [CTRL_w],
+  deltoend = [CTRL_u],
+  % special keys
+  % last components in previous commands
+  lastcmp = [0xae, 0x1f], %ALT + . (not supported from all terms), CTRL + _
+  % keep the command line, execute another and re-enter the keep'ed command
+  lastcur = [ESC_q],
+  histup = [CTRL_r, UP],
+  histdown = [DOWN],
+  };

@@ -6,7 +6,7 @@ define main (self)
     len = 0;
 
   ifnot (qualifier_exists ("is_delete"))
-    self.cur.col --;
+    self.cur.col--;
  
   _for i (0, self.cur.index)
     {

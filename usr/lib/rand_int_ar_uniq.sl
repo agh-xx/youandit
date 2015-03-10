@@ -17,7 +17,7 @@ define rand_int_ar_uniq (imin, imax, num)
     if (any (ar[i] == randar))
      continue;
     randar[index] = ar[i];
-    index ++;
+    index++;
     if (index == num)
       break;
     }

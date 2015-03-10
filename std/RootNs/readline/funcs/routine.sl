@@ -147,7 +147,7 @@ define main (self)
           substr (self.cur.argv[0], self.cur.col, -1),
           self.cur.argv[[1:]]];
 
-      self.cur.col ++;
+      self.cur.col++;
       throw Break;
       }
 
@@ -198,7 +198,7 @@ define main (self)
           self.cur.argv[[self.cur.index + 1:]]];
         }
 
-      self.cur.col ++;
+      self.cur.col++;
       throw Break;
       }
     }

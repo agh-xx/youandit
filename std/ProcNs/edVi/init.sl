@@ -138,10 +138,7 @@ define exit_me ()
 {
   if (s_._flags & MODIFIED)
     if (f_.getyn ("file is modified, write it? [y/n]"))
-      {
       s_.writefile ();
-      s_._flags = s_._flags xor MODIFIED;
-      }
 
   if (0 == SAVEJS || EXIT_CODE)
     {
@@ -405,22 +402,27 @@ private define write_line (line)
   () = fprintf (s_._fnfp, "%s\n", line);
 }
 
-private define write_file ()
+private define write_file (s)
 {
   variable i;
 
   () = fclose (s_._fnfp);
  
-  s_._fnfp = fopen (s_._fname, "w");
+  s._fnfp = fopen (s._fname, "w");
 
-  if (typeof (s_.p_.lins[0]) == List_Type)
-    _for i (0, length (s_.p_.lins) - 1)
-      write_line (strjoin (list_to_array (s_.p_.lins[i])));
+  if (typeof (s.p_.lins[0]) == List_Type)
+    _for i (0, length (s.p_.lins) - 1)
+      s.writeline (i);
   else
-    _for i (0, length (s_.p_.lins) - 1)
-      write_line (strjoin (s_.p_.lins[i]));
+    _for i (0, length (s.p_.lins) - 1)
+      write_line (strjoin (s.p_.lins[i]));
 
-  () = fclose (s_._fnfp);
+  () = fclose (s._fnfp);
+  
+  s._fnfp = fopen (s._fname, "r+");
+  
+  if (s._flags & MODIFIED)
+    s._flags = s._flags xor MODIFIED;
 }
 
 s_.writefile = &write_file;
