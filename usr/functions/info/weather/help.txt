@@ -2,7 +2,7 @@ SYNOPSIS
  Weather application
 
 USAGE
- usage: weather  [options]
+ usage: weather [options]
 
 DESCRIPTION
  Retrieve and print weather from worldweatheronline.com
@@ -10,7 +10,7 @@ DESCRIPTION
 OPTIONS
 
  --dont-retrieve     Do not retrieve data from internet, instead use a local db
- --days=             Get for num days instead of five (default)
+ --days=             Get for num days instead of five (default) (cannot be more than five)
  --uselocation=      Use this location instead of the default
  --search=           Search for a place around the world
  --help              Show this message
@@ -19,12 +19,12 @@ This application uses worldweatheronline api to display weather information.
 For this to work the user needs to obtain a private key from
 http://www.worldweatheronline.com/api/
 The key should be stored in
-root/she/data/weather/key.txt
+data/username/weather/key.txt
 
 The next step is to find the Latitude and Longitude values.
 You can use the --search= option or obtain this information from
 internet and store this info in
-root/she/data/weather/loc_default.txt
+data/username/weather/loc_default.txt
 
 Any other Latitude and Longitude values should be stored in
-root/she/data/weather/loc_somename.txt
+data/username/weather/loc_somename.txt

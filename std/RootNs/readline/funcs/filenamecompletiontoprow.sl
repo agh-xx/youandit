@@ -91,11 +91,7 @@ define main (self, fname)
           @fname = substr (@fname, 3, -1);
  
         if (isdir)
-          {
-          srv->write_prompt (@fname, 0;prompt_row = 0, prompt_char = "");
-          srv->refresh ();
           continue;
-          }
         }
       }
  

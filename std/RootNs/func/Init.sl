@@ -53,7 +53,8 @@ define main (self)
    keys["edthisfile"] = {"edthisfile", NULL, "Edit buffer with " + path_basename (EDITOR)};
 
   if (NULL != listdir ("/proc/acpi/battery/") ||
-      NULL != listdir ("/sys/class/power_supply"))
+      (NULL != listdir ("/sys/class/power_supply") &&
+       length (listdir ("/sys/class/power_supply"))))
     keys["battery"] = {"battery", NULL, "Show Battery Status"};
 
   throw Return, " ", struct

@@ -208,7 +208,12 @@ define main (self)
  
       i = wherefirst (arg == args);
 
-      if ("void" != type[i])
+      if ("void" == type[i])
+        {
+        CW.drawwind (;dont_reread);
+        root.topline ();
+        }
+      else
         if (any (["int", "string"] == type[i]))
           {
           CW.drawwind (;dont_reread);

@@ -1,6 +1,6 @@
-() = evalfile ("isleap");
-() = evalfile ("checktmfmt");
-() = evalfile ("strtoint");
+ineed ("isleap");
+ineed ("checktmfmt");
+ineed ("strtoint");
 
 define main ()
 {
@@ -15,24 +15,24 @@ define main ()
     gotopager = 0,
     file = SCRATCHBUF,
     repeats = NULL,
-    argv = __pop_list (_NARGS - 1);
+    args = __pop_list (_NARGS - 1);
  
-  argv = list_to_array (argv, String_Type);
+  args = list_to_array (args, String_Type);
 
-  index = proc->is_arg ("--pager", argv);
+  index = proc->is_arg ("--pager", args);
   ifnot (NULL == index)
     {
     gotopager = 1;
-    argv[index] = NULL;
-    argv = argv[wherenot (_isnull (argv))];
+    args[index] = NULL;
+    args = args[wherenot (_isnull (args))];
     }
 
-  ifnot (length (argv))
+  ifnot (length (args))
     tim = localtime (_time ());
 
-  if (1 == length (argv))
+  if (1 == length (args))
     {
-    tim = argv[0];
+    tim = args[0];
     if (strlen (tim) < 4)
       {
       srv->send_msg ("please use one of the --tf= or --for= switches", -1);
@@ -53,10 +53,10 @@ define main ()
       }
     }
 
-  if (2 == length (argv))
+  if (2 == length (args))
     {
-    repeats = argv[1];
-    tim = argv[0];
+    repeats = args[1];
+    tim = args[0];
 
     if (strlen (tim) < 4 && strlen (repeats) < 4)
       {
@@ -91,27 +91,33 @@ define main ()
       }
    }
 
-  if (1 == _NARGS || (1 == length (argv) && NULL != repeats))
+  if (1 == _NARGS || (1 == length (args) && NULL != repeats))
     tim.tm_year += 1900;
   else
     {
     tim = strchop (tim, '=', 0);
+
     ifnot (2 == length (tim))
       {
       srv->send_msg ("wrong time format", -1);
       throw GotoPrompt;
       }
+
     tim = tim[1];
     tok = strchop (tim, ':', 0);
+
     ifnot (6 == length (tok))
       {
       srv->send_msg ("wrong time format", -1);
       throw GotoPrompt;
       }
+
     tok = array_map (Integer_Type, &atoi, tok);
     tim = localtime (_time);
     set_struct_fields (tim, tok[0], tok[1], tok[2], tok[3], tok[4] - 1, tok[5]);
+
     retval = checktmfmt (tim);
+    
     if (NULL == retval)
       {
       err = ();

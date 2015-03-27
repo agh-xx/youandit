@@ -166,6 +166,7 @@ define main (self, name, type)
 {
   throw Return, " ", struct
     {
+    img = Img_Type[AVAILABLE_LINES + 1],
     dim,
     pfuncs = self.addpager (),
     pcount,

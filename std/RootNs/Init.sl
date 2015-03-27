@@ -81,8 +81,13 @@ private define topline (self)
     str = strftime ("[%a %d %b %I:%M:%S]"),
     spaces = COLUMNS - len - strlen (str);
 
-  srv->write_str_at (sprintf ("%s%s%s", def, spaces ? repeat (" ", spaces) :
-   "", str), COLOR.info, TOPROW, 0);
+  str = sprintf ("%s%s%s", def, spaces ? repeat (" ", spaces) : "", str);
+
+  srv->write_str_at (str, COLOR.info, TOPROW, 0);
+
+  CW.img[TOPROW].col = 0;
+  CW.img[TOPROW].clr = COLOR.info;
+  CW.img[TOPROW].str = str;
 }
 
 private define settermsize (self)
@@ -221,6 +226,8 @@ private define addwind (self, name, type)
 
     list_append (root.windnames, name);
     }
+  
+  IMG = root.windows[name].img;
 
   return retval;
 }
@@ -252,9 +259,10 @@ define init ()
   self.search = self.exec (sprintf ("%s/search/Init", path_dirname (__FILE__)));
 
   self.settermsize ();
-
+  
   if (NULL == listdir ("/proc/acpi/battery/")
-    && NULL == listdir ("/sys/class/power_supply"))
+    && (NULL == listdir ("/sys/class/power_supply") ||
+     0 == length(listdir ("/sys/class/power_supply"))))
     keys->cmap.battery = NULL;
 
   if (DEBUG)

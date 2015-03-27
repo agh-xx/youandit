@@ -1,9 +1,11 @@
 define main ()
 {
   variable
+    file,
+    argv,
     index,
     gotopager = 0,
-    argv = __pop_list (_NARGS - 1),
+    args = __pop_list (_NARGS - 1),
     df = which ("df");
 
   if (NULL == df)
@@ -12,46 +14,30 @@ define main ()
     throw GotoPrompt;
     }
 
-  if (length (argv))
+  args = list_to_array (args, String_Type);
+
+  index = proc->is_arg ("--pager", args);
+  ifnot (NULL == index)
     {
-    argv = list_to_array (argv);
-    index = proc->is_arg ("--pager", argv);
-    ifnot (NULL == index)
-      gotopager = 1;
+    gotopager = 1;
+    args[index] = NULL;
+    args = args[wherenot (_isnull (args))];
     }
  
-  variable
-    fp,
-    pid,
-    file,
-    status,
-    stdoutw,
-    stderrw,
-    buf = CW.buffers[CW.cur.frame],
-    err_fd = dup_fd (fileno (stderr)),
-    out_fd = dup_fd (fileno (stdout));
-
   argv = [df, "-h"];
 
-  stdoutw = open (SCRATCHBUF, O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IRUSR);
-  stderrw = open (CW.msgbuf, O_WRONLY|O_APPEND, S_IWUSR|S_IRUSR);
+  variable p = @i->init_proc (0, 1, 1, argv);
 
-  pid = fork ();
+  p.stdout.file = SCRATCHBUF;
+  p.stdout.wr_flags = ">|";
 
-  () = dup2_fd (stdoutw, 1);
-  () = dup2_fd (stderrw, 2);
+  p.stderr.file = CW.msgbuf;
+  p.stderr.wr_flags = ">>";
 
-  if ((0 == pid) && -1 == execv (argv[0], argv))
+  if (-1 == i->sysproc (p))
     throw GotoPrompt;
- 
-  status = waitpid (pid, 0);
 
-  () = _close (_fileno (stderrw));
-  () = _close (_fileno (stdoutw));
-  () = dup2_fd (err_fd, 2);
-  () = dup2_fd (out_fd, 2);
-
-  file = status.exit_status ? CW.msgbuf : SCRATCHBUF;
+  file = p.status.exit_status ? CW.msgbuf : SCRATCHBUF;
  
   ifnot (gotopager)
     (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, send_break});

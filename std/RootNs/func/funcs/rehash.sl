@@ -67,9 +67,9 @@ define main ()
       variable DEVCOMS;
 
     ifnot (is_defined ("DEVNS"))
-      variable DEVNS = sprintf ("%s/it", BINDIR);
+      variable DEVNS = sprintf ("%s/dev", BINDIR);
     else
-      DEVNS = sprintf ("%s/it", BINDIR);
+      DEVNS = sprintf ("%s/dev", BINDIR);
 
     DEVCOMS = listdir (sprintf ("%s/commands", DEVNS));
     ifnot (NULL == DEVCOMS)

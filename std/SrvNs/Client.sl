@@ -22,6 +22,17 @@ static define write_ar_at (ar, colors, rows, cols)
   () = sock->get_bit (SRV_SOCKET);
 }
 
+static define write_ar_nstr_at (ar, colors, rows, cols, len)
+{
+  sock->send_str (SRV_SOCKET, _function_name ());
+  () = sock->get_bit_send_str_ar (SRV_SOCKET, ar);
+  () = sock->get_bit_send_int_ar (SRV_SOCKET, colors);
+  () = sock->get_bit_send_int_ar (SRV_SOCKET, rows);
+  () = sock->get_bit_send_int_ar (SRV_SOCKET, cols);
+  () = sock->get_bit_send_int (SRV_SOCKET, len);
+  () = sock->get_bit (SRV_SOCKET);
+}
+
 static define write_str_at (str, color, row, col)
 {
   sock->send_str (SRV_SOCKET, _function_name ());

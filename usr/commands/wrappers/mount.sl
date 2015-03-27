@@ -1,28 +1,20 @@
-() = evalfile ("fileis");
+ineed ("fileis");
 
 define main ()
 {
   variable
     p,
     file,
+    argv,
     index,
     retval,
     passwd,
     issudo = NULL,
     gotopager = 0,
-    buf = CW.buffers[CW.cur.frame],
     mountpoint = NULL,
     device = NULL,
     mount = which ("mount"),
-    args = __pop_list (_NARGS - 1),
-    argv,
-    pid,
-    status,
-    stdoutw,
-    stderrw,
-    err_fd,
-    out_fd;
-
+    args = __pop_list (_NARGS - 1);
 
   if (NULL == mount)
     {
@@ -30,10 +22,7 @@ define main ()
     throw GotoPrompt;
     }
 
-  if (length (args))
-    args = list_to_array (args);
-  else
-    args = String_Type[0];
+  args = list_to_array (args, String_Type);
 
   index = proc->is_arg ("--pager", args);
   ifnot (NULL == index)

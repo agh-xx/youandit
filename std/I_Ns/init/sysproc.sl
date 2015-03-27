@@ -1,23 +1,3 @@
-define init_proc (in, out, err, argv)
-{
-  variable
-    Proc_Type = @Init_ProcType;
-
-  if (in)
-    Proc_Type.stdin = @Init_DescrType;
-
-  if (out)
-    Proc_Type.stdout = @Init_DescrType;
-
-  if (err)
-    Proc_Type.stderr = @Init_DescrType;
-
-  Proc_Type.argv = argv;
-
-  return Proc_Type;
-
-}
-
 private define parse_flags (fd)
 {
   variable
@@ -104,24 +84,8 @@ private define _open (fd, fp)
     open_fd (fd, fp);
 }
 
-define sysproc (s)
+private define cleanup (s)
 {
-  ifnot (NULL == s.stdin)
-    _pipe (s.stdin, stdin);
-
-  ifnot (NULL == s.stdout)
-    _open (s.stdout, stdout);
-
-  ifnot (NULL == s.stderr)
-    _open (s.stderr, stderr);
-
-  s.pid = fork ();
-
-  if ((0 == s.pid) && -1 == execv (s.argv[0], s.argv))
-    return -1;
-
-  s.status = waitpid (s.pid, 0);
-
   ifnot (NULL == s.stdout)
     {
     close_fd (s.stdout, stdout);
@@ -140,6 +104,56 @@ define sysproc (s)
  
   ifnot (NULL == s.stdin)
     close_fd (s.stdin, stdin);
+}
+
+define init_proc (in, out, err, argv)
+{
+  variable
+    Proc_Type = @Init_ProcType;
+
+  if (in)
+    Proc_Type.stdin = @Init_DescrType;
+
+  if (out)
+    Proc_Type.stdout = @Init_DescrType;
+
+  if (err)
+    Proc_Type.stderr = @Init_DescrType;
+
+  Proc_Type.argv = argv;
+  Proc_Type.fg = qualifier_exists ("isbg") ? 0 : 1;
+  Proc_Type.cleanup = &cleanup;
+
+  return Proc_Type;
+}
+
+define sysproc (s)
+{
+  ifnot (NULL == s.stdin)
+    _pipe (s.stdin, stdin);
+
+  ifnot (NULL == s.stdout)
+    _open (s.stdout, stdout);
+
+  ifnot (NULL == s.stderr)
+    _open (s.stderr, stderr);
+
+  s.pid = fork ();
+  
+  ifnot (NULL == s.env)
+    {
+    if ((0 == s.pid) && -1 == execve (s.argv[0], s.argv, s.env))
+      return -1;
+    }
+  else
+    if ((0 == s.pid) && -1 == execv (s.argv[0], s.argv))
+      return -1;
+  
+  if (s.fg)
+    {
+    s.status = waitpid (s.pid, 0);
+    s.cleanup ();
+    }
 
   return 0;
 }

@@ -18,10 +18,7 @@ define main ()
     throw GotoPrompt;
     }
 
-  if (length (args))
-    args = list_to_array (args);
-  else
-    args = String_Type[0];
+  args = list_to_array (args, String_Type);
 
   index = proc->is_arg ("--pager", args);
   ifnot (NULL == index)
@@ -60,12 +57,12 @@ define main ()
     throw GotoPrompt;
     }
 
-  variable argv = [umount, "-v", mountpoint];
+  variable argv = [umount, "--verbose", mountpoint];
 
   ifnot (NULL == issudo)
     {
     argv = [
-      SUDO_EXEC, "-S", "-E",  "-C", sprintf ("%d", _fileno (SRV_SOCKET)+ 1), argv];
+      SUDO_EXEC, "-S", "-E",  "-C", sprintf ("%d", _fileno (SRV_SOCKET) + 1), argv];
 
     passwd = root.lib.getpasswd ();
 
@@ -84,48 +81,23 @@ define main ()
       }
     }
 
-  variable
-    pid,
-    status,
-    stdoutw,
-    stderrw,
-    err_fd = dup_fd (fileno (stderr)),
-    out_fd = dup_fd (fileno (stdout));
-
-  stdoutw = open (SCRATCHBUF, O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IRUSR);
-  stderrw = open (CW.msgbuf, O_WRONLY|O_APPEND, S_IWUSR|S_IRUSR);
+  variable p = @i->init_proc (NULL != issudo, 1, 1, argv);
 
   ifnot (NULL == issudo)
-    {
-    variable stdinr, stdinw;
+    p.stdin.str = passwd;
 
-    (stdinr, stdinw) = pipe ();
+  p.stdout.file = SCRATCHBUF;
+  p.stdout.wr_flags = ">|";
 
-    () = write (stdinw, passwd + "\n");
-    () = close (stdinw);
-    }
- 
-  pid = fork ();
+  p.stderr.file = SCRATCHBUF;
+  p.stderr.wr_flags = ">>";
 
-  () = dup2_fd (stdoutw, 1);
-  () = dup2_fd (stderrw, 2);
- 
-  ifnot (NULL == issudo)
-    () = dup2_fd (stdinr, 0);
-
-  if ((0 == pid) && -1 == execv (argv[0], argv))
+  if (-1 == i->sysproc (p))
     throw GotoPrompt;
- 
-  status = waitpid (pid, 0);
 
-  () = _close (_fileno (stderrw));
-  () = _close (_fileno (stdoutw));
-  () = dup2_fd (err_fd, 2);
-  () = dup2_fd (out_fd, 1);
+  file = SCRATCHBUF;
 
-  file = status.exit_status ? CW.msgbuf : SCRATCHBUF;
- 
-  if (status.exit_status)
+  if (p.status.exit_status)
     (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, func = "G"});
   else
     ifnot (gotopager)

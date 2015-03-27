@@ -22,20 +22,20 @@ private define append (p, dec_str)
     ? [_col_:_col_ + length (dec_str)]
     : Integer_Type[0];
 
-   if (length (p.lins) - 1 < _linenr_)
-     {
-     list_append (p.lins, [encode_str (dec_str)]);
-     list_append (p.cols, [_col_]);
-     list_append (p.lnrs, [_linenr_]);
-     list_append (p.clrs, [_color_]);
-     }
-   else
-     {
-     p.lins[-1] = [p.lins[-1], encode_str (dec_str)];
-     p.cols[-1] = [p.cols[-1], _col_];
-     p.lnrs[-1] = [p.lnrs[-1], _linenr_];
-     p.clrs[-1] = [p.clrs[-1], _color_];
-     }
+  if (length (p.lins) - 1 < _linenr_)
+    {
+    list_append (p.lins, [encode_str (dec_str)]);
+    list_append (p.cols, [_col_]);
+    list_append (p.lnrs, [_linenr_]);
+    list_append (p.clrs, [_color_]);
+    }
+  else
+    {
+    p.lins[-1] = [p.lins[-1], encode_str (dec_str)];
+    p.cols[-1] = [p.cols[-1], _col_];
+    p.lnrs[-1] = [p.lnrs[-1], _linenr_];
+    p.clrs[-1] = [p.clrs[-1], _color_];
+    }
 
   _col_ += length (dec_str);
   _index_ = NULL == _cltok_ ? _index_ + length (dec_str) : _cltok_ + 1;
@@ -135,10 +135,7 @@ private define parsefile (s)
     parse_line (p);
     }
 
-  s_.p_.lnrs = p.lnrs;
-  s_.p_.lins = p.lins;
-  s_.p_.cols = p.cols;
-  s_.p_.clrs = p.clrs;
+  s_.p_ = p;
 
   () = fclose (s_._fnfp);
   return 0;
@@ -203,7 +200,6 @@ private define writeline (s, index)
 
       i++;
       }
-
     }
 
   line = substr (line, s._indent + 1, -1);

@@ -5,21 +5,19 @@ define main ()
     retval,
     gotopager = 0,
     file = SCRATCHBUF,
-    buf = CW.buffers[CW.cur.frame],
-    argv = __pop_list (_NARGS - 1);
+    args = __pop_list (_NARGS - 1);
  
-  argv = list_to_array (argv, String_Type);
+  args = list_to_array (args, String_Type);
 
-  index = proc->is_arg ("--pager", argv);
+  index = proc->is_arg ("--pager", args);
   ifnot (NULL == index)
     {
     gotopager = 1;
-    argv[index] = NULL;
-    argv = argv[wherenot (_isnull (argv))];
+    args[index] = NULL;
+    args = args[wherenot (_isnull (args))];
     }
  
-  index = proc->is_arg ("--help", argv);
- 
+  index = proc->is_arg ("--help", args);
   ifnot (NULL == index)
     {
     writefile (readfile (sprintf ("%s/info/weather/help.txt", path_dirname (__FILE__))), file);
@@ -33,7 +31,7 @@ define main ()
 
   writefile ([repeat ("_", COLUMNS)], file);
 
-  retval = proc->call (["weather", "--nocl", argv,
+  retval = proc->call (["weather", "--nocl", args,
       sprintf ("--execdir=%s/scripts", path_dirname (__FILE__)),
       sprintf ("--msgfname=%s", CW.msgbuf),
       sprintf ("--mainfname=%s", file)

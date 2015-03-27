@@ -17,6 +17,8 @@ variable
   PROMPTROW = NULL != LINES ? LINES - 2 : 0,
   MSGROW = NULL != LINES  ? LINES - 1 : 0,
   TOPROW = 0,
+  IMG,
+  PRINTROWS = NULL,
   CORECOMS,
   USRCOMS,
   PERSCOMS,

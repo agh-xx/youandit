@@ -36,6 +36,7 @@ define main (self)
 
     () = root.lib.printout ([strjoin (strtok (ar[index], "||"), " ")], col, &len;
       header = header,
+      last_row = PROMPTROW - (strlen (self.cur.line) / COLUMNS),
       lines = LINES - (strlen (self.cur.line) / COLUMNS),
       row = PROMPTROW - (strlen (self.cur.line) / COLUMNS) + i);
 

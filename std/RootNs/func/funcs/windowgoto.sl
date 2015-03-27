@@ -28,6 +28,7 @@ define main ()
     }
 
   CW = root.windows[name];
+  IMG = CW.img;
   CW.drawwind (;;__qualifiers ());
  
   () = chdir (CW.dir);

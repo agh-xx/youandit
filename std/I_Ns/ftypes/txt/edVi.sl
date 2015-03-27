@@ -1,5 +1,4 @@
 variable
-  pk,
   pf = Assoc_Type[Ref_Type],
   com,
   cf = Assoc_Type[Ref_Type],
@@ -11,9 +10,14 @@ w_._avlins = LINES - 4;
 define draw ();
 
 ineed ("edViFuncs");
+ineed ("viewer");
+ineed ("edit");
+
+variable pk = array_map (Integer_Type, &integer, assoc_get_keys (pf));
+
 ineed ("f_");
-ineed ("rl_");
-ineed ("com");
+ineed ("rline");
+ineed ("cline");
 
 define draw ()
 {

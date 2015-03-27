@@ -25,6 +25,7 @@ define main (self)
     }
 
   CW = root.windows[name];
+  IMG = CW.img;
 
   CW.drawwind ();
 

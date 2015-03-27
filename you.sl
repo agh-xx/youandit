@@ -1,3 +1,4 @@
+#!/usr/bin/env slsh
 if (length (where ("--help" == __argv)))
   {
   () = array_map (Integer_Type, &fprintf, stdout, "%s\n",

@@ -3,6 +3,7 @@ define main ()
   variable
     i,
     f,
+    file,
     index,
     gotopager = 0,
     du = which ("du"),
@@ -38,37 +39,19 @@ define main ()
       argv = [argv, array_map (String_Type, &path_concat, f, listdir (f))];
     }
 
-  variable
-    fp,
-    pid,
-    file,
-    status,
-    stdoutw,
-    stderrw,
-    buf = CW.buffers[CW.cur.frame],
-    err_fd = dup_fd (fileno (stderr)),
-    out_fd = dup_fd (fileno (stdout));
+  variable p = @i->init_proc (0, 1, 1, argv);
 
-  stdoutw = open (SCRATCHBUF, O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IRUSR);
-  stderrw = open (CW.msgbuf, O_WRONLY|O_APPEND, S_IWUSR|S_IRUSR);
+  p.stdout.file = SCRATCHBUF;
+  p.stdout.wr_flags = ">|";
 
-  pid = fork ();
+  p.stderr.file = CW.msgbuf;
+  p.stderr.wr_flags = ">>";
 
-  () = dup2_fd (stdoutw, 1);
-  () = dup2_fd (stderrw, 2);
-
-  if ((0 == pid) && -1 == execv (argv[0], argv))
+  if (-1 == i->sysproc (p))
     throw GotoPrompt;
- 
-  status = waitpid (pid, 0);
 
-  () = _close (_fileno (stderrw));
-  () = _close (_fileno (stdoutw));
-  () = dup2_fd (err_fd, 2);
-  () = dup2_fd (out_fd, 1);
+  file = p.status.exit_status ? CW.msgbuf : SCRATCHBUF;
 
-  file = status.exit_status ? CW.msgbuf : SCRATCHBUF;
- 
   ifnot (gotopager)
     (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, send_break});
   else

@@ -348,7 +348,7 @@ private define decode_js (s)
 
       if (js.st_.st_size != s_.st_.st_size || js.st_.st_mtime != s_.st_.st_mtime)
         {
-        js =  parse_file ();
+        js = parse_file ();
         s_._states = js._states;
         }
       }

@@ -1,6 +1,7 @@
 define main (self, frame)
 {
   variable
+    i,
     ar,
     len,
     buf = self.buffers[frame],
@@ -30,6 +31,20 @@ define main (self, frame)
     {ar, COLOR.normal, buf.rows, 0},
     {buf.infoline, [self.dim[frame].infolinecolor, self.dim[frame].infoline, 0]},
     [buf.pos[0], buf.pos[1]]);
+
+  ifnot (qualifier_exists ("file"))
+    {  
+    _for i (0, length (buf.rows) - 1)
+      {
+      self.img[buf.rows[i]].str = ar[i];
+      self.img[buf.rows[i]].col = 0;
+      self.img[buf.rows[i]].clr = COLOR.normal;
+      }
+
+    self.img[self.dim[frame].infoline].str = buf.infoline;
+    self.img[self.dim[frame].infoline].col = 0;
+    self.img[self.dim[frame].infoline].clr = self.dim[frame].infolinecolor;
+    }
 
   throw Break;
 }

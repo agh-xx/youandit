@@ -18,7 +18,6 @@ private define write_callback (fp, str)
 private define fetch (s, url)
 {
   variable
-    c,
     write_to_var = qualifier_exists ("write_to_var");
 
   ifnot (write_to_var)
@@ -41,7 +40,7 @@ private define fetch (s, url)
  
   try
     {
-    c = curl_new (url);
+    variable c = curl_new (url);
 
     if (s.followlocation)
       curl_setopt (c, CURLOPT_FOLLOWLOCATION, 1);
@@ -70,6 +69,12 @@ private define fetch (s, url)
     {
     ifnot (qualifier_exists ("dont_print"))
       array_map (Void_Type, print_err, exception_to_array ());
+
+    ifnot (write_to_var)
+      {
+      () = fclose (fp);
+      () = remove (file);
+      }
 
     return __get_exception_info.error;
     }

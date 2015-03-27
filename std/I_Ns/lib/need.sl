@@ -1,4 +1,4 @@
-private variable LOADED = Assoc_Type[Int_Type, 0];
+private variable LOADED = Assoc_Type[Integer_Type, 0];
 
 define need ()
 {

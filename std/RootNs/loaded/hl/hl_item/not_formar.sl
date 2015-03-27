@@ -11,7 +11,8 @@ define hlitem (self, ar, base, acol, item)
     items = 1,
     i = 0,
     page = 0,
-    irow = 1,
+    lrow = PROMPTROW - (strlen (self.cur.line) / COLUMNS),
+    irow,
     icol = 0,
     colr = qualifier ("color", COLOR.hlregion),
     index = 0,
@@ -30,7 +31,10 @@ define hlitem (self, ar, base, acol, item)
 
   car = @bar;
 
+  irow = lrow - (length (car) > lines ? lines : length (car));
+
   bar = root.lib.printout (bar, bcol, &len; header = header, lines = lines,
+    last_row = PROMPTROW - (strlen (self.cur.line) / COLUMNS),
     row = PROMPTROW - (strlen (self.cur.line) / COLUMNS) + i,
     hl_region = [colr, irow, icol * max_len, 1, max_len]);
 
@@ -42,7 +46,7 @@ define hlitem (self, ar, base, acol, item)
   while ( any (['\t', [keys->UP:keys->RIGHT], keys->PPAGE, keys->NPAGE] == chr))
     {
     if ('\t' == chr)
-      if (lines - 3 >= length (ar) && page == 0)
+      if (lines >= length (ar) && page == 0)
         chr = keys->RIGHT;
       else
         chr = keys->NPAGE;
@@ -70,6 +74,7 @@ define hlitem (self, ar, base, acol, item)
       car = @bar;
 
       bar = root.lib.printout (bar, bcol, &len; header = header, lines = lines,
+        last_row = PROMPTROW - (strlen (self.cur.line) / COLUMNS),
         row = PROMPTROW - (strlen (self.cur.line) / COLUMNS) + i,
         hl_region = [colr, irow, icol * max_len, 1, max_len]);
 
@@ -78,32 +83,42 @@ define hlitem (self, ar, base, acol, item)
       }
  
     if (keys->UP == chr)
-      if (0 == irow - 1)
+      if ((0 == index || index < items) && 1 < length (car))
+        {
         (irow, icol, index) =
-          lines - 3 <= length (car) ? lines - 3 : length (car),
-          length (car) mod items
-            ? ((length (ar) - (index + 1)) mod items) - 1
-            : items - 1,
-          length (car) >= lines - 3
-            ? (page) * ((lines - 4) * items) + ((lines - 4) * items)
-            : length (ar) -1;
-      else if (0 > index - items)
-        (irow, icol, index) =
-          1,
-          0,
-          (page) * ((lines - 4) * items);
+          lrow - 1,
+          length (car) >= lines
+            ? items - 1
+            : length (car) mod items
+              ? ((length (ar) - (index + 1)) mod items) - 1
+              : items - 1,
+          length (car) >= lines
+            ? ((page) * (lines * items)) + ((lines - 1) * items) + items - 1
+            : length (ar) - 1;
+        }
       else
         {
         irow--;
         index -= items;
+        if (0 == irow || 1 == length (car))
+          (irow, icol, index) =
+            lrow - 1,
+            length (car) >= lines
+              ? items - 1
+              : length (strtok (strjoin (car, " "))) mod items
+                ? (length (strtok (strjoin (car, " "))) mod items) - 1
+                : items - 1,
+            length (car) >= lines
+              ? ((page) * ((lines - 1) * items)) + ((lines - 1) * items) + items - 1
+              : length (ar) - 1;
         }
 
     if (keys->DOWN == chr)
-      if (irow + 4 > lines || index + items > length (ar) - 1)
+      if (irow + 1 > lines || index + items > length (ar) - 1)
         (irow, icol, index) =
-          1,
+          lrow - (length (car) > lines ? lines : length (car)),
           0,
-          page * ((lines - 4) * items);
+          page * ((lines - 1) * items);
       else
         {
         irow++;
@@ -116,9 +131,9 @@ define hlitem (self, ar, base, acol, item)
       index--;
 
       if (-1 == index)
-        if (length (car) < lines - 3)
+        if (length (car) < lines)
           (irow, icol, index) =
-            length (car),
+            lrow - 1,
             length (car) mod items
               ? ((length (ar) - (index + 1)) mod items) - 1
               : items - 1,
@@ -127,7 +142,9 @@ define hlitem (self, ar, base, acol, item)
       if (-1 == icol)
         {
         irow--;
-        icol = items - 1;
+        icol = length (car) mod items
+          ? (length (strtok (strjoin (car, " "))) mod items) - 1
+          : items - 1;
         }
 
       ifnot (irow)
@@ -139,17 +156,17 @@ define hlitem (self, ar, base, acol, item)
           }
         else
           (irow, icol, index) =
-            lines - 3,
-            0,
-            (page) * ((lines - 4) * items) + ((lines - 4) * items);
+            lrow - 1,
+            items - 1,
+           ((page) * ((lines - 1) * items)) + ((lines - 1) * items) + items - 1;
       }
 
     if (keys->RIGHT == chr)
       if (index + 1 > length (ar) - 1)
         (irow, icol, index) =
-          1,
+          lrow - (length (car) > lines ? lines : length (car)),
           0,
-          (page) * ((lines - 4) * items);
+          (page) * ((lines - 1) * items);
       else if (icol + 1 == items)
         ifnot (irow + 4 > lines)
           {
@@ -159,9 +176,9 @@ define hlitem (self, ar, base, acol, item)
           }
         else
           (irow, icol, index) =
-            1,
+            lrow - (length (car) > lines ? lines : length (car)),
             0,
-            (page) * ((lines - 4) * items);
+            (page) * ((lines - 1) * items);
       else
         {
         index++;
@@ -172,22 +189,23 @@ define hlitem (self, ar, base, acol, item)
       {
       ifnot (page)
         {
-        if (length (car) > lines - 3)
+        if (length (car) > lines)
           page = 0;
-          car = @ar;
-          len = length (car);
-          while (len > lines - 3)
-            {
-            page++;
-            car = car[[lines - 4:]];
-            bar = car;
-            len = length (car);
-            }
 
-          (irow, icol, index) =
-            1,
-            0,
-            (page) * ((lines - 4) * items);
+        car = @ar;
+        len = length (car);
+        while (len > lines)
+          {
+          page++;
+          car = car[[lines - 1:]];
+          bar = car;
+          len = length (car);
+          }
+
+        (irow, icol, index) =
+          lrow - (length (car) > lines ? lines : length (car)),
+          0,
+          (page) * ((lines - 1) * items);
         }
       else
         {
@@ -196,15 +214,16 @@ define hlitem (self, ar, base, acol, item)
         loop (page)
           {
           len = length (car);
-          car = car[[lines - 4:]];
+          car = car[[lines - 1:]];
           }
 
-        bar = car[[lines - 4:]];
+        bar = car[[lines - 1:]];
 
         (irow, icol, index) =
-          1,
+          lrow - (length (car) > lines ? lines : length (car)),
           0,
-          (page) * ((lines - 4) * items);
+          (page) * ((lines - 1) * items);
+
         }
       }
 
@@ -216,6 +235,7 @@ define hlitem (self, ar, base, acol, item)
     len = length (car);
 
     () = root.lib.printout (car, bcol, &len; header = header, lines = lines,
+      last_row = PROMPTROW - (strlen (self.cur.line) / COLUMNS),
       row = PROMPTROW - (strlen (self.cur.line) / COLUMNS) + i,
       hl_region = [colr, irow, icol * max_len, 1, max_len]);
 

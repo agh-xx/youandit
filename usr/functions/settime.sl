@@ -1,5 +1,5 @@
-() = evalfile ("isleap");
-() = evalfile ("checktmfmt");
+ineed ("isleap");
+ineed ("checktmfmt");
 
 define main ()
 {
@@ -12,25 +12,25 @@ define main ()
     retval,
     gotopager = 0,
     file = SCRATCHBUF,
-    argv = __pop_list (_NARGS - 1);
+    args = __pop_list (_NARGS - 1);
  
-  argv = list_to_array (argv, String_Type);
+  args = list_to_array (args, String_Type);
 
-  index = proc->is_arg ("--pager", argv);
+  index = proc->is_arg ("--pager", args);
   ifnot (NULL == index)
     {
     gotopager = 1;
-    argv[index] = NULL;
-    argv = argv[wherenot (_isnull (argv))];
+    args[index] = NULL;
+    args = args[wherenot (_isnull (args))];
     }
 
-  ifnot (length (argv))
+  ifnot (length (args))
     {
     srv->send_msg ("You need the --tf=ss:mm:hh:dd:mm:yy switch", 0);
     throw GotoPrompt;
     }
 
-  tim = argv[0];
+  tim = args[0];
 
   ifnot ("--tf=" == substr (tim, 1, 5))
     {

@@ -1,22 +1,26 @@
 variable
-  pk,
-  pf = Assoc_Type[Ref_Type],
   com,
-  cf = Assoc_Type[Ref_Type],
+  _chr_,
   w_ = s_.w_,
-  _chr_;
-
-w_._avlins = LINES - 4;
+  pf = Assoc_Type[Ref_Type],
+  cf = Assoc_Type[Ref_Type];
 
 define draw ();
 
 ineed ("edViFuncs");
+ineed ("viewer");
+ineed ("edit");
+
+variable pk = array_map (Integer_Type, &integer, assoc_get_keys (pf));
+
 ineed ("f_");
-ineed ("rl_");
-ineed ("com");
+ineed ("rline");
+ineed ("cline");
 
 define draw ()
 {
+  w_._avlins = LINES - 4;
+
   if (-1 == w_._len)
     {
     srv->write_ar_dr ([repeat (" ", COLUMNS), tail ()], [0, 0], [2, LINES - 1], [0],
@@ -50,7 +54,7 @@ define draw ()
       rows = [rows, row];
       ar = [ar, list_to_array (line)];
       w_.lins = [w_.lins, strjoin (list_to_array (line))];
-      w_.lnrs = [w_.lnrs, list_to_array (s_.p_.lnrs[w_._i])];
+      w_.lnrs = [w_.lnrs, s_.p_.lnrs[w_._i][0]];
       cols = [cols, list_to_array (s_.p_.cols[w_._i])];
       clrs = [clrs, list_to_array (s_.p_.clrs[w_._i])];
       w_.state = [w_.state, {ar[-1], clrs[-1], rows[-1], cols[-1]}]; 

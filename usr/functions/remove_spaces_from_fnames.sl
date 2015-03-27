@@ -5,19 +5,19 @@ define main ()
     retval,
     gotopager = 0,
     file = SCRATCHBUF,
-    argv = __pop_list (_NARGS - 1);
+    args = __pop_list (_NARGS - 1);
  
-  argv = list_to_array (argv, String_Type);
+  args = list_to_array (args, String_Type);
 
-  index = proc->is_arg ("--pager", argv);
+  index = proc->is_arg ("--pager", args);
   ifnot (NULL == index)
     {
     gotopager = 1;
-    argv[index] = NULL;
-    argv = argv[wherenot (_isnull (argv))];
+    args[index] = NULL;
+    args = args[wherenot (_isnull (args))];
     }
 
-  ifnot (length (argv))
+  ifnot (length (args))
     {
     srv->send_msg ("Wrong number of arguments", -1);
     throw GotoPrompt;
@@ -29,7 +29,7 @@ define main ()
         sprintf ("--execdir=%s/scripts", path_dirname (__FILE__)),
         sprintf ("--msgfname=%s", CW.msgbuf),
         sprintf ("--mainfname=%s", file),
-        argv]);
+        args]);
  
   writefile (sprintf ("EXIT CODE: %d", retval), file; mode = "a");
 

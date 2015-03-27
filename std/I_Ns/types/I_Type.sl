@@ -6,11 +6,6 @@ private define ag (self)
   self.exec (sprintf ("%s/%s", mytypedir, _function_name ());;__qualifiers ());
 }
 
-private define parse_ft (self, file)
-{
-  self.exec (sprintf ("%s/%s", mytypedir, _function_name ()), file;;__qualifiers ());
-}
-
 private define executeargv (self, argv)
 {
   self.exec (sprintf ("%s/%s", mytypedir, _function_name ()), argv;;__qualifiers ());
@@ -36,7 +31,6 @@ define main (self, name)
     {
     @root.windows[name],
     ag = &ag,
-    parse_ft = &parse_ft,
     };
  
   variable me = root.windows[name];

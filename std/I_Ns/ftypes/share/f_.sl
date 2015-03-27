@@ -31,4 +31,3 @@ private define get_char_from_array (s, ar, msg, dim, pos)
 }
 
 f_.getarchr = &get_char_from_array;
-

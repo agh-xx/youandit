@@ -37,7 +37,7 @@ rl_ = struct
 
 ineed ("f_compl");
 ineed ("com_rout");
-ineed ("gl"); 
+ineed ("getline"); 
 
 private define init (s)
 {
@@ -122,8 +122,6 @@ private define printout (s, ar, col, len)
 
   ifnot (NULL == hlreg)
     srv->set_color_in_region (hlreg[0], hlreg[1], hlreg[2], hlreg[3], hlreg[4];redraw);
-
-  %srv->gotorc_draw (qualifier ("row", LINES - 1), col < COLUMNS ? col : col - COLUMNS);
 
   @len = @len >= lines;
 

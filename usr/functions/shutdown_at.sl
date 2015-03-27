@@ -10,15 +10,15 @@ define main ()
     seconds,
     % a more rand'ed' name
     passwd_f = sprintf ("%s/_%ddown.txt", TEMPDIR, _time),
-    argv = __pop_list (_NARGS - 1);
+    args = __pop_list (_NARGS - 1);
 
-  ifnot (length (argv))
+  ifnot (length (args))
     {
     srv->send_msg ("You need to specify an action, use the tab completion", -1);
     throw GotoPrompt;
     }
  
-  arg = argv[0];
+  arg = args[0];
 
   if ("--when" == substr (arg, 1, 6))
     {

@@ -12,8 +12,11 @@ typedef struct
   stderr,
   status,
   pid,
+  env,
   argv,
   retval,
+  fg,
+  cleanup,
   } Init_ProcType;
 
 typedef struct
@@ -29,3 +32,9 @@ typedef struct
   } Init_DescrType;
 
 
+typedef struct
+  {
+  col,
+  clr,
+  str,
+  } Img_Type;
