@@ -29,26 +29,10 @@ define main (self, action)
     }
 
   buf.fname = fname;
-  ar = readfile (fname);
 
-  self.cur.frame = 0;
-
-  () = self.setar (buf, qualifier ("file", buf.fname));
-
-  buf.firstchar = Integer_Type[length (ar) + 1];
-  buf.firstchar[*] = 0;
-  buf.mtime = lstat_file (buf.fname).st_mtime;
- 
-  self.setwindim ();
-
-  self.set (buf, 0, length (ar) - 1; setline, setpos, setind, setrows);
-
-  self.pcount = row;
-  buf.pos[1] = col - 1;
-  (@self.pfuncs["go_to_line"])
-    (self, &buf.pos[0], &buf.pos[1], buf, 0, self.frames_size[0], length (ar) - 1);
-
-  self.drawframe (0);
+  (@self.gotopager) (self, fname);
+  %(@self.gotopager) (self, fname;func = 'G', count = row);
+  self.drawframe (0;reread_buf);
   self.writeinfolines ();
-  self.gotopager ();
+  throw GotoPrompt;
 }

@@ -1,7 +1,11 @@
-private define gotopager (self)
+private define gotopager ()
 {
-  self.exec (sprintf ("%s/funcs/%s", path_dirname (__FILE__), _function_name ())
-    ;;__qualifiers ());
+  variable
+    args = _NARGS > 1 ?__pop_list (_NARGS - 1) : {},
+    self = ();
+  
+  self.exec (sprintf ("%s/funcs/%s", path_dirname (__FILE__), _function_name ()),
+    __push_list (args);;__qualifiers ());
 }
 
 private define makeframename (self)
@@ -168,8 +172,6 @@ define main (self, name, type)
     {
     img = Img_Type[AVAILABLE_LINES + 1],
     dim,
-    pfuncs = self.addpager (),
-    pcount,
     history,
     readline,
     frames_size,
@@ -179,7 +181,6 @@ define main (self, name, type)
     name = name,
     maxframes = 3,
     minframes = 1,
-    pagerstate = 0,
     buffers = Frame_Type[0],
     dir = qualifier ("dir", getcwd ()),
     datadir = sprintf ("%s/%s", DATADIR, type),

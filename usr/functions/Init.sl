@@ -62,6 +62,9 @@ define main (self)
      "--savejs      void save json file (default no)",
     ], NULL};
 
+  keys["ved"] = {sprintf ("%s/ved", mydir), NULL, "ved",
+    ["--lnr= int goto linenr"], NULL};
+
   throw Return, " ", struct
     {
     exec = self.exec,

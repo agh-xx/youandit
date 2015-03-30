@@ -2,6 +2,7 @@ define main (self, argv)
 {
   variable
     retval,
+    gotopager = 0,
     routine = 1,
     buf = self.buffers[0];
 
@@ -57,17 +58,7 @@ define main (self, argv)
 
       {
       case "bytecompile":
-      retval = proc->call (["bytecompile", __argv[0], "--nocl",
-           sprintf ("--execdir=%s/proc", path_dirname (__FILE__)),
-           sprintf ("--msgfname=%s", buf.fname),
-           sprintf ("--mainfname=%s", buf.fname)]);
- 
-      if (retval)
-        writefile ([repeat ("_", COLUMNS), sprintf ("ERROR\nEXIT_CODE: %d", retval)],
-          buf.fname;mode = "a");
-      else
-        writefile ([repeat ("_", COLUMNS), "bytecompile completed with no errors"],
-          buf.fname;mode = "a");
+        self.bytecompile (buf.fname, &gotopager);
       }
  
       {
@@ -90,19 +81,7 @@ define main (self, argv)
           sprintf ("--mainfname=%s", buf.fname)]);
  
         ifnot (retval)
-          {
-          retval = proc->call (["bytecompile", __argv[0], "--nocl",
-            sprintf ("--execdir=%s/proc", path_dirname (__FILE__)),
-            sprintf ("--msgfname=%s", buf.fname),
-            sprintf ("--mainfname=%s", buf.fname)]);
- 
-          if (retval)
-            writefile ([repeat ("_", COLUMNS), sprintf ("ERROR\nEXIT_CODE: %d", retval)],
-              buf.fname;mode = "a");
-          else
-            writefile ([repeat ("_", COLUMNS), "bytecompile completed with no errors"],
-              buf.fname;mode = "a");
-          }
+          self.bytecompile (buf.fname, &gotopager);
       }
 
       {
@@ -136,6 +115,11 @@ define main (self, argv)
       }
 
       {
+      case "clear":
+        root.func.call ("clear";dont_ask);
+      }
+
+      {
       case "q!":
         root.func.call ("q!");
       }
@@ -151,7 +135,10 @@ define main (self, argv)
       self.drawframe (0;reread_buf);
       self.setinfoline (buf, 0, length (buf.ar_len));
       self.writeinfolines ();
-      self.gotopager(;func="G", frame = 0);
+      ifnot (gotopager)
+        self.gotopager (buf.fname;drawonly, func='G');
+      else
+        self.gotopager (buf.fname;func='G');
       }
 
     self.gotoprompt ();

@@ -80,6 +80,7 @@ try
   () = evalfile (sprintf ("%s/I_Ns/init/sigwinch_handler", STDNS));
   () = evalfile (sprintf ("%s/I_Ns/nss/Init", STDNS), "i");
   () = evalfile (sprintf ("%s/I_Ns/lib/need", STDNS), "i");
+  () = evalfile (sprintf ("%s/ved/ved", STDNS));
 
   if (DEV)
     dev_on ();
@@ -178,4 +179,4 @@ else
 
 array_map (Void_Type, &__uninitialize, [&$1, &$2, &$3, &$4, &$8, &$9]);
 
-root.user.call ("intro"; drawwind, send_break);
+root.user.call ("intro"; drawwind);

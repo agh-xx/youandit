@@ -41,7 +41,7 @@ define main ()
   srv->send_msg (sprintf ("%sReading %s", -1 == iswritable
         ? "[File Is Not Writable!], " : "", fname), iswritable);
 
-  CW.gotopager (;;struct {@__qualifiers, iamreal, file = fname, send_break_at_exit});
+  (@CW.gotopager) (CW, fname);
 
   throw GotoPrompt;
 }

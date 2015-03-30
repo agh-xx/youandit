@@ -40,8 +40,8 @@ private define set_basic_color (field, color)
     "white", "red", "green", "brown", "blue", "magenta",
     "cyan", "lightgray", "gray", "brightred", "brightgreen",
     "yellow", "brightblue", "brightmagenta", "brightcyan",
-    "blackonbrightcyan", "blackonwhite", "blackonred", "blackonbrown",
-    "blackonyellow"
+    "blackongray", "blackonwhite", "blackonred", "blackonbrown",
+    "blackonyellow", "brownonyellow", "brownonwhite"
     ];
 
   set_struct_field (COLOR, field, wherefirst (colors == color));
@@ -49,10 +49,12 @@ private define set_basic_color (field, color)
 
 array_map (Void_Type, &set_basic_color,
   ["normal", "msgerror", "msgsuccess", "msgwarn", "prompt",
-   "border", "focus", "hlchar", "info", "activeframe", "out", "hlregion", "hlhead"],
+   "border", "focus", "hlchar", "info", "activeframe", "out",
+   "hlregion", "hlhead", "topline"],
   [COLOR.normal, COLOR.msgerror, COLOR.msgsuccess, COLOR.msgwarn,
    COLOR.prompt, COLOR.border, COLOR.focus, COLOR.hlchar,
-   COLOR.info, COLOR.activeframe, COLOR.out, COLOR.hlregion, COLOR.hlhead]);
+   COLOR.info, COLOR.activeframe, COLOR.out, COLOR.hlregion,
+   COLOR.hlhead, COLOR.topline]);
 
 array_map (Void_Type, &slsmg_define_color, [0:14:1],
   [
@@ -66,8 +68,16 @@ array_map (Void_Type, &slsmg_define_color, [15:19:1],
   "black",
   array_map (String_Type, &substr,
   [
-  "blackonbrightcyan", "blackonwhite", "blackonred", "blackonbrown",
+  "blackongray", "blackonwhite", "blackonred", "blackonbrown",
   "blackonyellow",
+  ], 8, -1)
+  );
+
+array_map (Void_Type, &slsmg_define_color, [20:21:1],
+  "brown",
+  array_map (String_Type, &substr,
+  [
+  "brownonyellow", "brownonwhite",
   ], 8, -1)
   );
 

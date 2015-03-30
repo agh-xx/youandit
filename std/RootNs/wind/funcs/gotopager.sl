@@ -1,25 +1,19 @@
-define main (self)
+define main ()
 {
- 
-  variable ftype = qualifier ("ftype");
+  variable
+    qualifiers = @__qualifiers (),
+    args = __pop_list (_NARGS - 1);
+  
+  if (CW.type == "Shell_Type")
+    qualifiers = struct {@qualifiers, func='G'};
 
-  if (NULL == ftype)
-    (@self.pfuncs["pager"])
-      (self;;__qualifiers ());
+  if (length (args))
+    ved (__push_list (args);;qualifiers);
   else
-    {
-    ifnot (assoc_key_exists (FTYPES, ftype))
-      {
-      srv->send_msg (sprintf ("%s: Not such filetype", ftype), -1);
-      if (qualifier_exists ("dont_goto_prompt")
-        || qualifier_exists ("send_break_at_exit")
-        || qualifier_exists ("send_break"))
-        throw Break;
+    ved (;;qualifiers);
+  
+  ifnot (qualifier_exists ("drawonly"))
+    CW.drawframe (CW.cur.frame);
 
-      throw GotoPrompt;
-      }
-
-    (@FTYPES[ftype].pager) (;;__qualifiers ());
-    }
- 
+  throw GotoPrompt;
 }

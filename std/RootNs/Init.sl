@@ -83,10 +83,10 @@ private define topline (self)
 
   str = sprintf ("%s%s%s", def, spaces ? repeat (" ", spaces) : "", str);
 
-  srv->write_str_at (str, COLOR.info, TOPROW, 0);
+  srv->write_str_at (str, COLOR.topline, TOPROW, 0);
 
   CW.img[TOPROW].col = 0;
-  CW.img[TOPROW].clr = COLOR.info;
+  CW.img[TOPROW].clr = COLOR.topline;
   CW.img[TOPROW].str = str;
 }
 
@@ -114,11 +114,6 @@ private define addhistory (self)
   self.exec (sprintf ("%s/history/Init", path_dirname (__FILE__));;__qualifiers ());
 }
 
-private define addpager (self)
-{
-  return self.exec (sprintf ("%s/pager/Init", path_dirname (__FILE__));;__qualifiers ());
-}
-
 private define addreadline (self)
 {
   return self.exec (sprintf ("%s/readline/Init", path_dirname (__FILE__))
@@ -133,7 +128,7 @@ private define addwind (self, name, type)
     tmpdir,
     istype,
     datadir = qualifier ("datadir"),
-    blacklist = ["ed"],
+    blacklist = ["ved"],
     typedir = qualifier ("typedir");
 
   if (NULL == typedir)
@@ -240,14 +235,12 @@ define init ()
     lib,
     func,
     user,
-    search,
     wrappers,
     exec = &exec,
     call = &call,
     topline = &topline,
     settermsize = &settermsize,
     addwind = &addwind,
-    addpager = &addpager,
     addhistory = &addhistory,
     addreadline = &addreadline,
     windows = Assoc_Type[Struct_Type],
@@ -256,7 +249,6 @@ define init ()
  
   self.lib =self.exec (sprintf ("%s/lib/Init", path_dirname (__FILE__)));
   self.func = self.exec (sprintf ("%s/func/Init", path_dirname (__FILE__)));
-  self.search = self.exec (sprintf ("%s/search/Init", path_dirname (__FILE__)));
 
   self.settermsize ();
   

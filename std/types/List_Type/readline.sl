@@ -33,15 +33,6 @@ define main (self)
         self.cur.argv[0] = char (self.cur.chr);
         throw Break;
         }
-      else
-        {
-        routretv = self.nolength_routine (self.commands[1]);
- 
-        if (1 == routretv)
-          continue;
-        if (-1 == routretv)
-          throw Break;
-        }
 
     if ('\t' == self.cur.chr)
       {
@@ -89,19 +80,6 @@ define main (self)
         self.cur.argv[0] = "";
         self.cur.col = 1;
         continue;
-        }
-
-      if (strlen (self.cur.line))
-        if ("closeshell" == self.cur.argv[0])
-          throw Break;
-
-      if ('!' == self.cur.line[0])
-        {
-        self.cur.argv[0] = "";
-        self.cur.col = 1;
-
-        if (-1 == self.shell_routine (self.commands[1]))
-          throw Break;
         }
 
       self.my_prompt ();

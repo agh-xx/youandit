@@ -28,24 +28,8 @@ define main (self)
 
   self.cur.frame = self.frames - 1;
 
-  if (3 == self.frames)
-    {
-    self.cur.mainbufframe = 2;
-    self.cur.mainbuf = buf.fname;
-    buf.type = "shell_type";
-    self.cur.mode = "shell";
-    ar = [sprintf ("Shell in a List Report Window, Started at: %s", strftime ("%c"))];
-    }
-  else if (1 == self.frames)
-    {
-    buf.type = "output_type";
-    ar = [" "];
-    }
-  else
-    {
-    buf.type = "list_type";
-    ar = self.reportlist;
-    }
+  buf.type = "list_type";
+  ar = self.reportlist;
  
   buf.firstchar = Integer_Type[length (ar) + 1];
   buf.firstchar[*] = 0;

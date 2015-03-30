@@ -1,12 +1,12 @@
 define main ()
 {
   variable
+    pids,
+    coms,
     index,
     gotopager = 0,
     file = SCRATCHBUF,
-    argv = __pop_list (_NARGS - 1),
-    pids,
-    coms;
+    args = __pop_list (_NARGS - 1);
 
   (pids, coms) = proc->get_bg_list ();
 
@@ -15,21 +15,18 @@ define main ()
     srv->send_msg ("No background jobs", 0);
     throw GotoPrompt;
     }
-
-  if (length (argv))
-    {
-    argv = list_to_array (argv);
-    index = proc->is_arg ("--pager", argv);
-    ifnot (NULL == index)
-      gotopager = 1;
-    }
+  
+  args = list_to_array (args, String_Type);
+  index = proc->is_arg ("--pager", args);
+  ifnot (NULL == index)
+    gotopager = 1;
  
-  writefile (array_map (String_Type, &sprintf, "%d : %s", pids, coms), SCRATCHBUF);
+  writefile (array_map (String_Type, &sprintf, "%d : %s", pids, coms), file);
 
   ifnot (gotopager)
-    (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, send_break});
+    (@CW.gotopager) (CW, file;drawonly);
   else
-    (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, send_break_at_exit});
+    (@CW.gotopager) (CW, file);
 
   throw GotoPrompt;
 }

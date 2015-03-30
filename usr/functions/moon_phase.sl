@@ -91,7 +91,8 @@ define main ()
       }
    }
 
-  if (1 == _NARGS || (1 == length (args) && NULL != repeats))
+  if (1 == _NARGS || (2 == _NARGS && 0 == length (args))
+      || (1 == length (args) && NULL != repeats))
     tim.tm_year += 1900;
   else
     {
@@ -148,9 +149,9 @@ define main ()
   ifnot (retval)
     {
     ifnot (gotopager)
-      (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, send_break});
+      (@CW.gotopager) (CW, file;drawonly);
     else
-      (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, send_break_at_exit});
+      (@CW.gotopager) (CW, file);
     }
 
   throw GotoPrompt;

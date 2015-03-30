@@ -1,4 +1,6 @@
 variable
+  BSLASH = 0x2f,
+  QMARK = 0x3f,
   UP = 0x101,
   DOWN = 0x102,
   LEFT = 0x103,

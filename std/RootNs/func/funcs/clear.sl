@@ -1,16 +1,19 @@
 define main (self)
 {
   variable
+    i,
     ans,
     buf = CW.buffers[CW.cur.frame];
  
   if (qualifier_exists ("messages"))
     writefile ([""], CW.msgbuf);
   else
-    if ("Shell_Type" == CW.type)
+    if ("Shell_Type" == CW.type || qualifier_exists ("dont_ask"))
       {
       writefile ([" "], buf.fname);
       CW.drawframe (CW.cur.frame);
+      _for i (0, length (IMG) - 1)
+        IMG[i].str = NULL;
       }
     else
       {
@@ -21,6 +24,8 @@ define main (self)
         {
         writefile ([" "], buf.fname);
         CW.drawframe (CW.cur.frame);
+        _for i (0, length (IMG) - 1)
+          IMG[i].str = NULL;
         }
       }
 

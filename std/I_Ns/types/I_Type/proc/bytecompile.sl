@@ -1,3 +1,47 @@
+set_slang_load_path (getenv ("LOAD_PATH"));
+set_import_module_path (getenv ("IMPORT_PATH"));
+
+import ("getkey");
+
+variable
+  SRV_SOCKADDR = getenv ("SRV_SOCKADDR"),
+  SRV_SOCKET = @FD_Type (atoi (getenv ("SRV_FILENO"))),
+  BINDIR = getenv ("BINDIR"),
+  SOURCEDIR = getenv ("SOURCEDIR"),
+  PERSNS = getenv ("PERSNS"),
+  STDNS = getenv ("STDNS"),
+  COLUMNS = atoi (getenv ("COLUMNS")),
+  PROMPTROW = atoi (getenv ("PROMPTROW")),
+  getch,
+  getchar_lang,
+  TTY_INITED = 0;
+
+() = evalfile (sprintf ("%s/InputNs/input", STDNS), "input");
+() = evalfile (sprintf ("%s/I_Ns/lib/except_to_arr", STDNS));
+() = evalfile (sprintf ("%s/I_Ns/lib/std", STDNS));
+() = evalfile (sprintf ("%s/SockNs/sock_funcs", STDNS), "sock");
+() = evalfile (sprintf ("%s/I_Ns/lib/need", STDNS), "i");
+
+getch = &input->getchar;
+getchar_lang = &input->en_getch;
+init_tty (-1, 0, 0);
+
+define ineed (lib)
+{
+  try
+    i->need (lib);
+  catch ParseError:
+    {
+    () = array_map (Integer_Type, &fprintf, stderr, "%s\n", exception_to_array ());
+    exit (1);
+    }
+}
+
+define print_err (str)
+{
+  () = fprintf (stderr, "%s\n", str);
+}
+
 ineed ("fswalk");
 ineed ("copyfile");
 
@@ -5,7 +49,7 @@ variable
   EXIT_CODE = 0,
   DONT_REMOVE_MODULES = any ("--remove_modules" == __argv) ? NULL : 1,
   EXCLUDEFILESFORDELETION = [
-    "cache.txt", "intrinsic_cache.txt", "TODO", path_basename (__argv[1]),
+    "cache.txt", "intrinsic_cache.txt", "TODO", path_basename (__argv[0]),
      readfile (sprintf ("%s/data/bytecompile/excludefiles.txt", PERSNS))],
   EXCLUDEDIRSFORDELETION = [sprintf ("%s/tmp", BINDIR), sprintf ("%s/modules", STDNS)],
   EXCLUDEFILESBASENAME = ["TODO", "stackfile.sl", ".gitignore"],
@@ -17,6 +61,33 @@ EXCLUDEFILESFORDELETION = EXCLUDEFILESFORDELETION[wherenot (_isnull (EXCLUDEFILE
 variable Accept_All_As_Yes = 0;
 variable Accept_All_As_No = 0;
 
+define write_nstring_dr (str, len, color, pos)
+{
+  sock->send_str (SRV_SOCKET, _function_name ());
+
+  str = str == NULL || 0 == strlen (str) ? " " : str;
+
+  () = sock->get_bit_send_str (SRV_SOCKET, str);
+  () = sock->get_bit_send_int_ar (SRV_SOCKET, [len, color, pos]);
+  () = sock->get_bit (SRV_SOCKET);
+}
+
+define ask (str, ar)
+{
+  variable
+    retval;
+
+  write_nstring_dr (str, COLUMNS, 0, [PROMPTROW, 0, PROMPTROW, strlen (str)]);
+  
+  retval = (@getch);
+
+  while (NULL == wherefirst_eq (ar, retval) && 033 != retval)
+    retval = (@getch);
+
+  write_nstring_dr (" ", COLUMNS, 0, [PROMPTROW, 0, PROMPTROW, 0]);
+  return retval;
+}
+
 % lowercase to be used in functions, right now we are protected
 variable retval;
 
@@ -27,15 +98,13 @@ define rm_dir (dir)
   ifnot (Accept_All_As_Yes) {
   % coding style violence
  
-  retval = (@ask) ([dir, "remove extra directory?",
-     "y[es]/Y[es to all]/n[no]/N[o to all] escape to abort (same as 'n')"],
-    ['y',  'Y',  'n',  'N'];header = "QUESTION FROM THE BYTECOMPILE FUNCTION");
+  retval = ask (sprintf ("%s remove directory? y[es]/Y[es to all]/n[no]/N[o to all]", dir), 
+    ['y',  'Y',  'n',  'N']);
  
  
   if ('n' == retval || 'N' == retval || 033 == retval)
     {
-    (@print_err) (sprintf (
-      "extra directory %s hasn't been removed: Not confirmed", dir));
+    () = fprintf (stderr, "extra directory %s hasn't been removed: Not confirmed\n", dir);
 
     Accept_All_As_No = 'N' == retval;
     return;
@@ -47,12 +116,12 @@ define rm_dir (dir)
  
   if (-1 == rmdir (dir))
     {
-    (@print_err) (sprintf ("%s: extra directory hasn't been removed", dir));
-    (@print_err) (sprintf ("Error: %s", errno_string (errno)));
+    () = fprintf (stderr, "%s: extra directory hasn't been removed\n", dir);
+    () = fprintf (stderr, "Error: %s\n", errno_string (errno));
     return;
     }
 
-  (@print_out) (sprintf ("%s: extra directory has been removed", dir));
+  () = fprintf (stdout, "%s: extra directory has been removed\n", dir);
   return;
 }
 
@@ -63,31 +132,28 @@ define rmfile (file)
 
   ifnot (Accept_All_As_Yes) {
 
-  retval = (@ask) ([file, "remove extra compiled file?",
-     "y[es]/Y[es to all]/n[no]/N[o to all] escape to abort (same as 'n')"],
-    ['y',  'Y', 'n',  'N'];header = "QUESTION FROM THE BYTECOMPILE FUNCTION");
+  retval = ask (sprintf ("%s remove compiled file? y[es]/Y[es to all]/n[no]/N[o to all]", file), 
+    ['y',  'Y',  'n',  'N']);
 
   if ('n' == retval || 'N' == retval || 033 == retval)
     {
-    (@print_err) (sprintf (
-      "extra file %s hasn't been removed: Not confirmed", file));
+    () = fprintf (stderr, "extra file %s hasn't been removed: Not confirmed\n", file);
 
     Accept_All_As_No = 'N' == retval;
     return;
     }
 
   Accept_All_As_Yes = 'Y' == retval;
-
   }
 
   if (-1 == remove (file))
     {
-    (@print_err) (sprintf ("%s: extra file hasn't been removed", file));
-    (@print_err) (sprintf ("Error: %s", errno_string (errno)));
+    () = fprintf (stderr, "%s: extra file hasn't been removed\n", file);
+    () = fprintf (stderr, "Error: %s\n", errno_string (errno));
     return;
     }
 
-  (@print_out) (sprintf ("%s: extra file has been removed", file));
+  () = fprintf (stdout, "%s: extra file has been removed\n", file);
 }
 
 define file_callback_a (file, st)
@@ -143,7 +209,7 @@ define file_callback (file, st)
     {
     if (-1 == copyfile (file, newfile))
       {
-      (@print_err) (sprintf ("%s: failed  to copy", file));
+      () = fprintf (stderr, "%s: failed  to copy\n", file);
       return -1;
       }
 
@@ -154,9 +220,7 @@ define file_callback (file, st)
     byte_compile_file (sprintf ("%s/%s", SOURCEDIR, file), 0);
   catch AnyError:
     {
-    view_exception ([sprintf ("%s: failed to compile", file), exception_to_array ()]);
-    array_map (Void_Type, print_err, exception_to_array ());
-    array_map (Void_Type, print_out, exception_to_array ());
+    () = array_map (Integer_Type, &fprintf, stderr, "%s\n", exception_to_array ());
     EXIT_CODE = 1;
     return -1;
     }
@@ -166,10 +230,9 @@ define file_callback (file, st)
 
   if (-1 == remove (sprintf ("%s/%sc", SOURCEDIR, file)))
     {
-    (@print_err) (sprintf ("%sc: failed to move", file));
-    (@print_out) (sprintf ("%sc: failed to move", file));
-     EXIT_CODE = 1;
-     return -1;
+    () = fprintf (stderr, "%sc: failed to move\n", file);
+    EXIT_CODE = 1;
+    return -1;
     }
 
   return 1;
@@ -187,7 +250,7 @@ define dir_callback (dir, st)
  
   if (-1 == mkdir (newdir))
     {
-    (@print_err) (sprintf ("%s: mkdir failed: ERRNO: %s", newdir, errno_string (errno)));
+    () = fprintf (stderr, "%s: mkdir failed: ERRNO: %s\n", newdir, errno_string (errno));
     return -1;
     }
 
@@ -198,15 +261,13 @@ define main ()
 {
   if (-1 == chdir (SOURCEDIR))
     {
-    (@print_err)  (sprintf ("%s: cannot change to sources directory ERRNO: %s",
-      SOURCEDIR, errno_string (errno)));
-    return 1;
+    () = fprintf (stderr, "%s: cannot change to sources directory ERRNO: %s\n",
+      SOURCEDIR, errno_string (errno));
+    exit (1);
     }
 
   variable
     fs = fswalk_new (&dir_callback, &file_callback);
-
-  srv->send_msg_and_refresh ("Bytecompiling ...", 1);
 
   () = file_callback ("i.sl", NULL);
 
@@ -217,11 +278,12 @@ define main ()
  
   if (EXIT_CODE)
     {
-    srv->send_msg_and_refresh ("Bytecompiling ... failed", -1);
-    return EXIT_CODE;
+    () = fprintf (stderr, "Bytecompiling ... failed\nEXIT_CODE: %d\n%s\n",
+      EXIT_CODE, repeat ("_", COLUMNS));
+    exit (EXIT_CODE);
     }
 
-  srv->send_msg_and_refresh ("Bytecompiling ... done", 0);
+  () = fprintf (stdout, "Bytecompiling ... done\n");
  
   variable dirs = {};
   fs = fswalk_new (&dir_callback_a, &file_callback_a;dargs = {dirs});
@@ -233,6 +295,11 @@ define main ()
     dirs = dirs [array_sort (dirs;dir = -1)];
     array_map (Void_Type, &rm_dir, dirs);
     }
+  
+  () = fprintf (EXIT_CODE ? stderr : stdout, "EXIT_CODE: %d\n%s\n",
+    EXIT_CODE, repeat ("_", COLUMNS));
 
-  return EXIT_CODE;
+  exit (EXIT_CODE);
 }
+
+main ();

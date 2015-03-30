@@ -179,7 +179,7 @@ define hlitem (self, ar, base, acol, item)
           0,
           (page) * ((lines - 1) * items);
       else if (icol + 1 == items)
-        ifnot (irow + 4 > lines)
+        ifnot (irow > lines)
           {
           irow++;
           icol = 0;

@@ -1,13 +1,15 @@
 define main (self, quest, ar)
 {
   variable
-    prompt = qualifier ("prompt", "Answer: "),
-    promptlen = strlen (prompt) + 1,
     i,
+    retval,
     hl = qualifier ("hl"),
-    retval;
+    prompt = qualifier ("prompt", "Answer: "),
+    promptlen = strlen (prompt) + 1;
  
-  root.lib.printtostdout (quest;just_print, header = qualifier ("header", "QUESTION"));
+  root.lib.printtostdout (quest;just_print,
+    last_row = PROMPTROW - (strlen (CW.readline.cur.line) / COLUMNS),
+    header = qualifier ("header", "QUESTION"));
 
   srv->write_prompt (prompt, promptlen;prompt_char = "");
  

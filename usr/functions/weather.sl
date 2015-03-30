@@ -21,10 +21,11 @@ define main ()
   ifnot (NULL == index)
     {
     writefile (readfile (sprintf ("%s/info/weather/help.txt", path_dirname (__FILE__))), file);
+
     ifnot (gotopager)
-      (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, send_break});
+      (@CW.gotopager) (CW, file;drawonly);
     else
-      (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, send_break_at_exit});
+      (@CW.gotopager) (CW, file);
 
     throw GotoPrompt;
     }
@@ -39,11 +40,11 @@ define main ()
  
   if (retval)
    throw GotoPrompt;
- 
-  ifnot (gotopager)
-    (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, send_break});
-  else
-    (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, send_break_at_exit});
 
+  ifnot (gotopager)
+    (@CW.gotopager) (CW, file;drawonly);
+  else
+    (@CW.gotopager) (CW, file);
+ 
   throw GotoPrompt;
 }

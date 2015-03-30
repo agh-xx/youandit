@@ -7,12 +7,13 @@ variable COLOR = struct
   prompt = "yellow",
   border = "brightred",
   focus = "brightcyan",
-  info = "blackonbrown",
-  activeframe = "blackonred",
+  info = "blackonred",
+  activeframe = "blackonyellow",
   hlchar = "blackonyellow",
   out = "yellow",
   hlregion = "white",
   hlhead = "brown",
+  topline = "blackonbrown",
   };
 
 ifnot (access (sprintf ("%s/conf/colors/Init.slc", USRNS), F_OK|R_OK))

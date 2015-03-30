@@ -70,19 +70,13 @@ define main (self, argv)
       if ("man" == argv[0])
         {
         mainfname = SCRATCHBUF;
-        argv = [argv, "--fg", "--clear"];
+        argv = [argv, "--fg", "--nocl", "--clear"];
         }
 
       if ("search" == argv[0])
         {
-        mainfname  = sprintf ("%s/GrepList_%d", TEMPDIR, _time);
-        argv = [argv, "--fg", "--nocl"];
-        }
-
-      if ("help" == argv[0])
-        {
-        mainfname = sprintf ("%s/Help_Page_%d", TEMPDIR, _time);
-        argv = [argv, "--fg", "--nocl"];
+        mainfname  = sprintf ("%s/_list/list.list", TEMPDIR);
+        argv = [argv, "--fg", "--clear", "--nocl"];
         }
 
       argv = [argv, "--mainfname=" + mainfname];
@@ -93,7 +87,7 @@ define main (self, argv)
       if (NULL == retval)
         throw GotoPrompt;
 
-      if ("man" == argv[0] || "help" == argv[0])
+      if ("man" == argv[0])
         {
         if (1 == retval)
           {
@@ -103,49 +97,20 @@ define main (self, argv)
           throw GotoPrompt;
           }
  
-        writefile (readfile (mainfname), SCRATCHBUF);
-        CW.gotopager (;iamreal, file = SCRATCHBUF, send_break_at_exit);
+        ved (mainfname);
 
         throw GotoPrompt;
         }
 
-      if ("search" == argv[0]
-          && 0 == any ("--help" == argv)
+      if ("search" == argv[0] && 0 == any ("--help" == argv)
           && 0 == any ("--info" == argv))
         {
-        variable ar = readfile (mainfname);
-        ifnot (length (ar))
-          {
-          srv->send_msg ("no matches", 1);
-          throw GotoPrompt;
-          }
+        ved (mainfname;ftype = "list");
+        CW.drawwind ();
+        root.topline ();
 
-        ifnot (any ("list" == list_to_array (root.windnames)))
-          {
-          () = root.addwind ("list", "List_Type";
-            reportlist = ar,
-            dont_draw);
-
-          root.func.call ("windowgoto", "list";reread_buf);
-          }
-        else
-          {
-          variable cw = root.windows["list"];
-          cw.reportlist = ar;
-
-          variable
-            index,
-            type = Char_Type[0];
-
-          _for index (1, cw.frames - 1)
-            type = [type, "list_type" == cw.buffers[index].type];
-
-          index = wherefirst (type) + 1;
-          buf = cw.buffers[index];
-          writefile (ar, buf.fname);
-          root.func.call ("windowgoto", "list"; reread_buf);
-          }
-      }
+        throw GotoPrompt;
+        }
 
       ifnot (NULL == CW.cur.mainbufframe)
         {
@@ -156,7 +121,6 @@ define main (self, argv)
         CW.dim[CW.cur.mainbufframe].infolinecolor = COLOR.activeframe;
         CW.writeinfolines ();
         CW.drawwind ();
-        %CW.gotopager(;func="G", frame = CW.cur.mainbufframe);
         }
       else
         CW.drawwind ();

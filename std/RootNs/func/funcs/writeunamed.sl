@@ -1,8 +1,7 @@
 define main ()
 {
-  % for now the caller is gotopager
   variable
-    fname = (),
+    fname = SCRATCHBUF,
     self = CW,
     mainfname = self.buffers[self.cur.frame].fname;
  
@@ -12,7 +11,8 @@ define main ()
     throw Break;
     }
 
-  writefile ([repeat ("_", COLUMNS), readfile (fname), repeat ("_", COLUMNS)], mainfname;mode = "a");
+  writefile ([repeat ("_", COLUMNS), readfile (fname)], mainfname;mode = "a");
+  self.drawframe (self.cur.frame);
 
-  throw Break;
+  throw GotoPrompt;
 }

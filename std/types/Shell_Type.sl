@@ -26,8 +26,6 @@ define main (self, name)
   me.history = self.addhistory (;file = sprintf ("%s/.shellhistory.txt", DATADIR));
   me.history.read ();
 
-  me.pfuncs["g"] = &go_start_of_file;
-
   me.set = &set;
 
   loop (frames)

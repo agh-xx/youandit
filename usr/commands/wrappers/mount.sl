@@ -56,9 +56,9 @@ define main ()
   file = p.status.exit_status ? CW.msgbuf : SCRATCHBUF;
 
   ifnot (gotopager)
-    (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, send_break});
+    (@CW.gotopager) (CW, file;drawonly);
   else
-    (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, send_break_at_exit});
+    (@CW.gotopager) (CW, file);
 
   throw GotoPrompt;
   }
@@ -147,12 +147,12 @@ define main ()
   file = p.status.exit_status ? CW.msgbuf : SCRATCHBUF;
 
   if (p.status.exit_status)
-    (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, func = "G"});
+    (@CW.gotopager) (CW, file;func='G');
   else
     ifnot (gotopager)
-      (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, send_break});
+      (@CW.gotopager) (CW, file;drawonly);
     else
-      (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, send_break_at_exit});
+      (@CW.gotopager) (CW, file);
 
   throw GotoPrompt;
 }

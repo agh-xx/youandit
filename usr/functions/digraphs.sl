@@ -1154,7 +1154,7 @@ define main ()
 
  writefile (["DIGRAPHS TABLE", repeat ("_", COLUMNS), out], file);
 
- (@CW.gotopager) (CW;;struct {@__qualifiers (), iamreal, file = file, send_break_at_exit});
+ (@CW.gotopager) (CW, file);
 
  throw GotoPrompt;
 }

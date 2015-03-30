@@ -37,6 +37,7 @@ define main (self, name)
     reportlist = qualifier ("reportlist"),
     addframe = &addframe,
     jumptoitem = &jumptoitem,
+    disable_shell,
     len,
     cur = struct
       {
@@ -46,8 +47,8 @@ define main (self, name)
     };
 
   variable me = root.windows[name];
- 
-  me.minframes = 2;
+  
+  me.maxframes = 1; 
   me.len = length (me.reportlist);
 
   me.readline = struct
@@ -58,11 +59,10 @@ define main (self, name)
     };
 
   me.readline.readline = &readline;
-  me.readline.executeargv = {&executeargv, me.readline.executeargv};
+  me.readline.executeargv = {&executeargv};
   me.readline.commands =
     {
     listcommands[sorted],
-    COMMANDS
     };
 
   me.history = self.addhistory (;file = sprintf ("%s/.history.txt", me.datadir));
@@ -70,8 +70,7 @@ define main (self, name)
 
   me.cur.mode = "";
 
-  loop (2)
-    me.addframe (;;__qualifiers ());
+  me.addframe (;;__qualifiers ());
 
   throw Return, " ", 0;
 }

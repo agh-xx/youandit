@@ -316,6 +316,44 @@ if (-1 == $8)
   exit (1);
   }
 
+ifnot (isdirectory (sprintf ("%s/_ved", TEMPDIR)))
+  if (-1 == mkdir (sprintf ("%s/_ved", TEMPDIR)))
+    {
+    () = fprintf (stderr, "Cannot create directory %s/_ved, ERRNO: %s\n",
+      TEMPDIR, errno_string (errno));
+    exit (1);
+    }
+  else
+    $8 = chmod (sprintf ("%s/_ved", TEMPDIR), 0700);
+else
+  $8 = chmod (sprintf ("%s/_ved", TEMPDIR), 0700);
+
+if (-1 == $8)
+  {
+  () = fprintf (stderr, "%s/_ved: cannot change mode, ERRNO: %s\n",
+    TEMPDIR, errno_string (errno));
+  exit (1);
+  }
+
+ifnot (isdirectory (sprintf ("%s/_list", TEMPDIR)))
+  if (-1 == mkdir (sprintf ("%s/_list", TEMPDIR)))
+    {
+    () = fprintf (stderr, "Cannot create directory %s/_list, ERRNO: %s\n",
+      TEMPDIR, errno_string (errno));
+    exit (1);
+    }
+  else
+    $8 = chmod (sprintf ("%s/_list", TEMPDIR), 0700);
+else
+  $8 = chmod (sprintf ("%s/_list", TEMPDIR), 0700);
+
+if (-1 == $8)
+  {
+  () = fprintf (stderr, "%s/_list: cannot change mode, ERRNO: %s\n",
+    TEMPDIR, errno_string (errno));
+  exit (1);
+  }
+
 ifnot (isdirectory (sprintf ("%s/data", ROOTDIR)))
   if (-1 == mkdir (sprintf ("%s/data", ROOTDIR)))
     {

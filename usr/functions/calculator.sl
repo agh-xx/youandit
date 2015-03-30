@@ -22,7 +22,7 @@ define main ()
     ctrls =
       [
       '\r', 033, ' ', keys->CTRL_a, keys->CTRL_b, keys->CTRL_e,
-      keys->BACKSPACE, keys->RIGHT, keys->LEFT,
+      [keys->cmap.backspace], keys->RIGHT, keys->LEFT,
       keys->UP, keys->DOWN, keys->HOME, keys->END
       ],
     ar = [symbols, modt, nrs, ctrls];
@@ -42,7 +42,7 @@ define main ()
       break;
       }
 
-    if (any ([keys->BACKSPACE, keys->CTRL_h] == rline.cur.chr))
+    if (any (keys->cmap.backspace == rline.cur.chr))
       {
       if (rline.cur.col > 1)
         {
@@ -157,12 +157,12 @@ define main ()
       else
         continue;
 
-    ifnot (any ([keys->BACKSPACE, keys->CTRL_h] == rline.cur.chr))
+    ifnot (any (keys->cmap.backspace == rline.cur.chr))
       rline.insert_at ();
  
     rline.parse_args ();
 
-    if (any ([['1':'9'], ' ', ')', [keys->BACKSPACE, keys->CTRL_h]] == rline.cur.chr))
+    if (any ([['1':'9'], ' ', ')', keys->cmap.backspace] == rline.cur.chr))
       if (0 == any ([symbols, 'd'] == rline.cur.line[rline.cur.col - 2])
         || 0 == any ([symbols, 'd'] == rline.cur.line[rline.cur.col - 3])) %fix (put an if to catch ws
       try
