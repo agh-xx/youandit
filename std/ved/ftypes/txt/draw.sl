@@ -43,5 +43,9 @@ define draw ()
     }
   
   ar = [ar, tail];
+
+  _for i (0, length (ar) - 1)
+    IMG[cw_.rows[i]] = {[ar[i]], [cw_.clrs[i]], [cw_.rows[i]], [cw_.cols[i]]};
+
   srv->write_ar_nstr_dr (ar, cw_.clrs, cw_.rows, cw_.cols, [cw_.ptr[0], cw_.ptr[1]], COLUMNS);
 }

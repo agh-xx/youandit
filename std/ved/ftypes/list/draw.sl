@@ -37,13 +37,18 @@ define draw ()
     cw_.ptr[0] = i - 1;
 
   ar = array_map (String_Type, &substr, cw_.lins, 1, cw_._maxlen);
+
   if (length (ar) < length (cw_.rows) - 1)
     {
     variable t = String_Type[length (cw_.rows) - length (ar) - 1];
     t[*] = " ";
     ar = [ar, t];
     }
- 
+
   ar = [ar, tail];
+  
+  _for i (0, length (ar) - 1)
+    IMG[cw_.rows[i]] = {[ar[i]], [cw_.clrs[i]], [cw_.rows[i]], [cw_.cols[i]]};
+
   srv->write_ar_nstr_dr (ar, cw_.clrs, cw_.rows, cw_.cols, [cw_.ptr[0], cw_.ptr[1]], COLUMNS);
 }

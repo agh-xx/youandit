@@ -1,5 +1,13 @@
 public variable
-  cw_;
+  cw_,
+  rl_,
+  rlf_,
+  count = 0,
+  IMG,
+  clinef = Assoc_Type[Ref_Type],
+  clinec,
+  pagerf = Assoc_Type[Ref_Type],
+  pagerc;
 
 typedef struct
   {
@@ -9,6 +17,7 @@ typedef struct
   _chr,
   _type,
   _fname,
+  _flags,
   _maxlen,
   _indent,
   _avlins,
@@ -19,8 +28,8 @@ typedef struct
   lins,
   lnrs,
   vlins,
-  state,
   lines,
+  st_,
   } Frame_Type;
 
 typedef struct
@@ -31,6 +40,19 @@ typedef struct
   getlines,
   parsearray,
   } Ftype_Type;
+
+typedef struct
+  {
+  _row,
+  _col,
+  _chr,
+  _lin,
+  _ind,
+  lnrs,
+  argv,
+  cmp_lnrs,
+  com,
+  } Rline_Type;
 
 private define getlines (s)
 {

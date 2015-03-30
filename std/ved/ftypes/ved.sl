@@ -1,13 +1,22 @@
-variable
-  count = 0,
-  pf = Assoc_Type[Ref_Type];
-
 ineed ("vedfuncs");
 ineed ("viewer");
-ineed ("rline");
 ineed ("search");
+ineed ("rline");
 
-variable pk = array_map (Integer_Type, &integer, assoc_get_keys (pf));
+pagerc = array_map (Integer_Type, &integer, assoc_get_keys (pagerf));
+
+%CHANGE
+
+define set_img ()
+{
+  variable i;
+  IMG = List_Type[PROMPTROW];
+  _for i (1, length (IMG) - 1)
+    IMG[i] = {" ", 0, i, 0};
+  IMG[0] = {strftime ("%c"), 3, 0, 0};
+}
+
+set_img ();
 
 define ved (s)
 {
@@ -16,7 +25,8 @@ define ved (s)
   cw_._maxlen = COLUMNS;
   cw_._indent = 0;
   cw_._fname = get_file ();
-  cw_.rows =  get_rows ();
+  cw_.st_ = stat_file (cw_._fname);
+  cw_.rows = get_rows ();
   cw_.lines = s_.getlines ();
   
   cw_.ptr = Integer_Type[2];
@@ -29,7 +39,6 @@ define ved (s)
   cw_.clrs[*] = 0;
   cw_.clrs[-1] = INFOCLRFG;
   cw_._avlins = length (cw_.rows) - 2;
-  cw_.state = List_Type[length (cw_.rows)];
   cw_.ptr[0] = cw_.rows[0];
   cw_.ptr[1] = 0;
 
@@ -41,8 +50,8 @@ define ved (s)
   if (func)
     {
     count = get_count ();
-    if (any (pk == func))
-      (@pf[string (func)]);
+    if (any (pagerc == func))
+      (@pagerf[string (func)]);
     }
 
   if (DRAWONLY)
@@ -66,10 +75,13 @@ define ved (s)
       count = integer (count);
       }
 
-    if (any (pk == cw_._chr))
-      (@pf[string (cw_._chr)]);
+    if (any (pagerc == cw_._chr))
+      (@pagerf[string (cw_._chr)]);
     
+    if (':' == cw_._chr)
+      rlf_.read ();
+
     if (cw_._chr == 'q')
-      break;
+      exit_me (0);
     }
 }

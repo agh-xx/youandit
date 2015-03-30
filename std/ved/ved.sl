@@ -73,9 +73,14 @@ private define send_ftype ()
   sock->send_str (PG_SOCKET, FTYPE);
 }
 
-private define send_infocolor ()
+private define send_infoclrfg ()
 {
   sock->send_int (PG_SOCKET, COLOR.activeframe);
+}
+
+private define send_infoclrbg ()
+{
+  sock->send_int (PG_SOCKET, COLOR.info);
 }
 
 private define send_promptcolor ()
@@ -136,7 +141,8 @@ define ved ()
     SEND_FILE = 0x0258,
     SEND_ROWS = 0x02BC,
     SEND_FTYPE = 0x0320,
-    SEND_INFOCOLOR = 0x0384,
+    SEND_INFOCLRFG = 0x0384,
+    SEND_INFOCLRBG = 0x0385,
     SEND_PROMPTCOLOR = 0x03E8,
     SEND_MSGROW = 0x044C,
     SEND_FUNC = 0x04b0,
@@ -152,7 +158,8 @@ define ved ()
   funcs[string (SEND_FILE)] = &send_file;
   funcs[string (SEND_ROWS)] = &send_rows;
   funcs[string (SEND_FTYPE)] = &send_ftype;
-  funcs[string (SEND_INFOCOLOR)] = &send_infocolor;
+  funcs[string (SEND_INFOCLRBG)] = &send_infoclrbg;
+  funcs[string (SEND_INFOCLRFG)] = &send_infoclrfg;
   funcs[string (SEND_PROMPTCOLOR)] = &send_promptcolor;
   funcs[string (SEND_MSGROW)] = &send_msgrow;
   funcs[string (SEND_FUNC)] = &send_func;

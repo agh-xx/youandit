@@ -18,7 +18,7 @@ define clear (frow, lrow)
 define write_prompt (str, col)
 {
   srv->write_nstring_dr (str, COLUMNS, PROMPTCLR,
-    [PROMPTROW, 0, PROMPTROW, col]);
+    [PROMPTROW, 0, qualifier ("row", PROMPTROW), col]);
 }
 
 define write_msg_dr (str, row, col)
@@ -100,5 +100,5 @@ private define change_language ()
   chng_lang ();
 }
 
-pf[string (keys->rmap.changelang[0])] = &change_language;
-pf[string (keys->CTRL_r)] = &reread;
+pagerf[string (keys->rmap.changelang[0])] = &change_language;
+pagerf[string (keys->CTRL_r)] = &reread;

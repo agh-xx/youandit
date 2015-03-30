@@ -155,7 +155,7 @@ define search ()
   col = 1;
   
   typesearch = type == "forward" ? &search_forward : &search_backward;
-  write_prompt (str, col);
+  write_prompt (str, PROMPTROW, col);
   
   forever
     {
@@ -206,7 +206,7 @@ define search ()
     
     if (any (chr == keys->rmap.changelang))
       {
-      (@pf[string (chr)]);
+      (@pagerf[string (chr)]);
       write_msg_dr (" ", PROMPTROW, col);
       continue;
       }
@@ -246,7 +246,7 @@ define search ()
 
         col = strlen (pat) + 1;
         str = pchr + pat;
-        write_prompt (str, col);
+        write_prompt (str, PROMPTROW, col);
         (@typesearch) (pat);
         continue;
         }
@@ -262,7 +262,7 @@ define search ()
 
         col = strlen (pat) + 1;
         str = pchr + pat;
-        write_prompt (str, col);
+        write_prompt (str, PROMPTROW, col);
         (@typesearch) (pat);
         continue;
         }
@@ -284,12 +284,12 @@ define search ()
       }
 
     str = pchr + pat;
-    write_prompt (str, col);
+    write_prompt (str, PROMPTROW, col);
 
     if (dothesearch)
       (@typesearch) (pat);
     }
 }
 
-pf[string (keys->BSLASH)] = &search;
-pf[string (keys->QMARK)] = &search;
+pagerf[string (keys->BSLASH)] = &search;
+pagerf[string (keys->QMARK)] = &search;

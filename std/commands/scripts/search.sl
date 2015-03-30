@@ -1,6 +1,6 @@
 import ("pcre");
 
-() = evalfile ("fswalk");
+ineed ("fswalk");
 
 private variable
   MAXDEPTH = 1,
@@ -238,8 +238,6 @@ define main ()
   else
     if (NULL == maxdepth)
       maxdepth = 1000;
-    %else
-    %  maxdepth++;
  
   ifnot (NULL == PAT)
     {
@@ -264,6 +262,12 @@ define main ()
     files = files[where (strncmp (files, "--", 2))];
 
     array_map (Void_Type, &grep, files, maxdepth);
+    
+    ifnot (length (LINENRS))
+      {
+      (@print_out) ("Nothing found");
+      return 2;
+      }
 
     _for i (0, length (LINENRS) - 1)
       (@print_out) (sprintf ("%s|%d col %d| %s", FNAMES[i], LINENRS[i], COLS[i], LINES[i]));
@@ -279,19 +283,21 @@ define main ()
   files = files[where (strncmp (files, "--", 2))];
  
   variable ar;
+
   ifnot (NULL == findfiles)
     ar = array_map (Array_Type, &findfilesfunc, files, maxdepth);
   else
     ar = array_map (Array_Type, &danglinglinksfunc, files, maxdepth);
 
   ifnot (length (ar))
-    (@print_out) ("Nothing found");
-  else
     {
+    (@print_out) ("Nothing found");
+    return 2;
+    }
+  else
     _for i (0, length (ar) - 1)
       array_map (Void_Type, print_out, array_map
           (String_Type, &sprintf, "%s|0 col 0| 1", ar[i]));
-    }
 
   return 0;
 }

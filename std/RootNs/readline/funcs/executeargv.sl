@@ -105,6 +105,15 @@ define main (self, argv)
       if ("search" == argv[0] && 0 == any ("--help" == argv)
           && 0 == any ("--info" == argv))
         {
+        if (1 == retval)
+          throw GotoPrompt;
+
+        if (2 == retval)
+          {
+          srv->send_msg ("Nothing found to match pattern", 0);
+          throw GotoPrompt;
+          }
+
         ved (mainfname;ftype = "list");
         CW.drawwind ();
         root.topline ();
