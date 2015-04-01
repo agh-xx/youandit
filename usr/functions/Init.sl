@@ -65,6 +65,17 @@ define main (self)
   keys["ved"] = {sprintf ("%s/ved", mydir), NULL, "ved",
     ["--lnr= int goto linenr"], NULL};
 
+  ifnot (NULL == which ("ffmpeg"))
+    keys["convert_video_to_audio"] = {sprintf ("%s/video_to_audio", mydir), NULL,
+     "convert a video file to ogg (default) or mp3 format",
+     ["--tomp3 void convert it to mp3 instead off ogg",
+      "--input= filename  input file (required",
+      "--output= filename output file (default input file with an ogg extension)",
+      "--start= string  start seek file position in [hh:mm:ss] time format",
+      "--end=  int end  seek file position in [hh:mm:ss] time format",
+      "--removesource void remove source file on success",
+     ], NULL};
+
   throw Return, " ", struct
     {
     exec = self.exec,
