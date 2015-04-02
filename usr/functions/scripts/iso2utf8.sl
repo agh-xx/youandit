@@ -1,7 +1,7 @@
 import ("iconv");
 
-() = evalfile ("copyfile");
-() = evalfile ("fswalk");
+ineed ("copyfile");
+ineed ("fswalk");
 
 variable
   BLACKLIST = [
@@ -313,6 +313,7 @@ define main ()
     }
 
   files = __argv[[i:__argc - 1]];
+  files = files[where (strncmp (files, "--", 2))];
 
   _for i (0, length (files) - 1)
     {

@@ -25,7 +25,7 @@ define need ()
   catch OpenError:
     throw ParseError, sprintf ("%s: couldn't be found", file);
   catch ParseError:
-    throw ParseError, sprintf ("%s: %s %s %d", path_basename (file),
+    throw ParseError, sprintf ("file %s: %s func: %s lnr: %d", path_basename (file),
       __get_exception_info.message, __get_exception_info.function,
       __get_exception_info.line);
  

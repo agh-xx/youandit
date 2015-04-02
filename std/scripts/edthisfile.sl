@@ -44,8 +44,8 @@ define main ()
     }
  
   if (p.status.exit_status)
-    if (length (p.stderr.ar))
-      array_map (Void_Type, print_err, p.stderr.ar);
+    if (length (p.stderr.out))
+      array_map (Void_Type, print_err, p.stderr.out);
 
   return p.status.exit_status;
 }

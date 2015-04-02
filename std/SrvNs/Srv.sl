@@ -239,6 +239,21 @@ private define write_prompt ()
 
 funcs["write_prompt"] = &write_prompt;
 
+private define write_nstr ()
+{
+  variable
+    str = sock->send_bit_get_str (SRV_FD, 0),
+    ar = sock->send_bit_get_int_ar (SRV_FD, 0);
+
+  slsmg_gotorc (ar[1], ar[2]);
+  slsmg_set_color (ar[0]);
+  slsmg_write_nstring (str, ar[3]);
+
+  sock->send_bit (SRV_FD, 0);
+}
+
+funcs["write_nstr"] = &write_nstr;
+
 private define write_nstring_at ()
 {
   variable

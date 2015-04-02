@@ -60,9 +60,11 @@ define main (self, argv)
       variable
         isbg = 0,
         mainfname = NULL == CW.cur.mainbuf ? "/dev/null" : CW.cur.mainbuf,
-        whatdir = NULL != wherefirst (argv[0] == CORECOMS) ?
-          COREDIR : NULL != wherefirst (argv[0] == USRCOMS) ?
-          USRCOMMANDSDIR : PERSCOMMANDSDIR;
+        whatdir = NULL != wherefirst (argv[0] == CORECOMS)
+          ? COREDIR
+          : NULL != wherefirst (argv[0] == USRCOMS)
+            ? USRCOMMANDSDIR
+            : PERSCOMMANDSDIR;
 
       if (NULL == wherenot (strncmp (argv, "--execdir=", strlen ("--execdir="))))
         argv = [argv, sprintf ("--execdir=%s", whatdir)];

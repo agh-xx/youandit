@@ -83,7 +83,7 @@ variable
   BINDIR = sprintf ("%s/bin", ROOTDIR),
   DATADIR = sprintf ("%s/data/%s", ROOTDIR, WHOAMI),
   DATASHAREDIR = sprintf ("%s/data/share", ROOTDIR),
-  MODULEDIR = sprintf ("%s/modules/", ROOTDIR),
+  MODULEDIR = sprintf ("%s/modules", ROOTDIR),
   SOURCEDIR = sprintf ("%s/dist", ROOTDIR),
   STDNS =  sprintf ("%s/std", BINDIR),
   USRNS = sprintf ("%s/usr", BINDIR),

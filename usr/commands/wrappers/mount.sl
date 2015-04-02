@@ -133,7 +133,7 @@ define main ()
   p = @i->init_proc (NULL != issudo, 1, 1, argv);
 
   ifnot (NULL == issudo)
-    p.stdin.str = passwd;
+    p.stdin.in = passwd;
 
   p.stdout.file = SCRATCHBUF;
   p.stdout.wr_flags = ">|";

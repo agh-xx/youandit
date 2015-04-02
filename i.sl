@@ -30,6 +30,7 @@ variable
   REGS = Assoc_Type[Array_Type],
   SLSH_EXEC,
   SUDO_EXEC,
+  PROC_EXEC,
   getchar_lang,
   getch,
   mytypename = "i",
@@ -48,6 +49,8 @@ catch ParseError:
 
 SLSH_EXEC = which ("slsh");
 SUDO_EXEC = which ("sudo");
+PROC_EXEC = [SLSH_EXEC, sprintf ("%s/proc/funccall.slc", STDNS), ROOTDIR,
+  BINDIR, TEMPDIR, DATADIR, get_import_module_path (), get_slang_load_path ()];
 
 define dev_on ()
 {
@@ -61,6 +64,8 @@ try
   () = evalfile (sprintf ("%s/I_Ns/init/typedefs", STDNS));
   () = evalfile (sprintf ("%s/I_Ns/init/exceptions", STDNS));
   () = evalfile (sprintf ("%s/I_Ns/init/sysproc", STDNS), "i");
+  % above will change to bellow
+  () = evalfile (sprintf ("%s/proc/Init", STDNS), "proc");
   () = evalfile (sprintf ("%s/I_Ns/init/colors_var", STDNS));
   () = evalfile (sprintf ("%s/conf/etc/env", STDNS));
   () = evalfile (sprintf ("%s/InputNs/input", STDNS), "input");

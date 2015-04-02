@@ -1,3 +1,30 @@
+typedef struct
+  {
+  fg,
+  pid,
+  env,
+  argv,
+  stdin,
+  stdout,
+  stderr,
+  status,
+  retval,
+  cleanup,
+  connect,
+  } Proc_Type;
+
+typedef struct
+  {
+  in,
+  out,
+  file,
+  mode,
+  keep,
+  read,
+  write,
+  wr_flags,
+  } Descr_Type;
+
 private define parse_flags (fd)
 {
   variable
@@ -69,7 +96,7 @@ private define _pipe (fd, fp)
  
   (fd.read, fd.write) = pipe ();
 
-  () = write (fd.write, fd.str);
+  () = write (fd.write, fd.in);
 
   () = close (fd.write);
  
@@ -91,7 +118,7 @@ private define cleanup (s)
     close_fd (s.stdout, stdout);
 
     if (NULL == s.stdout.file)
-      s.stdout.ar = read_fd (s.stdout.read);
+      s.stdout.out = read_fd (s.stdout.read);
     }
 
   ifnot (NULL == s.stderr)
@@ -99,32 +126,56 @@ private define cleanup (s)
     close_fd (s.stderr, stderr);
 
     if (NULL == s.stderr.file)
-      s.stderr.ar = read_fd (s.stderr.read);
+      s.stderr.out = read_fd (s.stderr.read);
     }
  
   ifnot (NULL == s.stdin)
     close_fd (s.stdin, stdin);
 }
 
+private define connect_to_socket (s, sockaddr)
+{
+  variable
+    i = -1,
+    sock = socket (PF_UNIX, SOCK_STREAM, 0);
+
+  forever
+    {
+    i++;
+    if (5000 < i)
+      return NULL;
+
+    try
+      connect (sock, sockaddr);
+    catch AnyError:
+      continue;
+
+    break;
+    }
+  
+  return sock;
+}
+
 define init_proc (in, out, err, argv)
 {
   variable
-    Proc_Type = @Init_ProcType;
+    proc = @Proc_Type;
 
   if (in)
-    Proc_Type.stdin = @Init_DescrType;
+    proc.stdin = @Descr_Type;
 
   if (out)
-    Proc_Type.stdout = @Init_DescrType;
+    proc.stdout = @Descr_Type;
 
   if (err)
-    Proc_Type.stderr = @Init_DescrType;
+    proc.stderr = @Descr_Type;
 
-  Proc_Type.argv = argv;
-  Proc_Type.fg = qualifier_exists ("isbg") ? 0 : 1;
-  Proc_Type.cleanup = &cleanup;
+  proc.argv = argv;
+  proc.fg = qualifier_exists ("isbg") ? 0 : 1;
+  proc.cleanup = &cleanup;
+  proc.connect = &connect_to_socket;
 
-  return Proc_Type;
+  return proc;
 }
 
 define sysproc (s)

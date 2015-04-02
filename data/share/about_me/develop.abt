@@ -127,6 +127,17 @@ mkdir:
   --parents - stop, when first directory exists
 
 searchandreplace: search and replace for files in a given patterm
+make a function name it searchmeandreplace or something, to default to:
+                --recursive
+                --in-place
+                --global
+                --pat as the first arg
+                --sub as the second arg
+                SOURCEDIR
+                
+                (add this to i) plus
+                (add also searchme)
+
 _________________________________________________________________________________
 I:
 
@@ -146,7 +157,12 @@ USERNS  might  be   SOURCEDIR/../usr        ?permissions 0755?    tmpfs
       ?installation at the first request?   ?permissions 0755?    tmpfs
 PERSNS  might be    SOURCEDIR/../USERNAME   ?permissions 0744?    tmpfs
       installation at the first instance
- 
+
+      DONE: needs a test script to verify permissions
+            (add this to i)
+
+? Using (ved related) list type to move or (better) copy some functions to 
+  to that process
 _________________________________________________________________________________
 DEBUG:PROFILE:COMPILE
 
@@ -185,7 +201,8 @@ maybe a dir -
 
 add a sync lib -- interesting [Done ... partly]
 _________________________________________________________________________________
-edVi
+edVi - dis
+ved  - cont
 
 parse - check for no length,|
                             |- DONE
@@ -196,8 +213,12 @@ hold drawing instances - settings
 keep the process idled
    different sockets
 
-func in host for requested dimensions
+func in host for requested dimensions -| done and (ved related)
+                                        add one functions to send all
+                                        the info with one socket <->
 
+? add a ved-colors (conf option)
+ 
 are we in wrapmode?
 different colors for repeated wraps?
 function to create wrapped wind
