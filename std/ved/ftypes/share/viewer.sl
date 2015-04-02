@@ -1,25 +1,39 @@
 private variable
+  is_wrapped_str = 0,
   _plinlen_,
   _linlen_;
 
+private define adjust_col ()
+{
+  if (_linlen_ == 0 || 0 == cw_.ptr[1] - cw_._indent)
+    cw_.ptr[1] = cw_._indent;
+  else if (_linlen_ > cw_._maxlen && cw_.ptr[1] + 1 == cw_._maxlen ||
+    (cw_.ptr[1] - cw_._indent == _plinlen_ - 1 && _linlen_ > cw_._maxlen))
+      cw_.ptr[1] = cw_._maxlen - 1;
+  else if ((0 != _plinlen_ && cw_.ptr[1] - cw_._indent == _plinlen_ - 1 && (
+      _linlen_ < cw_.ptr[1] || _linlen_ < cw_._maxlen))
+     || (cw_.ptr[1] - cw_._indent && cw_.ptr[1] - cw_._indent >= _linlen_))
+       cw_.ptr[1] = _linlen_ - 1 + cw_._indent;
+}
+
 private define down ()
 {
+  if (is_wrapped_str)
+    {
+    cw_._i = cw_._ii;
+    s_.draw ();
+    is_wrapped_str = 0;
+    }
+
+  _plinlen_ = v_linlen ('.');
+
   if (cw_.ptr[0] < cw_.vlins[-1])
     {
-    _plinlen_ = v_linlen ('.');
-
     cw_.ptr[0]++;
  
     _linlen_ = v_linlen ('.');
  
-    ifnot (_linlen_)
-      cw_.ptr[1] = cw_._indent;
-    else if (_linlen_ > cw_._maxlen)
-      cw_.ptr[1] = cw_._maxlen - 1;
-    else
-      if ((0 != _plinlen_ && cw_.ptr[1] - cw_._indent == _plinlen_ - 1)
-       || (cw_.ptr[1] - cw_._indent && cw_.ptr[1] - cw_._indent >= _linlen_))
-         cw_.ptr[1] = _linlen_ - 1 + cw_._indent;
+    adjust_col ();
 
     draw_tail ();
 
@@ -32,26 +46,32 @@ private define down ()
   cw_._i++;
  
   s_.draw ();
+
+  _linlen_ = v_linlen ('.');
+  
+  adjust_col ();
+  
+  srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
 }
 
 private define up ()
 {
+  if (is_wrapped_str)
+    {
+    cw_._i = cw_._ii;
+    s_.draw ();
+    is_wrapped_str = 0;
+    }
+
+  _plinlen_ = v_linlen ('.');
+
   if (cw_.ptr[0] > cw_.vlins[0])
     {
-    _plinlen_ = v_linlen ('.');
 
     cw_.ptr[0]--;
  
     _linlen_ = v_linlen ('.');
-
-    ifnot (_linlen_)
-      cw_.ptr[1] = cw_._indent;
-    else if (_linlen_ > cw_._maxlen)
-      cw_.ptr[1] = cw_._maxlen - 1;
-    else
-      if ((0 != _plinlen_ && cw_.ptr[1] - cw_._indent == _plinlen_ - 1)
-       || (cw_.ptr[1] - cw_._indent && cw_.ptr[1] - cw_._indent >= _linlen_))
-         cw_.ptr[1] = _linlen_ - 1 + cw_._indent;
+      adjust_col ();
  
     draw_tail ();
  
@@ -64,6 +84,12 @@ private define up ()
   cw_._i--;
 
   s_.draw ();
+  
+  _linlen_ = v_linlen ('.');
+  
+  adjust_col ();
+  
+  srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
 }
 
 private define gotoline ()
@@ -159,11 +185,15 @@ private define right ()
   if (cw_.ptr[1] - cw_._indent < _linlen_ - 1 && cw_.ptr[1] < cw_._maxlen - 1)
    (cw_.ptr[1]++, draw_tail ());
   else if (_linlen_ + cw_._indent > cw_._maxlen && cw_.ptr[1] + 1 == cw_._maxlen)
+    {
     srv->write_wrapped_str_dr (substr (v_lin ('.'), cw_._indent + 1, -1),
      11, [cw_.ptr[0], _linlen_ >= COLUMNS ? 0 : cw_._indent],
      [_linlen_ / cw_._maxlen + (_linlen_ mod cw_._maxlen ? 1 : 0),
       COLUMNS],
       1, [cw_.ptr[0], cw_.ptr[1]]);
+
+    is_wrapped_str = 1;
+    }
 }
 
 private define eos ()
@@ -187,11 +217,15 @@ private define eol ()
   if (_linlen_ < cw_._maxlen)
     cw_.ptr[1] = _linlen_ + cw_._indent - 1;
   else
+    {
     srv->write_wrapped_str_dr (substr (v_lin ('.'), cw_._indent + 1, -1),
      11, [cw_.ptr[0], _linlen_ >= COLUMNS ? 0 : cw_._indent],
      [_linlen_ / cw_._maxlen + (_linlen_ mod cw_._maxlen ? 1 : 0),
       cw_._maxlen - cw_._indent + (COLUMNS - cw_._maxlen)],
       1, [cw_.ptr[0], cw_.ptr[1]]);
+
+    is_wrapped_str = 1;
+    }
  
   draw_tail ();
 }

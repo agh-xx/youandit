@@ -167,19 +167,15 @@ define ved ()
  
   if (-1 == i->sysproc (p))
     return;
-
-  PG_SOCKET = socket (PF_UNIX, SOCK_STREAM, 0);
-
-  forever
-    {
-    try
-      connect (PG_SOCKET, PG_SOCKADDR);
-    catch AnyError:
-      continue;
-
-     break;
-    }
   
+  PG_SOCKET = p.connect (PG_SOCKADDR);
+  if (NULL == PG_SOCKET)
+    {
+    p.cleanup ();
+    () = kill (p.pid, SIGKILL);
+    return;
+    }
+
   forever
     {
     retval = sock->get_int (PG_SOCKET);

@@ -2,11 +2,11 @@ ineed ("vedfuncs");
 ineed ("viewer");
 ineed ("search");
 ineed ("rline");
+ineed ("ed");
 
 pagerc = array_map (Integer_Type, &integer, assoc_get_keys (pagerf));
 
 %CHANGE
-
 define set_img ()
 {
   variable i;
@@ -23,11 +23,12 @@ define ved (s)
   cw_ = @Frame_Type;
   
   cw_._maxlen = COLUMNS;
-  cw_._indent = 0;
   cw_._fname = get_file ();
   cw_.st_ = stat_file (cw_._fname);
   cw_.rows = get_rows ();
+  cw_._indent = 0;
   cw_.lines = s_.getlines ();
+  cw_._flags = 0;
   
   cw_.ptr = Integer_Type[2];
 
@@ -62,7 +63,7 @@ define ved (s)
     count = -1;
     cw_._chr = get_char ();
     
-    if ('0' <= cw_._chr <= '9')
+    if ('1' <= cw_._chr <= '9')
       {
       count = "";
       
@@ -82,6 +83,6 @@ define ved (s)
       rlf_.read ();
 
     if (cw_._chr == 'q')
-      exit_me (0);
+      (@clinef["q"]) (;force);
     }
 }

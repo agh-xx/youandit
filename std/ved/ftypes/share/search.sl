@@ -9,7 +9,7 @@ private variable
 private define exit_rout ()
 {
   srv->gotorc (cw_.ptr[0], cw_.ptr[1]);
-  write_msg (" ", PROMPTCLR);
+  send_msg (" ", 0);
   srv->write_ar_nstr_at ([" "], [0], [PROMPTROW], [0], COLUMNS);
   draw_tail ();
 }
@@ -20,6 +20,7 @@ private define search_backward (str)
     i,
     ar,
     pat,
+    pos,
     cols,
     match,
     wrapped = 0,
@@ -34,7 +35,7 @@ private define search_backward (str)
     }
   catch ParseError:
     {
-    write_msg_dr ("error compiling pcre pattern", PROMPTROW, col);
+    send_msg_dr ("error compiling pcre pattern", 1, PROMPTROW, col);
     return;
     }
   
@@ -45,15 +46,21 @@ private define search_backward (str)
       {
       match = pcre_nth_match (pat, 0);
       ar = [
-        sprintf ("row %d|", lnr + 1),
+        sprintf ("row %d|", i + 1),
         substrbytes (cw_.lines[i], 1, match[0]),
         substrbytes (cw_.lines[i], match[0] + 1, match[1] - match[0]),
         substrbytes (cw_.lines[i], match[1] + 1, -1)];
       cols = strlen (ar[[:-2]]);
       cols = [0, array_map (Integer_Type, &int, cumsum (cols))];
       clrs = [0, 0, PROMPTCLR, 0];
+
+      pos = [qualifier ("row", PROMPTROW),  col];
+      if (qualifier_exists ("context"))
+        pos[1] = match[1];
+
+      srv->write_ar_nstr_dr (ar, clrs, rows, cols, pos, COLUMNS);
+
       lnr = i;
-      srv->write_ar_nstr_dr (ar, clrs, rows, cols, [PROMPTROW, col], COLUMNS);
       found = 1;
       return;
       }
@@ -70,7 +77,7 @@ private define search_backward (str)
         i--;
   
   found = 0;
-  write_msg_dr ("Nothing found", PROMPTROW, col);
+  send_msg_dr ("Nothing found", 0, PROMPTROW, col);
 }
 
 private define search_forward (str)
@@ -79,6 +86,7 @@ private define search_forward (str)
     i,
     ar,
     pat,
+    pos,
     cols,
     match,
     wrapped = 0,
@@ -93,7 +101,7 @@ private define search_forward (str)
     }
   catch ParseError:
     {
-    write_msg_dr ("error compiling pcre pattern", PROMPTROW, col);
+    send_msg_dr ("error compiling pcre pattern", 1, PROMPTROW, col);
     return;
     }
   
@@ -104,14 +112,19 @@ private define search_forward (str)
       {
       match = pcre_nth_match (pat, 0);
       ar = [
-        sprintf ("row %d|", lnr + 1),
+        sprintf ("row %d|", i + 1),
         substrbytes (cw_.lines[i], 1, match[0]),
         substrbytes (cw_.lines[i], match[0] + 1, match[1] - match[0]),
         substrbytes (cw_.lines[i], match[1] + 1, -1)];
       cols = strlen (ar[[:-2]]);
       cols = [0, array_map (Integer_Type, &int, cumsum (cols))];
       clrs = [0, 0, PROMPTCLR, 0];
-      srv->write_ar_nstr_dr (ar, clrs, rows, cols, [PROMPTROW, col], COLUMNS);
+
+      pos = [qualifier ("row", PROMPTROW),  col];
+      if (qualifier_exists ("context"))
+        pos[1] = match[1];
+
+      srv->write_ar_nstr_dr (ar, clrs, rows, cols, pos, COLUMNS);
 
       lnr = i;
       found = 1;
@@ -130,7 +143,7 @@ private define search_forward (str)
         i++;
   
   found = 0;
-  write_msg_dr ("Nothing found", PROMPTROW, col);
+  send_msg_dr ("Nothing found", 1, PROMPTROW, col);
 }
 
 define search ()
@@ -155,7 +168,7 @@ define search ()
   col = 1;
   
   typesearch = type == "forward" ? &search_forward : &search_backward;
-  write_prompt (str, PROMPTROW, col);
+  write_prompt (str, col);
   
   forever
     {
@@ -207,7 +220,7 @@ define search ()
     if (any (chr == keys->rmap.changelang))
       {
       (@pagerf[string (chr)]);
-      write_msg_dr (" ", PROMPTROW, col);
+      send_msg_dr (" ", 0, PROMPTROW, col);
       continue;
       }
 
@@ -246,7 +259,7 @@ define search ()
 
         col = strlen (pat) + 1;
         str = pchr + pat;
-        write_prompt (str, PROMPTROW, col);
+        write_prompt (str, col);
         (@typesearch) (pat);
         continue;
         }
@@ -262,7 +275,7 @@ define search ()
 
         col = strlen (pat) + 1;
         str = pchr + pat;
-        write_prompt (str, PROMPTROW, col);
+        write_prompt (str, col);
         (@typesearch) (pat);
         continue;
         }
@@ -284,12 +297,116 @@ define search ()
       }
 
     str = pchr + pat;
-    write_prompt (str, PROMPTROW, col);
+    write_prompt (str, col);
 
     if (dothesearch)
       (@typesearch) (pat);
     }
 }
 
+private define search_word ()
+{
+  variable
+    str,
+    pat,
+    end,
+    chr,
+    lcol,
+    type,
+    start,
+    origlnr,
+    typesearch,
+    line = v_lin ('.'),
+    len = strlen (line);
+  
+  lnr = v_lnr ('.');
+
+  type = '*' == cw_._chr ? "forward" : "backward";
+  
+  typesearch = type == "forward" ? &search_forward : &search_backward;
+
+  if (type == "forward")
+    if (lnr == cw_._len)
+      lnr = 0;
+    else
+      lnr++;
+  else
+    if (lnr == 0)
+      lnr = cw_._len;
+    else
+      lnr--;
+
+  col = cw_.ptr[1];
+  lcol = col;
+
+  if (isblank (line[lcol]))
+    return;
+
+  ifnot (lcol - cw_._indent)
+    start = cw_._indent;
+  else
+    {
+    while (lcol--, lcol >= cw_._indent && 0 == isblank (line[lcol]));
+    start = lcol + 1;
+    }
+ 
+  while (lcol++, lcol < len && 0 == isblank (line[lcol]));
+    end = lcol - 1;
+ 
+  pat = substr (line, start + 1, end - start + 1);
+
+  (@typesearch) (pat;row = MSGROW, context);
+
+  forever
+    {
+    chr = get_char ();
+    
+    ifnot (any ([keys->CTRL_n, 033, '\r'] == chr))
+      continue;
+
+    if (033 == chr)
+      {
+      exit_rout ();
+      break;
+      }
+    
+    if ('\r' == chr)
+      {
+      if (found)
+        {
+        list_insert (history, pat);
+        if (NULL == histindex)
+          histindex = 0;
+
+        cw_._i = lnr;
+        cw_.ptr[0] = cw_.rows[0];
+        cw_.ptr[1] = 0;
+        s_.draw ();
+        }
+
+      exit_rout ();
+      break;
+      }
+    
+    if (chr == keys->CTRL_n)
+      {
+      if (type == "forward")
+        if (lnr == cw_._len)
+          lnr = 0;
+        else
+          lnr++;
+      else
+        ifnot (lnr)
+          lnr = cw_._len;
+        else
+          lnr--;
+
+      (@typesearch) (pat;row = MSGROW, context);
+      }
+    }
+}
+
+pagerf[string ('#')] = &search_word;
+pagerf[string ('*')] = &search_word;
 pagerf[string (keys->BSLASH)] = &search;
 pagerf[string (keys->QMARK)] = &search;

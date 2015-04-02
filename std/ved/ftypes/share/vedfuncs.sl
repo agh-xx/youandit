@@ -21,14 +21,18 @@ define write_prompt (str, col)
     [PROMPTROW, 0, qualifier ("row", PROMPTROW), col]);
 }
 
-define write_msg_dr (str, row, col)
+define send_msg_dr (str, clr, row, col)
 {
-  srv->write_nstring_dr (str, COLUMNS, 1, [MSGROW, 0, row, col]);
+  variable
+    lcol = NULL == col ? strlen (str) + 1 : col, 
+    lrow = NULL == row ? MSGROW : row;
+
+  srv->write_nstring_dr (str, COLUMNS, clr, [MSGROW, 0, lrow, lcol]);
 }
 
-define write_msg (str, clr)
+define send_msg (str, clr)
 {
-  srv->write_ar_nstr_at ([str], [clr], [MSGROW], [0], COLUMNS);
+  srv->write_nstr (str, clr, MSGROW, 0, COLUMNS);
 }
 
 define decode (str)

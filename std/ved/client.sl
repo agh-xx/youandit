@@ -1,11 +1,3 @@
-static define get_img (rows, cols)
-{
-  sock->send_str (SRV_SOCKET, _function_name ());
-  () = sock->get_bit_send_int_ar (SRV_SOCKET, rows);
-  () = sock->get_bit_send_int (SRV_SOCKET, cols);
-  return sock->get_str_ar (SRV_SOCKET);
-}
-
 static define char_at ()
 {
   sock->send_str (SRV_SOCKET, _function_name ());
@@ -17,6 +9,14 @@ static define set_color_in_region (color, row, col, dr, dc)
   sock->send_str (SRV_SOCKET, _function_name ());
   () = sock->get_bit_send_int_ar (SRV_SOCKET,
     [color, row, col, dr, dc, qualifier_exists ("redraw")]);
+  () = sock->get_bit (SRV_SOCKET);
+}
+
+static define write_nstr (str, clr, row, col, columns)
+{
+  sock->send_str (SRV_SOCKET, _function_name ());
+  () = sock->get_bit_send_str (SRV_SOCKET, str);
+  () = sock->get_bit_send_int_ar (SRV_SOCKET, [clr, row, col, columns]);
   () = sock->get_bit (SRV_SOCKET);
 }
 

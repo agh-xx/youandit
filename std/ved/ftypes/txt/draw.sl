@@ -2,8 +2,12 @@ define draw ()
 {
   if (-1 == cw_._len)
     {
-    srv->write_ar_dr ([repeat (" ", COLUMNS), tail ()], [0, 0], [2, cw_.rows[-1], [0],
-      [cw_.ptr[0], cw_.ptr[1]]]);
+    cw_.lins = [" "];
+    cw_.lnrs = [0];
+    
+    srv->write_ar_nstr_dr ([repeat (" ", COLUMNS), tail ()], [0, INFOCLRFG],
+      [cw_.rows[0], cw_.rows[-1]], [0, 0], [cw_.rows[0], 0], COLUMNS);
+
     return;
     }
 

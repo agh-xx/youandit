@@ -23,45 +23,84 @@ rlf_ = struct
 
 private define quit ()
 {
-  if (rl_.argv[0] == "q!")
-    if (cw_._flags & MODIFIED)
-      cw_._flags = cw_._flags xor MODIFIED;
+  if (cw_._flags & RDONLY || 0 == cw_._flags & MODIFIED ||
+      (0 == qualifier_exists ("force") && "q!" == rl_.argv[0]))
+    s_.quit (0);
+  
+  send_msg_dr ("file is modified, save changes? y[es]|n[o]", 0, NULL, NULL);
 
-  exit_me (0);
-}
+  variable chr = get_char ();
+  while (0 == any (chr == ['y', 'n']))
+    chr = get_char ();
 
-private define write_line (fp, line)
-{
-  line = substr (line, cw_._indent + 1, -1);
-  () = fprintf (fp, "%s\n", line);
+  s_.quit (chr == 'y');
 }
 
 private define write_file ()
 {
   variable
-    i,
-    fname = _NARGS ? () : cw_._fname,
-    fp = fopen (fname, "w");
-
-  _for i (0, length (cw_.lines) - 1)
-    write_line (fp, cw_.lines[i]);
-
-  () = fclose (fp);
+    file,
+    args = __pop_list (_NARGS);
   
-  ifnot (_NARGS)
+  ifnot (length (args))
+    {
+    if (cw_._flags & RDONLY)
+      {
+      send_msg_dr ("file is read only", 1, cw_.ptr[0], cw_.ptr[1]);
+      return;
+      }
+
+    file = cw_._fname;
+    }
+  else
+    {
+    file = args[0];
+    ifnot (access (file, F_OK))
+      {
+      if ("w" == rl_.argv[0])
+        {
+        send_msg_dr ("file exists, w! to overwrite, press any key to continue", 1,
+          NULL, NULL);
+        () = get_char ();
+        send_msg_dr (" ", 0, cw_.ptr[0], cw_.ptr[1]);
+        return;
+        }
+
+      if (-1 == access (file, W_OK))
+        {
+        send_msg_dr ("file is not writable, press any key to continue", 1,
+          NULL, NULL);
+        () = get_char ();
+        send_msg_dr (" ", 0, cw_.ptr[0], cw_.ptr[1]);
+        return;
+        }
+      }
+    }
+
+  ifnot (0 == s_.writefile (file))
+    {
+    send_msg_dr (sprintf ("%s, press any key to continue", errno_string (errno)), 1,
+      NULL, NULL);
+    () = get_char ();
+    send_msg_dr (" ", 0, cw_.ptr[0], cw_.ptr[1]);
+    return;
+    }
+  
+  if (file == cw_._fname)
     cw_._flags = cw_._flags & ~MODIFIED;
 }
 
 private define write_quit ()
 {
-  writefile ();
-  exit_me (0);
+  variable args = __pop_list (_NARGS);
+  s_.quit (1, __push_list (args));
 }
 
 clinef["w"] = &write_file;
+clinef["w!"] = &write_file;
 clinef["q"] = &quit;
-clinef["wq"] = &write_quit;
 clinef["q!"] = &quit;
+clinef["wq"] = &write_quit;
 
 clinec = assoc_get_keys (clinef);
 
@@ -469,7 +508,6 @@ private define readline (s)
 {
   rlf_.init ();
 
- % rlf_.w_comp_rout (rl_.com);
   rlf_.prompt ();
 
   forever
@@ -1033,3 +1071,130 @@ private define hlitem (s, ar, base, acol, item)
 }
 
 rlf_.hlitem = &hlitem;
+
+private define getline (s, line, prev_l, next_l)
+{
+  srv->write_nstring_dr ("-- INSERT -- ", COLUMNS, 0, [0, 0, cw_.ptr[0], cw_.ptr[1]]);
+  variable gl_ = @Rline_Type;
+
+  gl_._col = cw_.ptr[1];
+  gl_._row = cw_.ptr[0];
+
+  forever
+    {
+    gl_._chr = get_char ();
+
+    if (033 == gl_._chr)
+      {
+      if (0 < cw_.ptr[1] - cw_._indent)
+        cw_.ptr[1]--;
+
+      srv->write_nstring_dr (" ", COLUMNS, 0, [0, 0, cw_.ptr[0], cw_.ptr[1]]);
+      return;
+      }
+     
+    if (any (keys->rmap.left == gl_._chr))
+      {
+      if (0 < cw_.ptr[1] - cw_._indent)
+        {
+        gl_._col--;
+        cw_.ptr[1]--;
+        srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
+        }
+
+      continue;
+      }
+    
+    if (any (keys->CTRL_y == gl_._chr))
+      {
+      if (cw_.ptr[1] < strlen (prev_l))
+        {
+        @line = substr (@line, 1, gl_._col) + substr (prev_l, cw_.ptr[1] + 1, 1)
+          + substr (@line, gl_._col + 1, - 1);
+        gl_._col++;
+        cw_.ptr[1]++;
+        srv->write_nstring_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
+        }
+
+      continue; 
+      }
+
+    if (any (keys->CTRL_e == gl_._chr))
+      {
+      if (cw_.ptr[1] < strlen (next_l))
+        {
+        @line = substr (@line, 1, gl_._col) + substr (next_l, cw_.ptr[1] + 1, 1) +
+          substr (@line, gl_._col + 1, - 1);
+        gl_._col++;
+        cw_.ptr[1]++;
+        srv->write_nstring_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
+        }
+
+      continue; 
+      }
+
+    if (any (keys->rmap.right == gl_._chr))
+      {
+      if (gl_._col < strlen (@line))
+        {
+        gl_._col++;
+        cw_.ptr[1]++;
+        srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
+        }
+
+      continue;
+      }
+
+    if (any (keys->rmap.home == gl_._chr))
+      {
+      gl_._col = cw_._indent;
+      cw_.ptr[1] = cw_._indent;
+      srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
+
+      continue;
+      }
+
+    if (any (keys->rmap.end == gl_._chr))
+      {
+      gl_._col = strlen (@line);
+      cw_.ptr[1] = strlen (@line);
+      srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);;
+
+      continue;
+      }
+
+    if (any (keys->rmap.backspace == gl_._chr))
+      {
+      if (0 < cw_.ptr[1] - cw_._indent)
+        {
+        @line = substr (@line, 1, gl_._col - 1) + substr (@line, gl_._col + 1, - 1);
+        cw_.ptr[1]--;
+        gl_._col--;
+        }
+
+      srv->write_nstring_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
+            
+      continue; 
+      }
+
+    if (any (keys->rmap.delete == gl_._chr))
+      {
+      @line = substr (@line, 1, gl_._col) + substr (@line, gl_._col + 2, - 1);
+
+      srv->write_nstring_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
+            
+      continue; 
+      }
+
+    if (' ' <= gl_._chr <= 126 || 902 <= gl_._chr <= 974)
+      {
+      @line = substr (@line, 1, gl_._col) + char (gl_._chr) +  substr (@line, gl_._col + 1, - 1);
+      gl_._col++;
+      cw_.ptr[1]++;
+      srv->write_nstring_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
+      continue; 
+      }
+    }
+}
+
+rlf_.getline = &getline;

@@ -34,6 +34,7 @@ private define init (s)
   frames[1]._maxlen = COLUMNS;
   frames[1].ptr[0] = frames[1].rows[0];
   frames[1].ptr[1] = 0;
+  frames[1]._flags = 0;
   frames[1]._i = 0;
  
   len = length (frames[0].rows);  
@@ -44,11 +45,12 @@ private define init (s)
   frames[0].clrs[*] = 0;
   frames[0].clrs[-1] = INFOCLRBG;
   frames[0]._avlins = len - 1;
-  frames[0]._indent = 0;
   frames[0]._maxlen = COLUMNS;
   frames[0].ptr = Integer_Type[2];
   frames[0].ptr[0] = frames[0].rows[0];
   frames[0].ptr[1] = 0;
+  frames[0]._flags = 0;
+  frames[0]._indent = 0;
   frames[0]._i = 0;
 }
 
@@ -106,7 +108,6 @@ define ved (s)
 
   cw_._fname = get_file ();
   cw_.st_ = stat_file (cw_._fname);
-
   cw_._indent = 0;
   cw_.lines = s_.getlines ();
   cw_._len = length (cw_.lines) - 1;
@@ -155,7 +156,7 @@ define ved (s)
       rlf_.read ();
 
     if (cw_._chr == 'q')
-      break;
+      (@clinef["q"]) (;force);
     }
 }
 
