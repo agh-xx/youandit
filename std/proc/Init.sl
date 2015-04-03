@@ -1,17 +1,13 @@
 typedef struct
   {
-  fg,
   pid,
-  env,
-  argv,
   stdin,
   stdout,
   stderr,
-  status,
-  retval,
-  cleanup,
+  execv,
+  execve,
+  atexit,
   connect,
-  execfunc,
   } ProcType;
 
 typedef struct
@@ -112,7 +108,7 @@ private define _open (fd, fp)
     open_fd (fd, fp);
 }
 
-private define cleanup (s)
+private define atexit (s)
 {
   ifnot (NULL == s.stdout)
     {
@@ -168,49 +164,63 @@ private define dopid (s)
   ifnot (NULL == s.stderr)
     _open (s.stderr, stderr);
 
-  s.pid = fork ();
+  return fork ();
 }
 
-define init (in, out, err, argv)
+private define _execv (s, argv, fg)
+{
+  variable status = 0;
+
+  s.pid = dopid (s);
+
+  if ((0 == s.pid) && -1 == execv (argv[0], argv))
+    return -1;
+  
+  if (NULL == fg)
+    {
+    status = waitpid (s.pid, 0);
+    s.atexit ();
+    }
+
+  return status;
+}
+
+private define _execve (s, argv, env, fg)
+{
+  variable status = 0;
+
+  s.pid = dopid (s);
+
+  if ((0 == s.pid) && -1 == execve (argv[0], argv, env))
+    return -1;
+  
+  if (NULL == fg)
+    {
+    status = waitpid (s.pid, 0);
+    s.atexit ();
+    }
+
+  return status;
+}
+
+define init (in, out, err)
 {
   variable
-    proc = @ProcType;
+    p = @ProcType;
 
   if (in)
-    proc.stdin = @DescrType;
+    p.stdin = @DescrType;
 
   if (out)
-    proc.stdout = @DescrType;
+    p.stdout = @DescrType;
 
   if (err)
-    proc.stderr = @DescrType;
+    p.stderr = @DescrType;
 
-  proc.argv = argv;
-  proc.fg = qualifier_exists ("isbg") ? 0 : 1;
-  proc.cleanup = &cleanup;
-  proc.connect = &connect_to_socket;
+  p.atexit = &atexit;
+  p.connect = &connect_to_socket;
+  p.execve = &_execve;
+  p.execv = &_execv;
 
-  return proc;
-}
-
-define exec (s)
-{
-  dopid (s);
-
-  ifnot (NULL == s.env)
-    {
-    if ((0 == s.pid) && -1 == execve (s.argv[0], s.argv, s.env))
-      return -1;
-    }
-  else
-    if ((0 == s.pid) && -1 == execv (s.argv[0], s.argv))
-      return -1;
-  
-  if (s.fg)
-    {
-    s.status = waitpid (s.pid, 0);
-    s.cleanup ();
-    }
-
-  return 0;
+  return p;
 }

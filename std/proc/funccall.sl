@@ -17,18 +17,6 @@ set_slang_load_path (sprintf ("%s:%c%s/I_Ns/lib:%c:%s/proc",
 
 private variable func = __argv[7];
 
-sigprocmask (SIG_BLOCK, [SIGINT]);
-
-define ar_to_fp (ar, fmt, fp)
-{
-  variable
-    bts = int (sum (array_map (Integer_Type, &fprintf, fp, fmt, ar)));
- 
-  () = fflush (fp);
-
-  return bts;
-}
-
 __set_argc_argv (__argv[[7:]]);
 
 () = evalfile (sprintf ("%s/I_Ns/lib/need", STDNS), "i");
@@ -41,11 +29,68 @@ define ineed ()
     i->need (__push_list (args));
   catch ParseError:
     {
-    () = ar_to_fp (exception_to_array (), "%s\n", stdout);
+    () = array_map (Integer_Type, &fprintf, stdout, "%s\n", exception_to_array ());
     exit (1);
     }
 }
-  
+
+ineed ("std");
+
+define _usage ()
+{
+  variable
+    if_opt_err = _NARGS ? () : " ",
+    infodir = path_dirname (__argv[0]) + "/info/" + path_basename (__argv[0]),
+    helpfile = qualifier ("helpfile", sprintf ("%s/help.txt", infodir)),
+    ar = _NARGS ? [if_opt_err] : String_Type[0];
+
+  if (NULL == helpfile)
+    {
+    () = fprintf (stderr, "No Help file available for %s\n", path_basename (__argv[0]));
+    exit (1);
+    }
+
+  ifnot (access (helpfile, F_OK))
+    ar = [ar, readfile (helpfile)];
+
+  ifnot (length (ar))
+    {
+    () = fprintf (stderr, "No Help file available for %s\n", path_basename (__argv[0]));
+    exit (1);
+    }
+
+  ar_to_fp (["Help for %s", path_basename (__argv[0]), ar], "%s\n", stdout);
+
+  exit (_NARGS);
+}
+
+define info ()
+{
+  variable
+    infodir = path_dirname (__argv[0]) + "/info/" + path_basename (__argv[0]),
+    infofile = qualifier ("helpfile", sprintf ("%s/desc.txt", infodir)),
+    ar;
+
+  if (NULL == infofile || -1 == access (infofile, F_OK))
+    {
+    () = fprintf (stderr, "No Info file available for %s\n", path_basename (__argv[0]));
+    exit (1);
+    }
+
+  ifnot (access (infofile, F_OK))
+    ar = readfile (infofile);
+
+  if (0 == length (ar) || NULL == ar)
+    {
+    () = fprintf (stderr, "No Info file available for %s\n", path_basename (__argv[0]));
+    exit (1);
+    }
+
+  ar_to_fp (["Info for %s", path_basename (__argv[0]), ar], "%s\n", stdout);
+
+  exit (0);
+}
+
 try
   {
   () = evalfile (func);

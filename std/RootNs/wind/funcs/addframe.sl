@@ -40,7 +40,7 @@ define main (self)
 
   ifnot (qualifier_exists ("dont_write"))
     {
-    () = print_ar_to_fp (ar, "%s\n",
+    () = ar_to_fp (ar, "%s\n",
       qualifier ("file") ? fopen (qualifier ("file"), "w+") : buf.fp);
     buf.mtime = lstat_file (buf.fname).st_mtime;
     }

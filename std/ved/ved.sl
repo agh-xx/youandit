@@ -88,23 +88,10 @@ private define send_promptcolor ()
   sock->send_int (PG_SOCKET, COLOR.prompt);
 }
 
-private define doproc (sockaddr)
+private define doproc ()
 {
-  variable
-    argv = [SLSH_EXEC, sprintf ("%s/proc.slc", path_dirname (__FILE__))],
-    env = [
-      sprintf ("PG_SOCKADDR=%s", sockaddr),
-      sprintf ("IMPORT_PATH=%s", get_import_module_path ()),
-      sprintf ("LOAD_PATH=%s", get_slang_load_path ()),
-      sprintf ("TERM=%s", getenv ("TERM")),
-      sprintf ("LANG=%s", getenv ("LANG")),
-      sprintf ("STDNS=%s", STDNS),
-      sprintf ("SRV_SOCKADDR=%s", SRV_SOCKADDR),
-      sprintf ("SRV_FILENO=%d", _fileno (SRV_SOCKET))];
+  variable p = @proc->init (0, 1, 1);
 
-  variable p = @i->init_proc (0, 1, 1, argv;isbg);
-
-  p.env = env;
   p.stdout.file = CW.buffers[CW.cur.frame].fname,
   p.stdout.wr_flags = ">>";
   p.stderr.file = CW.msgbuf;
@@ -148,7 +135,17 @@ define ved ()
     SEND_FUNC = 0x04b0,
     SEND_LINES = 0x0514,
     PG_SOCKADDR = sprintf ("%s/_pipes/pg.sock", TEMPDIR),
-    p = doproc (PG_SOCKADDR),
+    argv = [PROC_EXEC, sprintf ("%s/proc", path_dirname (__FILE__))],
+    env = [
+      sprintf ("PG_SOCKADDR=%s", PG_SOCKADDR),
+      sprintf ("IMPORT_PATH=%s", get_import_module_path ()),
+      sprintf ("LOAD_PATH=%s", get_slang_load_path ()),
+      sprintf ("TERM=%s", getenv ("TERM")),
+      sprintf ("LANG=%s", getenv ("LANG")),
+      sprintf ("STDNS=%s", STDNS),
+      sprintf ("SRV_SOCKADDR=%s", SRV_SOCKADDR),
+      sprintf ("SRV_FILENO=%d", _fileno (SRV_SOCKET))],
+    p = doproc (),
     funcs = Assoc_Type[Ref_Type];
   
   funcs[string (JUST_DRAW)] = &just_draw;
@@ -165,13 +162,14 @@ define ved ()
   funcs[string (SEND_FUNC)] = &send_func;
   funcs[string (SEND_LINES)] = &send_lines;
  
-  if (-1 == i->sysproc (p))
+  if (-1 == p.execve (argv, env, 1))
     return;
   
   PG_SOCKET = p.connect (PG_SOCKADDR);
+
   if (NULL == PG_SOCKET)
     {
-    p.cleanup ();
+    p.atexit ();
     () = kill (p.pid, SIGKILL);
     return;
     }
@@ -189,6 +187,6 @@ define ved ()
     (@funcs[string (retval)]) (PG_SOCKET);
     }
 
-  p.status = waitpid (p.pid, 0);
-  p.cleanup ();
+  variable status = waitpid (p.pid, 0);
+  p.atexit ();
 }

@@ -1,4 +1,4 @@
-define print_ar_to_fp (ar, fmt, fp)
+define ar_to_fp (ar, fmt, fp)
 {
   variable
     bts = int (sum (array_map (Integer_Type, &fprintf, fp, fmt, ar)));

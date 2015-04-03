@@ -33,7 +33,7 @@ define main (self)
  
   buf.firstchar = Integer_Type[length (ar) + 1];
   buf.firstchar[*] = 0;
-  () = print_ar_to_fp (ar, "%s\n", buf.fp);
+  () = ar_to_fp (ar, "%s\n", buf.fp);
   buf.mtime = lstat_file (buf.fname).st_mtime;
 
   self.setframesize ();
