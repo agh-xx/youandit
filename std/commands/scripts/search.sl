@@ -262,7 +262,7 @@ define main ()
     files = files[where (strncmp (files, "--", 2))];
 
     array_map (Void_Type, &grep, files, maxdepth);
-    
+ 
     ifnot (length (LINENRS))
       {
       (@print_out) ("Nothing found");

@@ -21,7 +21,7 @@ set_img ();
 define ved (s)
 {
   cw_ = @Frame_Type;
-  
+ 
   cw_._maxlen = COLUMNS;
   cw_._fname = get_file ();
   cw_.st_ = stat_file (cw_._fname);
@@ -29,7 +29,7 @@ define ved (s)
   cw_._indent = 0;
   cw_.lines = s_.getlines ();
   cw_._flags = 0;
-  
+ 
   cw_.ptr = Integer_Type[2];
 
   write_prompt (" ", 0);
@@ -57,16 +57,16 @@ define ved (s)
 
   if (DRAWONLY)
     return;
-  
+ 
   forever
     {
     count = -1;
     cw_._chr = get_char ();
-    
+ 
     if ('1' <= cw_._chr <= '9')
       {
       count = "";
-      
+ 
       while ('0' <= cw_._chr <= '9')
         {
         count += char (cw_._chr);
@@ -78,7 +78,7 @@ define ved (s)
 
     if (any (pagerc == cw_._chr))
       (@pagerf[string (cw_._chr)]);
-    
+ 
     if (':' == cw_._chr)
       rlf_.read ();
 

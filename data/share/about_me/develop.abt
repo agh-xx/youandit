@@ -134,7 +134,7 @@ make a function name it searchmeandreplace or something, to default to:
                 --pat as the first arg
                 --sub as the second arg
                 SOURCEDIR
-                
+ 
                 (add this to i) plus
                 (add also searchme)
 
@@ -161,7 +161,7 @@ PERSNS  might be    SOURCEDIR/../USERNAME   ?permissions 0744?    tmpfs
       DONE: needs a test script to verify permissions
             (add this to i)
 
-? Using (ved related) list type to move or (better) copy some functions to 
+? Using (ved related) list type to move or (better) copy some functions to
   to that process
 _________________________________________________________________________________
 DEBUG:PROFILE:COMPILE

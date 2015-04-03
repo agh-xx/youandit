@@ -11,7 +11,7 @@ static define quit ()
     flags = MODIFIED,
     args = __pop_list (_NARGS - 1),
     write_on_exit = args[0];
-  
+ 
   ifnot (write_on_exit)
     doquit ();
 

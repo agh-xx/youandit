@@ -297,7 +297,7 @@ private define hlitem (s, ar, base, acol, item)
  
   len = length (bar);
   @item = ar[index];
-  
+ 
   irow = LINES - 3 - (strlen (s.c_._lin) / COLUMNS) - (length (bar) > lines ? lines + 1 : length (bar));
 
   car = @bar;
@@ -305,7 +305,7 @@ private define hlitem (s, ar, base, acol, item)
   bar = s.printout (bar, bcol, &len;lines = lines,
     row = LINES - 2 - (strlen (s.c_._lin) / COLUMNS) + i,
     hl_region = [colr, irow, icol * max_len, 1, max_len]);
-  
+ 
   send_ans (RLINE_GETCH);
   chr = get_ans ();
  
@@ -345,14 +345,14 @@ private define hlitem (s, ar, base, acol, item)
       car = @bar;
 
       irow = LINES - 3 - (strlen (s.c_._lin) / COLUMNS) - (length (car) > lines ? lines + 1 : length (car));
-     
+ 
       if (length (bar) < lines)
-        s.restore ([s.c_._row, s.c_._col]); 
+        s.restore ([s.c_._row, s.c_._col]);
 
       bar = s.printout (bar, bcol, &len;lines = lines,
         row = LINES - 2 - (strlen (s.c_._lin) / COLUMNS) + i,
         hl_region = [colr, irow, icol * max_len, 1, max_len]);
-     
+ 
       send_ans (RLINE_GETCH);
       chr = get_ans ();
       continue;

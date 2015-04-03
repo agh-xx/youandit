@@ -535,7 +535,7 @@ private define get_img ()
     line,
     rows = sock->send_bit_get_int_ar (SRV_FD, 0),
     cols = sock->send_bit_get_int (SRV_FD, 0);
-  
+ 
   ar = String_Type[length (rows)];
 
   _for i (0, length (ar) - 1)

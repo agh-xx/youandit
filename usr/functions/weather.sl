@@ -3,6 +3,7 @@ define main ()
   variable
     index,
     retval,
+    status,
     gotopager = 0,
     file = SCRATCHBUF,
     args = __pop_list (_NARGS - 1);
@@ -20,31 +21,34 @@ define main ()
   index = proc->is_arg ("--help", args);
   ifnot (NULL == index)
     {
-    writefile (readfile (sprintf ("%s/info/weather/help.txt", path_dirname (__FILE__))), file);
-
     ifnot (gotopager)
-      (@CW.gotopager) (CW, file;drawonly);
+      ved (sprintf ("%s/info/weather/help.txt", path_dirname (__FILE__));drawonly);
     else
-      (@CW.gotopager) (CW, file);
+      ved (sprintf ("%s/info/weather/help.txt", path_dirname (__FILE__));drawwind);
 
     throw GotoPrompt;
     }
-
-  writefile ([repeat ("_", COLUMNS)], file);
-
-  retval = proc->call (["weather", "--nocl", args,
-      sprintf ("--execdir=%s/scripts", path_dirname (__FILE__)),
-      sprintf ("--msgfname=%s", CW.msgbuf),
-      sprintf ("--mainfname=%s", file)
-      ]);
  
-  if (retval)
-   throw GotoPrompt;
+  variable p = proc->init (0, 1, 1);
 
-  ifnot (gotopager)
-    (@CW.gotopager) (CW, file;drawonly);
+  p.stdout.file = SCRATCHBUF;
+  p.stderr.file = SCRATCHBUF;
+  p.stderr.wr_flags = ">>";
+ 
+  args = [args, sprintf ("--dline=%s", repeat ("_", COLUMNS))];
+
+  status = p.execv ([PROC_EXEC, sprintf ("%s/scripts/weather", path_dirname (__FILE__)),
+    args], NULL);
+
+  if (NULL == status)
+    throw GotoPrompt;
+
+  file = SCRATCHBUF;
+ 
+  if (gotopager || status.exit_status)
+    ved (file;drawwind);
   else
-    (@CW.gotopager) (CW, file);
- 
+    ved (file;drawonly);
+
   throw GotoPrompt;
 }

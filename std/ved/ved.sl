@@ -107,11 +107,11 @@ define ved ()
 
   ifnot (_NARGS)
     FILE = CW.buffers[CW.cur.frame].fname;
-  else  
+  else
     FILE = ();
-  
-  COUNT = qualifier ("count"); 
-  FUNC = qualifier ("func"); 
+ 
+  COUNT = qualifier ("count");
+  FUNC = qualifier ("func");
   DRAWONLY = qualifier_exists ("drawonly");
   FTYPE = qualifier ("ftype", substr (path_extname (FILE), 2, -1));
 
@@ -147,7 +147,7 @@ define ved ()
       sprintf ("SRV_FILENO=%d", _fileno (SRV_SOCKET))],
     p = doproc (),
     funcs = Assoc_Type[Ref_Type];
-  
+ 
   funcs[string (JUST_DRAW)] = &just_draw;
   funcs[string (CHNG_LANG)] = &chng_lang;
   funcs[string (SEND_CHAR)] = &send_chr;
@@ -164,7 +164,7 @@ define ved ()
  
   if (-1 == p.execve (argv, env, 1))
     return;
-  
+ 
   PG_SOCKET = p.connect (PG_SOCKADDR);
 
   if (NULL == PG_SOCKET)
@@ -177,16 +177,19 @@ define ved ()
   forever
     {
     retval = sock->get_int (PG_SOCKET);
-    
+ 
     ifnot (Integer_Type == typeof (retval))
       break;
 
     if (retval == GOTO_EXIT)
       break;
-    
+ 
     (@funcs[string (retval)]) (PG_SOCKET);
     }
 
   variable status = waitpid (p.pid, 0);
   p.atexit ();
+
+  if (qualifier_exists ("drawwind"))
+    CW.drawwind ();
 }

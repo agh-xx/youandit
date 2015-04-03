@@ -221,7 +221,7 @@ private define addwind (self, name, type)
 
     list_append (root.windnames, name);
     }
-  
+ 
   IMG = root.windows[name].img;
 
   return retval;
@@ -251,7 +251,7 @@ define init ()
   self.func = self.exec (sprintf ("%s/func/Init", path_dirname (__FILE__)));
 
   self.settermsize ();
-  
+ 
   if (NULL == listdir ("/proc/acpi/battery/")
     && (NULL == listdir ("/sys/class/power_supply") ||
      0 == length(listdir ("/sys/class/power_supply"))))

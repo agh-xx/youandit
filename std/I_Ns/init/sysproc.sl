@@ -152,7 +152,7 @@ private define connect_to_socket (s, sockaddr)
 
     break;
     }
-  
+ 
   return sock;
 }
 
@@ -190,7 +190,7 @@ define sysproc (s)
     _open (s.stderr, stderr);
 
   s.pid = fork ();
-  
+ 
   ifnot (NULL == s.env)
     {
     if ((0 == s.pid) && -1 == execve (s.argv[0], s.argv, s.env))
@@ -199,7 +199,7 @@ define sysproc (s)
   else
     if ((0 == s.pid) && -1 == execv (s.argv[0], s.argv))
       return -1;
-  
+ 
   if (s.fg)
     {
     s.status = waitpid (s.pid, 0);

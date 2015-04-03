@@ -26,7 +26,7 @@ private define quit ()
   if (cw_._flags & RDONLY || 0 == cw_._flags & MODIFIED ||
       (0 == qualifier_exists ("force") && "q!" == rl_.argv[0]))
     s_.quit (0);
-  
+ 
   send_msg_dr ("file is modified, save changes? y[es]|n[o]", 0, NULL, NULL);
 
   variable chr = get_char ();
@@ -41,7 +41,7 @@ private define write_file ()
   variable
     file,
     args = __pop_list (_NARGS);
-  
+ 
   ifnot (length (args))
     {
     if (cw_._flags & RDONLY)
@@ -85,7 +85,7 @@ private define write_file ()
     send_msg_dr (" ", 0, cw_.ptr[0], cw_.ptr[1]);
     return;
     }
-  
+ 
   if (file == cw_._fname)
     cw_._flags = cw_._flags & ~MODIFIED;
 }
@@ -163,8 +163,8 @@ private define routine (s)
     {
     if (rl_._col > 1)
       rlf_.delete_at ();
-    
-    return; 
+ 
+    return;
     }
 
   if (any (keys->rmap.left == rl_._chr))
@@ -371,14 +371,14 @@ private define printout (s, ar, col, len)
     hlreg = qualifier ("hl_region"),
     lines = qualifier ("lines", LINES),
     nar = @len < lines ? @ar : ar[[:lines - 1]];
-  
+ 
   rlf_.w_comp_rout (nar);
 
   ifnot (NULL == hlreg)
     srv->set_color_in_region (hlreg[0], hlreg[1], hlreg[2], hlreg[3], hlreg[4]);
-  
+ 
   @len = @len >= lines;
-  
+ 
   srv->gotorc_draw (rl_._row, rl_._col);
 
   return ar[[origlen >= lines ? lines - 1 : origlen:]];
@@ -403,7 +403,7 @@ private define write_completion_routine (s, ar)
 
   _for i (0, length (ar) - 1)
     rl_.cmp_lnrs[i] = len + i;
-  
+ 
   srv->write_ar_nstr_at (ar, clrs, rl_.cmp_lnrs, cols, COLUMNS);
 }
 
@@ -479,7 +479,7 @@ private define clear (s, pos)
   ar[*] = repeat (" ", COLUMNS);
   clrs[*] = 0;
   cols[*] = 0;
-  
+ 
   ifnot (qualifier_exists ("dont_redraw"))
     srv->write_ar_dr (ar, clrs, rl_.lnrs, cols, pos);
   else
@@ -859,7 +859,7 @@ private define hlitem (s, ar, base, acol, item)
   bar = rlf_.printout (bar, bcol, &len;lines = lines,
     row = PROMPTROW - (strlen (rl_._lin) / COLUMNS) + i,
     hl_region = [colr, irow, icol * max_len, 1, max_len]);
-  
+ 
   chr = get_char ();
  
   ifnot (len || any (['\t', [keys->UP:keys->RIGHT], keys->PPAGE, keys->NPAGE] == chr))
@@ -897,14 +897,14 @@ private define hlitem (s, ar, base, acol, item)
 
       irow = lrow - (length (car) > lines ? lines : length (car));
       icol = 0;
-     
+ 
       if (length (bar) < lines)
-        rlf_.restore ([rl_._row, rl_._col]); 
+        rlf_.restore ([rl_._row, rl_._col]);
 
       bar = rlf_.printout (bar, bcol, &len;lines = lines,
         row = PROMPTROW - (strlen (rl_._lin) / COLUMNS) + i,
         hl_region = [colr, irow, icol * max_len, 1, max_len]);
-     
+ 
       chr = get_char ();
       continue;
       }
@@ -1092,7 +1092,7 @@ private define getline (s, line, prev_l, next_l)
       srv->write_nstring_dr (" ", COLUMNS, 0, [0, 0, cw_.ptr[0], cw_.ptr[1]]);
       return;
       }
-     
+ 
     if (any (keys->rmap.left == gl_._chr))
       {
       if (0 < cw_.ptr[1] - cw_._indent)
@@ -1104,7 +1104,7 @@ private define getline (s, line, prev_l, next_l)
 
       continue;
       }
-    
+ 
     if (any (keys->CTRL_y == gl_._chr))
       {
       if (cw_.ptr[1] < strlen (prev_l))
@@ -1116,7 +1116,7 @@ private define getline (s, line, prev_l, next_l)
         srv->write_nstring_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
         }
 
-      continue; 
+      continue;
       }
 
     if (any (keys->CTRL_e == gl_._chr))
@@ -1130,7 +1130,7 @@ private define getline (s, line, prev_l, next_l)
         srv->write_nstring_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
         }
 
-      continue; 
+      continue;
       }
 
     if (any (keys->rmap.right == gl_._chr))
@@ -1173,8 +1173,8 @@ private define getline (s, line, prev_l, next_l)
         }
 
       srv->write_nstring_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
-            
-      continue; 
+ 
+      continue;
       }
 
     if (any (keys->rmap.delete == gl_._chr))
@@ -1182,8 +1182,8 @@ private define getline (s, line, prev_l, next_l)
       @line = substr (@line, 1, gl_._col) + substr (@line, gl_._col + 2, - 1);
 
       srv->write_nstring_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
-            
-      continue; 
+ 
+      continue;
       }
 
     if (' ' <= gl_._chr <= 126 || 902 <= gl_._chr <= 974)
@@ -1192,7 +1192,7 @@ private define getline (s, line, prev_l, next_l)
       gl_._col++;
       cw_.ptr[1]++;
       srv->write_nstring_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
-      continue; 
+      continue;
       }
     }
 }

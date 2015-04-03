@@ -37,7 +37,7 @@ rl_ = struct
 
 ineed ("f_compl");
 ineed ("com_rout");
-ineed ("getline"); 
+ineed ("getline");
 
 private define init (s)
 {
@@ -117,7 +117,7 @@ private define printout (s, ar, col, len)
     hlreg = qualifier ("hl_region"),
     lines = qualifier ("lines", LINES),
     nar = @len < lines ? @ar : ar[[:lines]];
-  
+ 
   s.w_comp_rout (nar;;__qualifiers ());
 
   ifnot (NULL == hlreg)
@@ -157,7 +157,7 @@ private define write_completion_routine (s, ar)
 
     s.formar (items, fmt, ar, &bar);
     }
-  
+ 
   variable
     len = length (bar),
     clrs = Integer_Type[len],
@@ -171,7 +171,7 @@ private define write_completion_routine (s, ar)
   len = LINES - 4 - (strlen (s.c_._lin) / COLUMNS) - len + 1;
   _for i (0, length (bar) - 1)
     s.c_.cmp_lnrs[i] = len + i;
-  
+ 
   if (qualifier_exists ("redraw"))
     srv->write_ar_nstr_dr (bar, clrs, s.c_.cmp_lnrs, cols, [s.c_._row, s.c_._col], COLUMNS);
   else
@@ -195,7 +195,7 @@ private define restore (s, pos)
     clrs = Integer_Type[0],
     cols = Integer_Type[0],
     i;
-  
+ 
   if (length (s.c_.cmp_lnrs) == length (w_.state))
     _for i (0, length (w_.state) - 1)
       {
@@ -245,7 +245,7 @@ private define clear (s, pos)
   ar[*] = repeat (" ", COLUMNS);
   clrs[*] = 0;
   cols[*] = 0;
-  
+ 
   ifnot (qualifier_exists ("dont_redraw"))
     srv->write_ar_dr (ar, clrs, s.c_.lnrs, cols, pos);
   else
@@ -315,7 +315,7 @@ private define readline (s)
 
     s.parse_args ();
     s.prompt ();
-    
+ 
     send_ans (RLINE_GETCH);
     }
 }

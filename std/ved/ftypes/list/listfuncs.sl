@@ -37,7 +37,7 @@ private define init (s)
   frames[1]._flags = 0;
   frames[1]._i = 0;
  
-  len = length (frames[0].rows);  
+  len = length (frames[0].rows);
 
   frames[0].cols = Integer_Type[len];
   frames[0].cols[*] = 0;
@@ -75,10 +75,10 @@ private define getitem ()
 private define drawfile ()
 {
   variable l = getitem ();
-  
+ 
   if (NULL == l)
     return;
-  
+ 
   togglecur ();
 
   cw_.lines = readfile (l.fname);
@@ -113,7 +113,7 @@ define ved (s)
   cw_._len = length (cw_.lines) - 1;
 
   init (s);
-  
+ 
   clear (1, LINES);
 
   srv->set_color_in_region (INFOCLRBG, cw_.rows[0] - 1, 0, 1, COLUMNS);
@@ -130,16 +130,16 @@ define ved (s)
 
   if (DRAWONLY)
     return;
-  
+ 
   forever
     {
     count = -1;
     cw_._chr = get_char ();
-    
+ 
     if ('0' <= cw_._chr <= '9')
       {
       count = "";
-      
+ 
       while ('0' <= cw_._chr <= '9')
         {
         count += char (cw_._chr);
@@ -151,7 +151,7 @@ define ved (s)
 
     if (any (pagerc == cw_._chr))
       (@pagerf[string (cw_._chr)]);
-    
+ 
     if (':' == cw_._chr)
       rlf_.read ();
 

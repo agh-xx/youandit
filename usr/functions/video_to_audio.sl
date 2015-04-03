@@ -74,7 +74,7 @@ define main ()
     ifnot (NULL == start)
       ifnot (3 == length (start))
         start = NULL;
-      
+ 
     ifnot (NULL == start)
       {
       _for i (0, 2)
@@ -91,8 +91,8 @@ define main ()
               throw GotoPrompt;
               }
             else
-              seca += atoi (start[i]) * secst[i];  
-       
+              seca += atoi (start[i]) * secst[i];
+ 
       start = strjoin (start, ":");
       }
 
@@ -112,7 +112,7 @@ define main ()
     ifnot (NULL == end)
       ifnot (3 == length (end))
         end = NULL;
-      
+ 
     ifnot (NULL == end)
       {
       _for i (0, 2)
@@ -129,8 +129,8 @@ define main ()
               throw GotoPrompt;
               }
             else
-              secb += atoi (end[i]) * secst[i];  
-      
+              secb += atoi (end[i]) * secst[i];
+ 
       if (secb > seca)
         duration = string (secb - seca);
       }
@@ -234,7 +234,7 @@ define main ()
     }
 
   variable p = @i->init_proc (NULL != issudo, 1, 1, argv);
-  
+ 
   ifnot (NULL == issudo)
     p.stdin.in = passwd;
 

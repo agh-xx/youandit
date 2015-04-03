@@ -110,7 +110,7 @@ private define parsefile (s)
   variable indent = repeat (" ", s_._indent);
 
   _linenr_ = -1;
-  
+ 
   variable p = struct
     {
     lnrs = {},

@@ -48,9 +48,9 @@ private define down ()
   s_.draw ();
 
   _linlen_ = v_linlen ('.');
-  
+ 
   adjust_col ();
-  
+ 
   srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
 }
 
@@ -84,11 +84,11 @@ private define up ()
   cw_._i--;
 
   s_.draw ();
-  
+ 
   _linlen_ = v_linlen ('.');
-  
+ 
   adjust_col ();
-  
+ 
   srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
 }
 

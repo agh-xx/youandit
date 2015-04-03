@@ -46,7 +46,7 @@ define draw ()
     }
 
   ar = [ar, tail];
-  
+ 
   _for i (0, length (ar) - 1)
     IMG[cw_.rows[i]] = {[ar[i]], [cw_.clrs[i]], [cw_.rows[i]], [cw_.cols[i]]};
 

@@ -115,7 +115,7 @@ private define rm_extra (s, cur, other)
     fs = fswalk_new (&dir_callback_a, &file_callback_a;
       dargs = {dirs, cur, other}, fargs = {cur, other, &exit_code});
  
-  if (s.interactive_extra)
+  if (s.interactive_remove)
     Accept_All_As_Yes = 0;
   else
     Accept_All_As_Yes = 1;
@@ -188,7 +188,7 @@ private define _copy (s, source, dest, st_source, st_dest)
     backup = NULL,
     backuptext = "";
 
-  if (s.interactive)
+  if (s.interactive_copy)
     {
     retval = (@ask)
       ([sprintf ("update `%s'", dest), "y[es]/n[o]/q[uit] or escape to abort"],
@@ -460,8 +460,8 @@ define sync_new ()
       force = 1,
       suffix = "~",
       preserve_time = 1,
-      interactive,
-      interactive_extra,
+      interactive_copy,
+      interactive_remove,
       ignoredir,
       rmextra = 1,
       methods

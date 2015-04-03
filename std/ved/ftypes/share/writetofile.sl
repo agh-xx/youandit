@@ -9,7 +9,7 @@ static define writetofile (s, file)
   variable
     i,
     fp = fopen (file, "w");
-  
+ 
   if (NULL == fp)
     return errno;
 
@@ -18,6 +18,6 @@ static define writetofile (s, file)
       return errno;
 
   () = fclose (fp);
-  
+ 
   return 0;
 }

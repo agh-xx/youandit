@@ -1,8 +1,10 @@
 ineed ("fetch");
 ineed ("json");
 ineed ("isconnected");
+ineed ("cmdopt");
 
 private variable
+  DLINE,
   LOCATION = "default",
   DBFILE = sprintf ("%s/weather", DATADIR),
   KEYFILE = sprintf ("%s/weather/key.txt", DATADIR),
@@ -11,24 +13,17 @@ private variable
   DONT_RETRIEVE = NULL,
   NUM_DAYS = 5;
 
-define help ()
-{
-  variable args = __pop_list (_NARGS);
-  _usage (__push_list (args);helpfile = sprintf (
-    "%s/../info/weather/help.txt", path_dirname (__FILE__)));
-}
-
 private define get_key ()
 {
   if (-1 == access (KEYFILE, F_OK))
     {
-    (@print_err) (sprintf ("%s: doesn't exists", KEYFILE));
+    () =  fprintf (stderr, "%s: doesn't exists\n", KEYFILE);
     return NULL;
     }
 
   if (-1 == access (KEYFILE, R_OK))
     {
-    (@print_err) (sprintf ("%s: is not readable", KEYFILE));
+    () = fprintf (stderr, "%s: is not readable\n", KEYFILE);
     return NULL;
     }
 
@@ -36,8 +31,8 @@ private define get_key ()
 
   ifnot (length (key))
     {
-    (@print_err) ("No key available");
-    (@print_err) ("You can obtain one from http://www.worldweatheronline.com/api/");
+    () = fprintf (stderr, "No key available\n");
+    () = fprintf (stderr, "You can obtain one from http://www.worldweatheronline.com/api/\n");
     return NULL;
     }
 
@@ -54,13 +49,13 @@ private define get_from_site ()
  
   if (-1 == access (LOCATION, F_OK))
     {
-    (@print_err) (sprintf ("%s: doesn't exists", LOCATION));
+    () = fprintf (stderr, "%s: doesn't exists\n", LOCATION);
     return NULL;
     }
 
   if (-1 == access (LOCATION, R_OK))
     {
-    (@print_err) (sprintf ("%s: Is not readble", LOCATION));
+    () = fprintf (stderr, "%s: Is not readble\n", LOCATION);
     return NULL;
     }
 
@@ -68,7 +63,7 @@ private define get_from_site ()
 
   ifnot (length (LOCATION))
     {
-    (@print_err) ("No Latitude and Longitude values found");
+    () = fprintf (stderr, "No Latitude and Longitude values found\n");
     return NULL;
     }
  
@@ -85,7 +80,7 @@ private define get_from_site ()
     return s.output;
   else
     {
-    (@print_err) ("Couldn't retrieve data from internet");
+    () = fprintf (stderr, "Couldn't retrieve data from internet\n");
     return NULL;
     }
 }
@@ -120,7 +115,7 @@ define create_report (s)
   list_append (report, "          OBSERVATION TIME: " + s.data.current_condition[0].observation_time
       + " at " + s.data.weather[0].date);
 
-  list_append (report, repeat ("_", COLUMNS));
+  list_append (report, DLINE);
 
   while (i < length (s.data.weather))
     {
@@ -235,7 +230,7 @@ define create_report (s)
  
     list_append (report, str);
 
-    list_append (report, repeat ("_", COLUMNS));
+    list_append (report, DLINE);
  
     i++;
     }
@@ -248,13 +243,13 @@ define get_from_db ()
 {
   if (-1 == access (DBFILE, F_OK))
     {
-    (@print_err) ("No Internet connection, neither a db file available");
+    () = fprintf (stderr, "No Internet connection, neither a db file available\n");
     return NULL;
     }
 
   if (-1 == access (DBFILE, R_OK|W_OK))
     {
-    (@print_err) ("You don't have the required permissions to the db file");
+    () = fprintf (stderr, "You don't have the required permissions to the db file\n");
     return NULL;
     }
  
@@ -262,7 +257,7 @@ define get_from_db ()
 
   ifnot (length (line))
     {
-    (@print_err) ("No previous entries in the db file");
+    () = fprintf (stderr, "No previous entries in the db file\n");
     return NULL;
     }
 
@@ -282,7 +277,7 @@ define weather_main ()
 
       if (NULL == line)
         {
-        (@print_err) ("Couldn't fetch the required data");
+        () = fprintf (stderr, "Couldn't fetch the required data\n");
         return 1;
         }
 
@@ -299,7 +294,8 @@ define weather_main ()
 
   report = create_report (json_decode (line));
  
-  array_map (Void_Type, print_out, report);
+  ar_to_fp (report, "%s\n", stdout);
+
   return 0;
 }
 
@@ -313,7 +309,7 @@ private define _search (pat)
  
   ifnot (isconnected ())
     {
-    (@print_err) ("Computer is not connected to Internet");
+    () = fprintf (stderr, "Computer is not connected to Internet\n");
     return 1;
     }
 
@@ -325,7 +321,7 @@ private define _search (pat)
 
     if (retval)
       {
-      (@print_err) ("Couldn't retrieve data from internet");
+      () = fprintf (stderr, "Couldn't retrieve data from internet\n");
       return 1;
       }
 
@@ -340,7 +336,7 @@ private define _search (pat)
 ifnot (NULL == struct_field_exists (json, "data"))
   ifnot (NULL == struct_field_exists (json.data, "error"))
     {
-    (@print_err) (json.data.error[0].msg);
+    () = fprintf (stderr, json.data.error[0].msg + "\n");
     return 1;
     }
 
@@ -355,8 +351,9 @@ ifnot (NULL == struct_field_exists (json, "data"))
      +tmp.longitude         + "  population "
      +tmp.population);
     }
+ 
+  ar_to_fp (list_to_array (report), "%s\n", stdout);
 
-  array_map (Void_Type, print_out, list_to_array (report));
   return 0;
 }
 
@@ -364,6 +361,7 @@ define main ()
 {
   variable
     i,
+    retval,
     search = NULL,
     c = cmdopt_new (&_usage);
 
@@ -371,6 +369,7 @@ define main ()
   c.add ("uselocation", &LOCATION;type = "string");
   c.add ("days", &NUM_DAYS;type = "int");
   c.add ("dont-retrieve", &DONT_RETRIEVE);
+  c.add ("dline", &DLINE;type = "string");
  
   i = c.process (__argv, 1);
 
@@ -378,7 +377,11 @@ define main ()
   LOCATION = sprintf ("%s/weather/loc_%s.txt", DATADIR, LOCATION);
 
   ifnot (NULL == search)
-    return _search (search);
+    exit (_search (search));
 
-  return weather_main ();
+  retval = weather_main ();
+ 
+  exit (NULL == retval ? 1 : retval);
 }
+
+main ();

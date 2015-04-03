@@ -4,10 +4,10 @@ define main ()
     file,
     index,
     retval,
+    status,
     passwd,
     issudo = NULL,
     gotopager = 0,
-    buf = CW.buffers[CW.cur.frame],
     mountpoint = NULL,
     umount = which ("umount"),
     args = __pop_list (_NARGS - 1);
@@ -81,29 +81,29 @@ define main ()
       }
     }
 
-  variable p = @i->init_proc (NULL != issudo, 1, 1, argv);
+  variable p = proc->init (NULL != issudo, 1, 1);
 
   ifnot (NULL == issudo)
     p.stdin.in = passwd;
 
   p.stdout.file = SCRATCHBUF;
-  p.stdout.wr_flags = ">|";
-
   p.stderr.file = SCRATCHBUF;
   p.stderr.wr_flags = ">>";
+ 
+  status = p.execv (argv, NULL);
 
-  if (-1 == i->sysproc (p))
+  if (NULL == status)
     throw GotoPrompt;
 
   file = SCRATCHBUF;
 
-  if (p.status.exit_status)
-    (@CW.gotopager) (CW, file;func='G');
+  if (status.exit_status)
+    ved (file;func='G', drawwind);
   else
     ifnot (gotopager)
-      (@CW.gotopager) (CW, file;drawonly);
+      ved (file;drawonly);
     else
-      (@CW.gotopager) (CW, file);
+      ved (file;drawwind);
 
   throw GotoPrompt;
 }

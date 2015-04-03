@@ -8,6 +8,7 @@ define main ()
     argv,
     index,
     retval,
+    status,
     passwd,
     issudo = NULL,
     gotopager = 0,
@@ -42,23 +43,23 @@ define main ()
 
   ifnot (length (args))
   {
-  p = @i->init_proc (NULL, 1, 1, [mount]);
+  p = proc->init (0, 1, 1);
  
   p.stdout.file = SCRATCHBUF;
-  p.stdout.wr_flags = ">|";
-
   p.stderr.file = CW.msgbuf;
   p.stderr.wr_flags = ">>";
  
-  if (-1 == i->sysproc (p))
+  status = p.execv ([mount], NULL);
+
+  if (NULL == status)
     throw GotoPrompt;
 
-  file = p.status.exit_status ? CW.msgbuf : SCRATCHBUF;
+  file = status.exit_status ? CW.msgbuf : SCRATCHBUF;
 
   ifnot (gotopager)
-    (@CW.gotopager) (CW, file;drawonly);
+    ved (file;drawonly);
   else
-    (@CW.gotopager) (CW, file);
+    ved (file;drawwind);
 
   throw GotoPrompt;
   }
@@ -110,7 +111,7 @@ define main ()
   ifnot (NULL == issudo)
     {
     argv = [
-      SUDO_EXEC, "-S", "-E",  "-C", sprintf ("%d", _fileno (SRV_SOCKET)+ 1),
+      SUDO_EXEC, "-S", "-E",  "-C", sprintf ("%d", _fileno (SRV_SOCKET) + 1),
       argv];
 
     passwd = root.lib.getpasswd ();
@@ -130,29 +131,28 @@ define main ()
       }
     }
  
-  p = @i->init_proc (NULL != issudo, 1, 1, argv);
+  p = proc->init (NULL != issudo, 1, 1);
 
   ifnot (NULL == issudo)
     p.stdin.in = passwd;
 
   p.stdout.file = SCRATCHBUF;
-  p.stdout.wr_flags = ">|";
-
   p.stderr.file = CW.msgbuf;
   p.stderr.wr_flags = ">>";
-
-  if (-1 == i->sysproc (p))
+ 
+  status = p.execv (argv, NULL);
+  if (NULL == status)
     throw GotoPrompt;
 
-  file = p.status.exit_status ? CW.msgbuf : SCRATCHBUF;
+  file = status.exit_status ? CW.msgbuf : SCRATCHBUF;
 
-  if (p.status.exit_status)
-    (@CW.gotopager) (CW, file;func='G');
+  if (status.exit_status)
+    ved (file;func='G', drawwind);
   else
     ifnot (gotopager)
-      (@CW.gotopager) (CW, file;drawonly);
+      ved (file;drawonly);
     else
-      (@CW.gotopager) (CW, file);
+      ved (file;drawwind);
 
   throw GotoPrompt;
 }

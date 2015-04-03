@@ -7,7 +7,7 @@ define clear (frow, lrow)
     clrs = Integer_Type[len],
     rows = [frow:lrow],
     pos = [cw_.ptr[0], cw_.ptr[1]];
-    
+ 
   ar[*] = " ";
   cols[*] = 0;
   clrs[*] = 0;
@@ -24,7 +24,7 @@ define write_prompt (str, col)
 define send_msg_dr (str, clr, row, col)
 {
   variable
-    lcol = NULL == col ? strlen (str) + 1 : col, 
+    lcol = NULL == col ? strlen (str) + 1 : col,
     lrow = NULL == row ? MSGROW : row;
 
   srv->write_nstring_dr (str, COLUMNS, clr, [MSGROW, 0, lrow, lcol]);
@@ -72,15 +72,31 @@ define v_lnr (r)
   return cw_.lnrs[r];
 }
 
+define find_Word (line, col, start, end)
+{
+  ifnot (col - cw_._indent)
+    @start = cw_._indent;
+  else
+    {
+    while (col--, col >= cw_._indent && 0 == isblank (line[col]));
+    @start = col + 1;
+    }
+ 
+  variable len = strlen (line);
+  while (col++, col < len && 0 == isblank (line[col]));
+    @end = col - 1;
+}
+
 define tail ()
 {
   variable
     lnr = v_lnr ('.') + 1,
     line = v_lin ('.');
-  
+ 
   return sprintf ("buf [%s] (row %d) (col %d) (linenr %d/%d %.0f%%) (strlen %d) chr (%d)",
     path_basename (cw_._fname), cw_.ptr[0], cw_.ptr[1] - cw_._indent + 1, lnr,
-    cw_._len + 1, (100.0 / cw_._len) * lnr, v_linlen ('.'), decode (substr (line, cw_.ptr[1] + 1, 1))[0]);
+    cw_._len + 1, (100.0 / cw_._len) * lnr, v_linlen ('.'),
+    decode (substr (line, cw_.ptr[1] + 1, 1))[0]);
 }
 
 define draw_tail ()

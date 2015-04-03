@@ -57,7 +57,7 @@ define draw ()
       w_.lnrs = [w_.lnrs, s_.p_.lnrs[w_._i][0]];
       cols = [cols, list_to_array (s_.p_.cols[w_._i])];
       clrs = [clrs, list_to_array (s_.p_.clrs[w_._i])];
-      w_.state = [w_.state, {ar[-1], clrs[-1], rows[-1], cols[-1]}]; 
+      w_.state = [w_.state, {ar[-1], clrs[-1], rows[-1], cols[-1]}];
       w_._i++;
       i++;
       }
@@ -73,7 +73,7 @@ define draw ()
       w_.lnrs = [w_.lnrs, s_.p_.lnrs[w_._i]];
       cols = [cols, s_.p_.cols[w_._i]];
       clrs = [clrs, s_.p_.clrs[w_._i]];
-      w_.state = [w_.state, {ar[-1], clrs[-1], rows[-1], cols[-1]}]; 
+      w_.state = [w_.state, {ar[-1], clrs[-1], rows[-1], cols[-1]}];
       w_._i++;
       i++;
       }

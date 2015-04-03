@@ -8,7 +8,7 @@ define main ()
     tree = path_concat (__argv[1], "dist"),
     sync = sync_new ();
  
-  sync.interactive_extra = 1;
+  sync.interactive_remove = 1;
 
   if (are_same_files (cur, tree))
     {

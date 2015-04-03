@@ -118,7 +118,7 @@ define main ()
     set_struct_fields (tim, tok[0], tok[1], tok[2], tok[3], tok[4] - 1, tok[5]);
 
     retval = checktmfmt (tim);
-    
+ 
     if (NULL == retval)
       {
       err = ();

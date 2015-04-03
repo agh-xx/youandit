@@ -4,7 +4,7 @@ define draw ()
     {
     cw_.lins = [" "];
     cw_.lnrs = [0];
-    
+ 
     srv->write_ar_nstr_dr ([repeat (" ", COLUMNS), tail ()], [0, INFOCLRFG],
       [cw_.rows[0], cw_.rows[-1]], [0, 0], [cw_.rows[0], 0], COLUMNS);
 
@@ -45,7 +45,7 @@ define draw ()
     t[*] = " ";
     ar = [ar, t];
     }
-  
+ 
   ar = [ar, tail];
 
   _for i (0, length (ar) - 1)

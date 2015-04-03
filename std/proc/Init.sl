@@ -149,7 +149,7 @@ private define connect_to_socket (s, sockaddr)
 
     break;
     }
-  
+ 
   return sock;
 }
 
@@ -174,8 +174,8 @@ private define _execv (s, argv, fg)
   s.pid = dopid (s);
 
   if ((0 == s.pid) && -1 == execv (argv[0], argv))
-    return -1;
-  
+    return NULL;
+ 
   if (NULL == fg)
     {
     status = waitpid (s.pid, 0);
@@ -192,8 +192,8 @@ private define _execve (s, argv, env, fg)
   s.pid = dopid (s);
 
   if ((0 == s.pid) && -1 == execve (argv[0], argv, env))
-    return -1;
-  
+    return NULL;
+ 
   if (NULL == fg)
     {
     status = waitpid (s.pid, 0);

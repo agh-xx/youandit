@@ -21,7 +21,7 @@ private define curl_main (s, url)
      file = strchop (url, '/', 0)[-1];
   else
     file = OUTFILE;
-  
+ 
   return s.fetch(url;file = file);
 }
 
@@ -74,7 +74,7 @@ define main ()
   if ((1 < len) || (REMOTEALL))
     OUTFILE = "remote";
 
-  variable s = fetch_new (); 
+  variable s = fetch_new ();
 
   ifnot (NULL == CACERT)
     s.cacert = CACERT;

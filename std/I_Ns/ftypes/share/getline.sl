@@ -18,7 +18,7 @@ private define getline (s, line, prev_l, next_l)
       srv->write_nstring_dr (" ", COLUMNS, 0, [0, 0, w_.ptr[0], w_.ptr[1]]);
       return;
       }
-     
+ 
     if (any (keys->rmap.left == s.c_._chr))
       {
       if (0 < w_.ptr[1] - s_._indent)
@@ -30,7 +30,7 @@ private define getline (s, line, prev_l, next_l)
 
       continue;
       }
-    
+ 
     if (any (keys->CTRL_y == s.c_._chr))
       {
       if (w_.ptr[1] < strlen (prev_l))
@@ -42,7 +42,7 @@ private define getline (s, line, prev_l, next_l)
         srv->write_nstring_dr (@line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
         }
 
-      continue; 
+      continue;
       }
 
     if (any (keys->CTRL_e == s.c_._chr))
@@ -56,7 +56,7 @@ private define getline (s, line, prev_l, next_l)
         srv->write_nstring_dr (@line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
         }
 
-      continue; 
+      continue;
       }
 
     if (any (keys->rmap.right == s.c_._chr))
@@ -99,8 +99,8 @@ private define getline (s, line, prev_l, next_l)
         }
 
       srv->write_nstring_dr (@line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
-            
-      continue; 
+ 
+      continue;
       }
 
     if (any (keys->rmap.delete == s.c_._chr))
@@ -108,8 +108,8 @@ private define getline (s, line, prev_l, next_l)
       @line = substr (@line, 1, s.c_._col) + substr (@line, s.c_._col + 2, - 1);
 
       srv->write_nstring_dr (@line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
-            
-      continue; 
+ 
+      continue;
       }
 
     if (' ' <= s.c_._chr <= 126 || 902 <= s.c_._chr <= 974)
@@ -118,7 +118,7 @@ private define getline (s, line, prev_l, next_l)
       s.c_._col++;
       w_.ptr[1]++;
       srv->write_nstring_dr (@line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
-      continue; 
+      continue;
       }
     }
 }

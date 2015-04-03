@@ -35,6 +35,7 @@ typedef struct
 typedef struct
   {
   _type,
+  _shiftwidth,
   ved,
   draw,
   quit,
@@ -97,8 +98,9 @@ define init (ftype)
 {
   % TO DO the checks
   variable type = @Ftype_Type;
-  
+ 
   type._type = ftype;
+  type._shiftwidth = 4;
   type.getlines = &getlines;
   type.ved = ved (ftype);
   type.draw = draw (ftype);

@@ -38,7 +38,7 @@ private define search_backward (str)
     send_msg_dr ("error compiling pcre pattern", 1, PROMPTROW, col);
     return;
     }
-  
+ 
   i = lnr;
 
   while (i > -1 || (i > lnr && wrapped))
@@ -75,7 +75,7 @@ private define search_backward (str)
           }
       else
         i--;
-  
+ 
   found = 0;
   send_msg_dr ("Nothing found", 0, PROMPTROW, col);
 }
@@ -104,9 +104,9 @@ private define search_forward (str)
     send_msg_dr ("error compiling pcre pattern", 1, PROMPTROW, col);
     return;
     }
-  
+ 
   i = lnr;
-  
+ 
   while (i <= cw_._len || (i < lnr && wrapped))
     if (pcre_exec (pat, cw_.lines[i]))
       {
@@ -141,7 +141,7 @@ private define search_forward (str)
           }
       else
         i++;
-  
+ 
   found = 0;
   send_msg_dr ("Nothing found", 1, PROMPTROW, col);
 }
@@ -159,17 +159,17 @@ define search ()
     pat = "";
 
   lnr = v_lnr ('.');
-  
+ 
   origlnr = lnr;
 
   type = keys->BSLASH == cw_._chr ? "forward" : "backward";
   pchr = type == "forward" ? "/" : "?";
   str = pchr;
   col = 1;
-  
+ 
   typesearch = type == "forward" ? &search_forward : &search_backward;
   write_prompt (str, col);
-  
+ 
   forever
     {
     dothesearch = 0;
@@ -180,7 +180,7 @@ define search ()
       exit_rout ();
       break;
       }
-    
+ 
     if ((' ' <= chr < 64505) &&
         0 == any (chr == [keys->rmap.backspace, keys->rmap.delete,
         [keys->UP:keys->RIGHT], [keys->F1:keys->F12]]))
@@ -193,22 +193,22 @@ define search ()
       col++;
       dothesearch = 1;
       }
-    
-    if (any (chr == keys->rmap.backspace) && strlen (pat)) 
+ 
+    if (any (chr == keys->rmap.backspace) && strlen (pat))
       if (col - 1)
         {
         if (col == strlen (pat) + 1)
           pat = substr (pat, 1, strlen (pat) - 1);
         else
           pat = substr (pat, 1, col - 2) + substr (pat, col, -1);
-        
+ 
         lnr = origlnr;
 
         col--;
         dothesearch = 1;
         }
 
-    if (any (chr == keys->rmap.delete) && strlen (pat)) 
+    if (any (chr == keys->rmap.delete) && strlen (pat))
       {
       ifnot (col - 1)
         (pat = substr (pat, 2, -1), dothesearch = 1);
@@ -216,7 +216,7 @@ define search ()
         (pat = substr (pat, 1, col - 1) + substr (pat, col + 1, -1),
          dothesearch = 1);
       }
-    
+ 
     if (any (chr == keys->rmap.changelang))
       {
       (@pagerf[string (chr)]);
@@ -226,10 +226,10 @@ define search ()
 
     if (any (chr == keys->rmap.left) && col != 1)
       col--;
-    
+ 
     if (any (chr == keys->rmap.right) && col != strlen (pat) + 1)
       col++;
-    
+ 
     if ('\r' == chr)
       {
       if (found)
@@ -247,7 +247,7 @@ define search ()
       exit_rout ();
       break;
       }
-    
+ 
     if (chr == keys->UP)
       ifnot (NULL == histindex)
         {
@@ -316,13 +316,12 @@ private define search_word ()
     start,
     origlnr,
     typesearch,
-    line = v_lin ('.'),
-    len = strlen (line);
-  
+    line = v_lin ('.');
+ 
   lnr = v_lnr ('.');
 
   type = '*' == cw_._chr ? "forward" : "backward";
-  
+ 
   typesearch = type == "forward" ? &search_forward : &search_backward;
 
   if (type == "forward")
@@ -341,17 +340,8 @@ private define search_word ()
 
   if (isblank (line[lcol]))
     return;
-
-  ifnot (lcol - cw_._indent)
-    start = cw_._indent;
-  else
-    {
-    while (lcol--, lcol >= cw_._indent && 0 == isblank (line[lcol]));
-    start = lcol + 1;
-    }
  
-  while (lcol++, lcol < len && 0 == isblank (line[lcol]));
-    end = lcol - 1;
+  find_Word (line, lcol, &start, &end);
  
   pat = substr (line, start + 1, end - start + 1);
 
@@ -360,7 +350,7 @@ private define search_word ()
   forever
     {
     chr = get_char ();
-    
+ 
     ifnot (any ([keys->CTRL_n, 033, '\r'] == chr))
       continue;
 
@@ -369,7 +359,7 @@ private define search_word ()
       exit_rout ();
       break;
       }
-    
+ 
     if ('\r' == chr)
       {
       if (found)
@@ -387,7 +377,7 @@ private define search_word ()
       exit_rout ();
       break;
       }
-    
+ 
     if (chr == keys->CTRL_n)
       {
       if (type == "forward")

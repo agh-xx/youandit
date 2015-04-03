@@ -22,12 +22,12 @@ define main ()
 
   ifnot (length (args))
     file = CW.buffers[CW.cur.frame].fname;
-  else  
+  else
     file = args[0];
 
   if (file == "-")
     file = SCRATCHBUF;
-  
+ 
   ifnot (NULL == count)
     ved (file;func = 'G', count = count);
   else

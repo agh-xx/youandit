@@ -1,7 +1,60 @@
+private define indent_in ()
+{
+  variable
+    i_ = cw_._indent,
+    i = v_lnr ('.'),
+    line = v_lin ('.');
+
+  ifnot (isblank (line[i_]))
+    return;
+ 
+  while (isblank (line[i_]))
+    i_++;
+
+  if (i_ > s_._shiftwidth)
+    i_ = s_._shiftwidth;
+
+  line = substr (line, i_ + 1, -1);
+
+  cw_.lins[cw_.ptr[0] - cw_.rows[0]] = line;
+  cw_.lines[i] = line;
+  cw_.ptr[1] -= i_;
+
+  if (0 > cw_.ptr[1] - cw_._indent)
+    cw_.ptr[1] = cw_._indent;
+
+  cw_._flags = cw_._flags | MODIFIED;
+  cw_.st_.st_size += s_._shiftwidth;
+
+  srv->write_nstr (line, 0, cw_.ptr[0], 0, COLUMNS);
+  draw_tail ();
+}
+
+private define indent_out ()
+{
+  variable
+    i = v_lnr ('.'),
+    line = v_lin ('.');
+
+  line = sprintf ("%s%s", repeat (" ", s_._shiftwidth), line);
+
+  cw_.lins[cw_.ptr[0] - cw_.rows[0]] = line;
+  cw_.lines[i] = line;
+  cw_.ptr[1] += s_._shiftwidth;
+
+  if (cw_.ptr[1] >= cw_._maxlen)
+    cw_.ptr[1] = cw_._maxlen - 1;
+
+  cw_._flags = cw_._flags | MODIFIED;
+  cw_.st_.st_size += s_._shiftwidth;
+
+  srv->write_nstr (line, 0, cw_.ptr[0], 0, COLUMNS);
+  draw_tail ();
+}
+
 private define del_line ()
 {
   variable
-    i_,
     i = v_lnr ('.'),
     line = v_lin ('.');
 
@@ -11,9 +64,9 @@ private define del_line ()
   cw_.lines[i] = NULL;
   cw_.lines = cw_.lines[wherenot (_isnull (cw_.lines))];
   cw_._len--;
-  
+ 
   cw_._i = cw_._ii;
-  
+ 
   cw_.ptr[1] = cw_._indent;
 
   if (cw_.ptr[0] == cw_.vlins[-1] && 1 <length (cw_.vlins))
@@ -29,45 +82,34 @@ private define del_line ()
   return 0;
 }
 
-%private define del_word ()
-%{
-%  variable
-%    end,
-%    start,
-%    col = w_.ptr[1],
-%    i = v_lnr ('.'),
-%    line = v_lin ('.'),
-%    len = strlen (line);
-%  
-%  if (isblank (line[col]))
-%    return;
-%
-%  ifnot (col - cw_._indent)
-%    start = cw_._indent;
-%  else
-%    {
-%    while (col--, 0 == isblank (line[col]));
-%    start = col + 1;
-%    }
-% 
-%  while (col++, col < len && 0 == isblank (line[col]));
-%    end = col - 1;
-%
-%  line = sprintf ("%s%s", substr (line, 1, start), substr (line, end + 2, -1)); 
-%  
-%  ifnot (s_._flags & MODIFIED)
-%    s_._flags = s_._flags | MODIFIED;
-%  
-%  w_.lins[w_.ptr[0] - 2] = line;
-%  s_.p_.lins[i] = line;
-%  w_.ptr[1] = start;
-%  s_.st_.st_size -= len - strbytelen (line);
-% 
-%  s_.encode ();
-%
-%  srv->write_nstring_dr (line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
-%}
-%
+private define del_word ()
+{
+  variable
+    end,
+    start,
+    col = cw_.ptr[1],
+    i = v_lnr ('.'),
+    line = v_lin ('.'),
+    len = strlen (line);
+ 
+  if (isblank (line[col]))
+    return;
+ 
+  find_Word (line, col, &start, &end);
+
+  line = sprintf ("%s%s", substr (line, 1, start), substr (line, end + 2, -1));
+ 
+  cw_._flags = cw_._flags | MODIFIED;
+ 
+  cw_.lins[cw_.ptr[0] - cw_.rows[0]] = line;
+  cw_.lines[i] = line;
+  cw_.ptr[1] = start;
+
+  cw_.st_.st_size -= len - strbytelen (line);
+
+  srv->write_nstring_dr (line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
+}
+
 private define del_chr ()
 {
   variable
@@ -102,16 +144,14 @@ private define del_chr ()
   cw_.st_.st_size -= blen - strbytelen (line);
  
   cw_._flags = cw_._flags | MODIFIED;
-  
+ 
   srv->write_nstring_dr (line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
 }
 
 private define del ()
 {
   cw_._chr = get_char ();
-  
-  send_msg_dr ("delete? d[delete line]|w[ord]", 0, NULL, NULL);
-
+ 
   if (any (['d', 'w' == cw_._chr]))
     {
     if ('d' == cw_._chr)
@@ -122,11 +162,55 @@ private define del ()
       s_.draw ();
       }
 %% will change to W and del_Word
-%    if ('w' == cw_._chr)
-%      del_word ();
+    if ('w' == cw_._chr)
+      del_word ();
+    }
+}
+
+private define del_to_end ()
+{
+  variable
+    col = cw_.ptr[1],
+    i = v_lnr ('.'),
+    line = v_lin ('.'),
+    len = strlen (line);
+ 
+  if (cw_.ptr[1] == len)
+    return;
+ 
+  cw_.st_.st_size -= strbytelen (line);
+
+  ifnot (cw_.ptr[1] - cw_._indent)
+    {
+    line = repeat (" ", cw_._indent);
+    ifnot (strlen (line))
+      line = " ";
+ 
+    cw_.ptr[1] = cw_._indent;
+
+    cw_.lines[i] = line;
+    cw_.lins[cw_.ptr[0] - cw_.rows[0]] = line;
+ 
+    cw_._flags = cw_._flags | MODIFIED;
+
+    srv->write_nstr (line, 0, cw_.ptr[0], 0, COLUMNS);
+    draw_tail ();
+    return;
     }
 
-  send_msg_dr (" ", 0, cw_.ptr[0], cw_.ptr[1]);
+  line = substr (line, 1, col);
+
+  cw_.lins[cw_.ptr[0] - cw_.rows[0]] = line;
+  cw_.lines[i] = line;
+ 
+  cw_._flags = cw_._flags | MODIFIED;
+
+  cw_.st_.st_size += strbytelen (line);
+
+  cw_.ptr[1]--;
+
+  srv->write_nstr (line, 0, cw_.ptr[0], 0, COLUMNS);
+  draw_tail ();
 }
 
 private define edit_line ()
@@ -148,8 +232,8 @@ private define edit_line ()
     next_l = "";
   else
     next_l = strjoin (cw_.lines[i+1]);
-  
-  if ('C' == cw_._chr) 
+ 
+  if ('C' == cw_._chr)
     line = substr (line, 1, col);
   else if ('a' == cw_._chr)
     cw_.ptr[1]++;
@@ -163,7 +247,7 @@ private define edit_line ()
   rlf_.getline (&line, prev_l, next_l);
  
   cw_._flags = cw_._flags | MODIFIED;
-  
+ 
   cw_.lins[cw_.ptr[0] - cw_.rows[0]] = line;
   cw_.lines[i] = line;
 
@@ -175,11 +259,12 @@ private define edit_line ()
 pagerf[string ('d')] = &del;
 pagerf[string ('x')] = &del_chr;
 pagerf[string ('X')] = &del_chr;
+pagerf[string ('D')] = &del_to_end;
 pagerf[string ('C')] = &edit_line;
 pagerf[string ('i')] = &edit_line;
 pagerf[string ('a')] = &edit_line;
 pagerf[string ('A')] = &edit_line;
 %pf[string (keys->CTRL_u)] = &redo;
 %pf[string ('u')] = &undo;
-%pf[string ('>')] = &indent_out;
-%pf[string ('<')] = &indent_in;
+pagerf[string ('>')] = &indent_out;
+pagerf[string ('<')] = &indent_in;

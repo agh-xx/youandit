@@ -418,9 +418,9 @@ private define write_file (s)
       write_line (strjoin (s.p_.lins[i]));
 
   () = fclose (s._fnfp);
-  
+ 
   s._fnfp = fopen (s._fname, "r+");
-  
+ 
   if (s._flags & MODIFIED)
     s._flags = s._flags xor MODIFIED;
 }

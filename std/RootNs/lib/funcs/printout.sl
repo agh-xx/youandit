@@ -50,8 +50,8 @@ define main (self, ar, col, len)
     if (l < COLUMNS)
       nar[i] = nar[i] + repeat (" ", COLUMNS - l);
     }
-  
-  if (NULL == lrow) 
+ 
+  if (NULL == lrow)
     {
     if (@len < lines)
       {

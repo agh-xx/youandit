@@ -3,7 +3,7 @@ private define gotopager ()
   variable
     args = _NARGS > 1 ?__pop_list (_NARGS - 1) : {},
     self = ();
-  
+ 
   self.exec (sprintf ("%s/funcs/%s", path_dirname (__FILE__), _function_name ()),
     __push_list (args);;__qualifiers ());
 }

@@ -10,9 +10,9 @@ variable
   SOURCEDIR = sprintf ("%s/dist", ROOTDIR);
 
 set_import_module_path (__argv[5]);
-set_slang_load_path (sprintf ("%s:%c%s/I_Ns/lib:%c:%s/proc",
+set_slang_load_path (sprintf ("%s/proc/lib:%c%s:%c%s/I_Ns/lib",
+    STDNS, path_get_delimiter (),
   __argv[6], path_get_delimiter (),
-  STDNS, path_get_delimiter (),
   STDNS));
 
 private variable func = __argv[7];
@@ -40,7 +40,7 @@ define _usage ()
 {
   variable
     if_opt_err = _NARGS ? () : " ",
-    infodir = path_dirname (__argv[0]) + "/info/" + path_basename (__argv[0]),
+    infodir = path_dirname (__argv[0]) + "/../info/" + path_basename (__argv[0]),
     helpfile = qualifier ("helpfile", sprintf ("%s/help.txt", infodir)),
     ar = _NARGS ? [if_opt_err] : String_Type[0];
 
@@ -59,7 +59,7 @@ define _usage ()
     exit (1);
     }
 
-  ar_to_fp (["Help for %s", path_basename (__argv[0]), ar], "%s\n", stdout);
+  ar_to_fp ([sprintf ("Help for %s", path_basename (__argv[0])), ar], "%s\n", stdout);
 
   exit (_NARGS);
 }
@@ -67,7 +67,7 @@ define _usage ()
 define info ()
 {
   variable
-    infodir = path_dirname (__argv[0]) + "/info/" + path_basename (__argv[0]),
+    infodir = path_dirname (__argv[0]) + "/../info/" + path_basename (__argv[0]),
     infofile = qualifier ("helpfile", sprintf ("%s/desc.txt", infodir)),
     ar;
 

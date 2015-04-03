@@ -65,7 +65,7 @@ define draw ()
   clrs[*] = 0;
 
   srv->draw_wind (ar, clrs, [w_.vlins, LINES - 1], cols, [w_.ptr[0], w_.ptr[1]]);
-  
+ 
   w_.state = List_Type[length (w_.vlins)];
 
   _for i (0, length (w_.vlins) - 1)

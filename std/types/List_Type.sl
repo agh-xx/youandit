@@ -47,8 +47,8 @@ define main (self, name)
     };
 
   variable me = root.windows[name];
-  
-  me.maxframes = 1; 
+ 
+  me.maxframes = 1;
   me.len = length (me.reportlist);
 
   me.readline = struct

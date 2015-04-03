@@ -33,7 +33,7 @@ define main (self, frame)
     [buf.pos[0], buf.pos[1]]);
 
   ifnot (qualifier_exists ("file"))
-    {  
+    {
     _for i (0, length (buf.rows) - 1)
       {
       self.img[buf.rows[i]].str = ar[i];

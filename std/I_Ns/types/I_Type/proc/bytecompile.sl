@@ -78,7 +78,7 @@ define ask (str, ar)
     retval;
 
   write_nstring_dr (str, COLUMNS, 0, [PROMPTROW, 0, PROMPTROW, strlen (str)]);
-  
+ 
   retval = (@getch);
 
   while (NULL == wherefirst_eq (ar, retval) && 033 != retval)
@@ -98,7 +98,7 @@ define rm_dir (dir)
   ifnot (Accept_All_As_Yes) {
   % coding style violence
  
-  retval = ask (sprintf ("%s remove directory? y[es]/Y[es to all]/n[no]/N[o to all]", dir), 
+  retval = ask (sprintf ("%s remove directory? y[es]/Y[es to all]/n[no]/N[o to all]", dir),
     ['y',  'Y',  'n',  'N']);
  
  
@@ -132,7 +132,7 @@ define rmfile (file)
 
   ifnot (Accept_All_As_Yes) {
 
-  retval = ask (sprintf ("%s remove compiled file? y[es]/Y[es to all]/n[no]/N[o to all]", file), 
+  retval = ask (sprintf ("%s remove compiled file? y[es]/Y[es to all]/n[no]/N[o to all]", file),
     ['y',  'Y',  'n',  'N']);
 
   if ('n' == retval || 'N' == retval || 033 == retval)
@@ -295,7 +295,7 @@ define main ()
     dirs = dirs [array_sort (dirs;dir = -1)];
     array_map (Void_Type, &rm_dir, dirs);
     }
-  
+ 
   () = fprintf (EXIT_CODE ? stderr : stdout, "EXIT_CODE: %d\n%s\n",
     EXIT_CODE, repeat ("_", COLUMNS));
 

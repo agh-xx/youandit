@@ -15,7 +15,7 @@ define main ()
     srv->send_msg ("No background jobs", 0);
     throw GotoPrompt;
     }
-  
+ 
   args = list_to_array (args, String_Type);
   index = proc->is_arg ("--pager", args);
   ifnot (NULL == index)

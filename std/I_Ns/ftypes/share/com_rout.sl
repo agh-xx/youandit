@@ -43,8 +43,8 @@ private define routine (s)
     {
     if (s.c_._col > 1)
       s.delete_at ();
-    
-    return; 
+ 
+    return;
     }
 
   if (any (keys->rmap.left == s.c_._chr))

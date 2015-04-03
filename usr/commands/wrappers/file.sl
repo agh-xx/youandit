@@ -1,9 +1,10 @@
 define main ()
 {
   variable
+    argv,
     file,
     index,
-    argv,
+    status,
     gotopager = 0,
     file_exec = which ("file"),
     args = __pop_list (_NARGS - 1);
@@ -32,23 +33,22 @@ define main ()
 
   argv = [file_exec, args];
 
-  variable p = @i->init_proc (0, 1, 1, argv);
+  variable p = proc->init (0, 1, 1);
 
   p.stdout.file = SCRATCHBUF;
-  p.stdout.wr_flags = ">|";
-
   p.stderr.file = CW.msgbuf;
   p.stderr.wr_flags = ">>";
-
-  if (-1 == i->sysproc (p))
+ 
+  status = p.execv (argv, NULL);
+  if (NULL == status)
     throw GotoPrompt;
 
-  file = p.status.exit_status ? CW.msgbuf : SCRATCHBUF;
+  file = status.exit_status ? CW.msgbuf : SCRATCHBUF;
 
   ifnot (gotopager)
-    (@CW.gotopager) (CW, file;drawonly);
+    ved (file;drawonly);
   else
-    (@CW.gotopager) (CW, file);
+    ved (file;drawwind);
 
   throw GotoPrompt;
 }

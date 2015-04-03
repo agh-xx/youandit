@@ -47,7 +47,7 @@ bind ($1, PG_SOCKADDR);
 listen ($1, 1);
 
 PG_SOCKET = accept (__tmp ($1));
-  
+ 
 try
   {
   () = evalfile (sprintf ("%s/SockNs/sock_funcs", STDNS), "sock");
@@ -72,7 +72,7 @@ catch AnyError:
         Description: %s\n\
         Error:       %d\n",
         _push_struct_field_values (__get_exception_info)), '\n', 0));
-  
+ 
   write (PG_SOCKET, string (GOTO_EXIT));
   exit (1);
   }
