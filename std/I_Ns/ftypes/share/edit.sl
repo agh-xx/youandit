@@ -146,7 +146,7 @@ private define del_word ()
  
   s_.encode ();
 
-  srv->write_nstring_dr (line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
+  srv->write_nstr_dr (line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
 }
 
 private define del_chr ()
@@ -187,7 +187,7 @@ private define del_chr ()
  
   s_.encode ();
 
-  srv->write_nstring_dr (line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
+  srv->write_nstr_dr (line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
 }
 
 private define del ()
@@ -348,7 +348,7 @@ private define newline ()
     else
       next_l = strjoin (s_.p_.lins[i+1]);
  
-  srv->write_nstring_dr (line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
+  srv->write_nstr_dr (line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
 
   rl_.getline (&line, prev_l, next_l);
  
@@ -411,7 +411,7 @@ private define edit_line ()
  
   s_.st_.st_size -= strbytelen (line);
 
-  srv->write_nstring_dr (line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
+  srv->write_nstr_dr (line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
 
   rl_.getline (&line, prev_l, next_l);
  

@@ -12,6 +12,13 @@ static define set_color_in_region (color, row, col, dr, dc)
   () = sock->get_bit (SRV_SOCKET);
 }
 
+static define draw_hline (clr, row, col, cols)
+{
+  sock->send_str (SRV_SOCKET, _function_name ());
+  sock->get_bit_send_int_ar (SRV_SOCKET, [clr, row, col, cols]);
+  () = sock->get_bit (SRV_SOCKET);
+}
+
 static define write_nstr (str, clr, row, col, columns)
 {
   sock->send_str (SRV_SOCKET, _function_name ());
@@ -20,7 +27,7 @@ static define write_nstr (str, clr, row, col, columns)
   () = sock->get_bit (SRV_SOCKET);
 }
 
-static define write_ar_nstr_at (ar, colors, rows, cols, len)
+static define write_ar_nstr (ar, colors, rows, cols, len)
 {
   sock->send_str (SRV_SOCKET, _function_name ());
   () = sock->get_bit_send_str_ar (SRV_SOCKET, ar);
@@ -31,7 +38,7 @@ static define write_ar_nstr_at (ar, colors, rows, cols, len)
   () = sock->get_bit (SRV_SOCKET);
 }
 
-static define write_ar_at (ar, colors, rows, cols)
+static define write_ar (ar, colors, rows, cols)
 {
   sock->send_str (SRV_SOCKET, _function_name ());
   () = sock->get_bit_send_str_ar (SRV_SOCKET, ar);
@@ -64,7 +71,7 @@ static define write_ar_dr (ar, colors, rows, cols, pos)
   () = sock->get_bit (SRV_SOCKET);
 }
 
-static define write_nstring_dr (str, len, color, pos)
+static define write_nstr_dr (str, len, color, pos)
 {
   sock->send_str (SRV_SOCKET, _function_name ());
 

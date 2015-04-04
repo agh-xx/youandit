@@ -23,5 +23,5 @@ define main (self)
     self.img[lines[i]].clr = colors[i];
     }
 
-  srv->write_ar_at (ar, colors, lines, 0);
+  srv->write_ar (ar, colors, lines, 0);
 }

@@ -21,7 +21,7 @@ define main ()
     session[i] = "";
  
   srv->clear_frame (framelen, PROMPTROW - framelen - 1, PROMPTROW - 1, COLOR.out, 0);
-  srv->write_ar_at ([repeat ("_", COLUMNS), session], COLOR.out, [PROMPTROW - framelen - 1: PROMPTROW - 1], 0);
+  srv->write_ar ([repeat ("_", COLUMNS), session], COLOR.out, [PROMPTROW - framelen - 1: PROMPTROW - 1], 0);
   srv->write_prompt (NULL, 1;prompt_char = ">");
 
   forever
@@ -34,7 +34,7 @@ define main ()
  
     CW.drawwind (;dont_reread);
     srv->clear_frame (framelen, PROMPTROW - framelen, PROMPTROW - 1, COLOR.out, 0);
-    srv->write_ar_at ([repeat ("_", COLUMNS), session], COLOR.out, [PROMPTROW - framelen - 1: PROMPTROW - 1], 0);
+    srv->write_ar ([repeat ("_", COLUMNS), session], COLOR.out, [PROMPTROW - framelen - 1: PROMPTROW - 1], 0);
     srv->refresh ();
 
     histar = [line, histar[wherenot (histar == line)]];
@@ -66,7 +66,7 @@ define main ()
     root.topline ();
  
     srv->clear_frame (framelen, PROMPTROW - framelen, PROMPTROW - 1, COLOR.out, 0);
-    srv->write_ar_at ([repeat ("_", COLUMNS), session], COLOR.out, [PROMPTROW - framelen - 1: PROMPTROW - 1], 0);
+    srv->write_ar ([repeat ("_", COLUMNS), session], COLOR.out, [PROMPTROW - framelen - 1: PROMPTROW - 1], 0);
     srv->write_prompt (NULL, 1;prompt_char = ">");
     }
 

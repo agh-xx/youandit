@@ -36,6 +36,7 @@ define draw ()
   if (cw_.ptr[0] >= i)
     cw_.ptr[0] = i - 1;
 
+
   ar = array_map (String_Type, &substr, cw_.lins, 1, cw_._maxlen);
 
   if (length (ar) < length (cw_.rows) - 1)

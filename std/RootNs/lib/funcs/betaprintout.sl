@@ -35,7 +35,7 @@ define main (self, ar, col, len)
   srv->write_str_at (sprintf ("%s%s", header,
      repeat (" ", COLUMNS - strlen (header))), qualifier ("head_clr", COLOR.hlhead), 0, 0);
 
-  srv->write_ar_at (nar, qualifier ("color", COLOR.focus), rows, 0);
+  srv->write_ar (nar, qualifier ("color", COLOR.focus), rows, 0);
  
   ifnot (NULL == hlreg)
     srv->set_color_in_region (hlreg[0], hlreg[1], hlreg[2], hlreg[3], hlreg[4]);

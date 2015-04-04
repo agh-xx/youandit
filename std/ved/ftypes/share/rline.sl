@@ -404,14 +404,14 @@ private define write_completion_routine (s, ar)
   _for i (0, length (ar) - 1)
     rl_.cmp_lnrs[i] = len + i;
  
-  srv->write_ar_nstr_at (ar, clrs, rl_.cmp_lnrs, cols, COLUMNS);
+  srv->write_ar_nstr (ar, clrs, rl_.cmp_lnrs, cols, COLUMNS);
 }
 
 rlf_.w_comp_rout = &write_completion_routine;
 
 private define write_rline (line, clr, dim, pos)
 {
-  srv->write_nstring_dr (line, COLUMNS, clr, [dim, pos]);
+  s_.write_nstr_dr (line, clr, dim[0], dim[1], pos);
 }
 
 private define write_routine (s)
@@ -483,7 +483,7 @@ private define clear (s, pos)
   ifnot (qualifier_exists ("dont_redraw"))
     srv->write_ar_dr (ar, clrs, rl_.lnrs, cols, pos);
   else
-    srv->write_ar_at (ar, clrs, rl_.lnrs, cols);
+    srv->write_ar (ar, clrs, rl_.lnrs, cols);
 
 }
 
@@ -507,7 +507,9 @@ rlf_.execline = &exec_line;
 private define readline (s)
 {
   rlf_.init ();
-
+  
+  topline (" (ved)  -- COMMAND LINE --");
+  
   rlf_.prompt ();
 
   forever
@@ -517,12 +519,14 @@ private define readline (s)
     if (033 == rl_._chr)
       {
       rlf_.clear (cw_.ptr;dont_redraw);
+      topline (" (ved)  -- PAGER --");
       rlf_.restore (cw_.ptr);
       break;
       }
 
     if ('\r' == rl_._chr)
       {
+      topline (" (ved)  -- PAGER --");
       rlf_.execline ();
       return;
       }
@@ -1074,8 +1078,12 @@ rlf_.hlitem = &hlitem;
 
 private define getline (s, line, prev_l, next_l)
 {
-  srv->write_nstring_dr ("-- INSERT -- ", COLUMNS, 0, [0, 0, cw_.ptr[0], cw_.ptr[1]]);
-  variable gl_ = @Rline_Type;
+  topline_dr (" (ved)  -- INSERT --");
+
+  variable
+    l,
+    i,
+    gl_ = @Rline_Type;
 
   gl_._col = cw_.ptr[1];
   gl_._row = cw_.ptr[0];
@@ -1089,10 +1097,114 @@ private define getline (s, line, prev_l, next_l)
       if (0 < cw_.ptr[1] - cw_._indent)
         cw_.ptr[1]--;
 
-      srv->write_nstring_dr (" ", COLUMNS, 0, [0, 0, cw_.ptr[0], cw_.ptr[1]]);
+      cw_._flags = cw_._flags | MODIFIED;
+     
+      cw_.lins[cw_.ptr[0] - cw_.rows[0]] = @line;
+      cw_.lines["next" == qualifier ("dir") ? qualifier ("i") + 1 :qualifier ("i")] = @line;
+
+      cw_.st_.st_size += strbytelen (@line);
+
+      topline_dr (" (ved)  -- PAGER --");
+      return;
+      }
+
+    if ('\r' == gl_._chr)
+      if (strlen (@line) == cw_.ptr[1])
+        {
+        cw_._flags = cw_._flags | MODIFIED;
+       
+        cw_.lins[cw_.ptr[0] - cw_.rows[0]] = @line;
+        cw_.lines["next" == qualifier ("dir") ? qualifier ("i") + 1 :qualifier ("i")] = @line;
+
+        cw_.st_.st_size += strbytelen (@line);
+        
+        cw_._chr = 'o';
+        
+        (@pagerf[string ('o')]);
+
+        return;
+        }
+      else
+        {
+        cw_._flags = cw_._flags | MODIFIED;
+        l = 0 == cw_.ptr[1] - cw_._indent ? " " : substr (@line, 1, cw_.ptr[1]);
+        i = qualifier ("i");
+        @line = substr (@line, cw_.ptr[1] + 1, -1);
+
+        prev_l = l;
+
+        if (i + 1 >= cw_._len)
+          next_l = "";
+        else
+          next_l = v_lin (cw_.ptr[0] + 1);
+
+        cw_.st_.st_size += strbytelen (l);
+
+        cw_.ptr[1] = cw_._indent;
+        cw_._i = cw_._ii;
+
+        if (cw_.ptr[0] == cw_.rows[-2] && cw_.ptr[0] + 1 > cw_._avlins)
+          cw_._i++;
+        else
+          cw_.ptr[0]++;
+
+        ifnot (i)
+          cw_.lines = [l, @line, cw_.lines[[i + 1:]]];
+        else
+          cw_.lines = [cw_.lines[[:i - 1]], l, @line, cw_.lines[[i + 1:]]];
+
+        cw_._len++;
+        
+        s_.draw ();
+        
+        rlf_.getline (line, prev_l, next_l;dir = "next", i = i);
+
+        return;
+        }
+
+    if (keys->UP == gl_._chr)
+      {
+      i = v_lnr ('.');
+      ifnot (i)
+        continue;
+
+      cw_._flags = cw_._flags | MODIFIED;
+       
+      cw_.lins[cw_.ptr[0] - cw_.rows[0]] = @line;
+      cw_.lines["next" == qualifier ("dir") ? qualifier ("i") + 1 :qualifier ("i")] = @line;
+
+      cw_.st_.st_size += strbytelen (@line);
+        
+      (@pagerf[string (keys->UP)]);
+
+      cw_._chr = 'i';
+
+      (@pagerf[string ('i')]);
+
       return;
       }
  
+    if (keys->DOWN == gl_._chr)
+      {
+      i = v_lnr ('.');
+      ifnot (i < cw_._len)
+        continue;
+
+      cw_._flags = cw_._flags | MODIFIED;
+       
+      cw_.lins[cw_.ptr[0] - cw_.rows[0]] = @line;
+      cw_.lines["next" == qualifier ("dir") ? qualifier ("i") + 1 :qualifier ("i")] = @line;
+
+      cw_.st_.st_size += strbytelen (@line);
+        
+      (@pagerf[string (keys->DOWN)]);
+
+      cw_._chr = 'i';
+
+      (@pagerf[string ('i')]);
+
+      return;
+      }
     if (any (keys->rmap.left == gl_._chr))
       {
       if (0 < cw_.ptr[1] - cw_._indent)
@@ -1113,13 +1225,13 @@ private define getline (s, line, prev_l, next_l)
           + substr (@line, gl_._col + 1, - 1);
         gl_._col++;
         cw_.ptr[1]++;
-        srv->write_nstring_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
+        srv->write_nstr_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
         }
 
       continue;
       }
 
-    if (any (keys->CTRL_e == gl_._chr))
+    if (any (keys->rmap.end == gl_._chr))
       {
       if (cw_.ptr[1] < strlen (next_l))
         {
@@ -1127,7 +1239,7 @@ private define getline (s, line, prev_l, next_l)
           substr (@line, gl_._col + 1, - 1);
         gl_._col++;
         cw_.ptr[1]++;
-        srv->write_nstring_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
+        srv->write_nstr_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
         }
 
       continue;
@@ -1172,7 +1284,7 @@ private define getline (s, line, prev_l, next_l)
         gl_._col--;
         }
 
-      srv->write_nstring_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
+      srv->write_nstr_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
  
       continue;
       }
@@ -1181,7 +1293,7 @@ private define getline (s, line, prev_l, next_l)
       {
       @line = substr (@line, 1, gl_._col) + substr (@line, gl_._col + 2, - 1);
 
-      srv->write_nstring_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
+      srv->write_nstr_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
  
       continue;
       }
@@ -1191,7 +1303,7 @@ private define getline (s, line, prev_l, next_l)
       @line = substr (@line, 1, gl_._col) + char (gl_._chr) +  substr (@line, gl_._col + 1, - 1);
       gl_._col++;
       cw_.ptr[1]++;
-      srv->write_nstring_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
+      srv->write_nstr_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
       continue;
       }
     }

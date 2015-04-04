@@ -61,7 +61,7 @@ EXCLUDEFILESFORDELETION = EXCLUDEFILESFORDELETION[wherenot (_isnull (EXCLUDEFILE
 variable Accept_All_As_Yes = 0;
 variable Accept_All_As_No = 0;
 
-define write_nstring_dr (str, len, color, pos)
+define write_nstr_dr (str, len, color, pos)
 {
   sock->send_str (SRV_SOCKET, _function_name ());
 
@@ -77,14 +77,14 @@ define ask (str, ar)
   variable
     retval;
 
-  write_nstring_dr (str, COLUMNS, 0, [PROMPTROW, 0, PROMPTROW, strlen (str)]);
+  write_nstr_dr (str, COLUMNS, 0, [PROMPTROW, 0, PROMPTROW, strlen (str)]);
  
   retval = (@getch);
 
   while (NULL == wherefirst_eq (ar, retval) && 033 != retval)
     retval = (@getch);
 
-  write_nstring_dr (" ", COLUMNS, 0, [PROMPTROW, 0, PROMPTROW, 0]);
+  write_nstr_dr (" ", COLUMNS, 0, [PROMPTROW, 0, PROMPTROW, 0]);
   return retval;
 }
 

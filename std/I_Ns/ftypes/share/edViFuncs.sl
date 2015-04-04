@@ -35,7 +35,7 @@ define tail ()
 
 define draw_tail ()
 {
-  srv->write_nstring_dr (tail, COLUMNS, 0, [LINES - 1, 0, w_.ptr[0], w_.ptr[1]]);
+  srv->write_nstr_dr (tail, COLUMNS, 0, [LINES - 1, 0, w_.ptr[0], w_.ptr[1]]);
 }
 
 define draw_head ()

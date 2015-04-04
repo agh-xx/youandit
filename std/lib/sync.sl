@@ -21,7 +21,6 @@ private define rm_dir (dir)
      "y[es]/Y[es to all]/n[no]/N[o to all] escape to abort (same as 'n')"],
     ['y',  'Y',  'n',  'N'];header = "sync question");
  
- 
   if ('n' == retval || 'N' == retval || 033 == retval)
     {
     (@print_out) (sprintf (
@@ -135,6 +134,8 @@ private define rm_extra (s, cur, other)
   if (any (-1 == exit_code))
     return 1;
 
+  Accept_All_As_Yes = 0;
+
   return 0;
 }
 
@@ -187,22 +188,27 @@ private define _copy (s, source, dest, st_source, st_dest)
     retval,
     backup = NULL,
     backuptext = "";
-
-  if (s.interactive_copy)
-    {
-    retval = (@ask)
-      ([sprintf ("update `%s'", dest), "y[es]/n[o]/q[uit] or escape to abort"],
-      ['y', 'n', 'q']);
-
-    if (any (['n', 033] == retval))
+  
+  ifnot (Accept_All_As_Yes)
+    if (s.interactive_copy)
       {
-      (@print_out) (sprintf ("%s aborting ...", source));
-      return 1;
-      }
+      retval = (@ask) ([sprintf ("update `%s'", dest),
+        "y[es]/Y[es to all]/n[no]/N[o to all] escape to abort (same as 'n')"],
+          ['y',  'Y',  'n',  'N']);
 
-    if ('q' == retval)
-      return -1;
-    }
+      if ('n' == retval || 'N' == retval || 033 == retval)
+        {
+        (@print_out) (sprintf ("%s aborting ...", source));
+
+        Accept_All_As_No = 'N' == retval;
+        return 0;
+        }
+
+      if ('q' == retval)
+        return -1;
+   
+      Accept_All_As_Yes = 'Y' == retval;
+      }
 
   if (s.backup)
       ifnot (any ([isfifo (source;st = st_source), issock (source;st = st_source),
@@ -326,6 +332,9 @@ private define _copy (s, source, dest, st_source, st_dest)
 
 private define file_callback (file, st, s, source, dest, exit_code)
 {
+  if (Accept_All_As_No)
+    return -1;
+
   (dest, ) = strreplace (file, source, dest, 1);
  
   variable
@@ -368,6 +377,9 @@ private define file_callback (file, st, s, source, dest, exit_code)
 
 private define dir_callback (dir, st, s, source, dest, exit_code)
 {
+  if (Accept_All_As_No)
+    return -1;
+
   ifnot (NULL == s.ignoredir)
     {
     variable ldir = strtok (dir, "/");
@@ -440,6 +452,7 @@ private define _sync (s, source, dest)
     dargs = {s, source, dest, &exit_code}, fargs = {s, source, dest, &exit_code});
 
   fs.walk (source);
+
   ifnot (exit_code)
     if (s.rmextra)
       exit_code = rm_extra (s, source, dest);

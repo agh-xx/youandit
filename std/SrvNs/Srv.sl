@@ -167,7 +167,7 @@ private define write_wrapped_str_dr ()
 
 funcs["write_wrapped_str_dr"] = &write_wrapped_str_dr;
 
-private define write_ar_nstr_at ()
+private define write_ar_nstr ()
 {
   variable
     ar = sock->send_bit_get_str_ar (SRV_FD, 0),
@@ -181,9 +181,9 @@ private define write_ar_nstr_at ()
   sock->send_bit (SRV_FD, 0);
 }
 
-funcs["write_ar_nstr_at"] = &write_ar_nstr_at;
+funcs["write_ar_nstr"] = &write_ar_nstr;
 
-private define write_ar_at ()
+private define write_ar ()
 {
   variable
     ar = sock->send_bit_get_str_ar (SRV_FD, 0),
@@ -196,7 +196,7 @@ private define write_ar_at ()
   sock->send_bit (SRV_FD, 0);
 }
 
-funcs["write_ar_at"] = &write_ar_at;
+funcs["write_ar"] = &write_ar;
 
 private define multi_rline_prompt ()
 {
@@ -273,7 +273,7 @@ private define write_nstring_at ()
 
 funcs["write_nstring_at"] = &write_nstring_at;
 
-private define write_nstring_dr ()
+private define write_nstr_dr ()
 {
   variable
     str = sock->send_bit_get_str (SRV_FD, 0),
@@ -289,7 +289,7 @@ private define write_nstring_dr ()
   sock->send_bit (SRV_FD, 0);
 }
 
-funcs["write_nstring_dr"] = &write_nstring_dr;
+funcs["write_nstr_dr"] = &write_nstr_dr;
 
 private define draw_wind ()
 {
@@ -351,6 +351,17 @@ private define gotorc ()
 }
 
 funcs["gotorc"] = &gotorc;
+
+private define draw_hline ()
+{
+  variable ar = sock->send_bit_get_int_ar (SRV_FD, 0);
+  slsmg_gotorc (ar[1], ar[2]);
+  slsmg_set_color (ar[0]);
+  slsmg_draw_hline (ar[3]);
+  sock->send_bit (SRV_FD, 0);
+}
+
+funcs["draw_hline"] = &draw_hline;
 
 private define gotorc_draw ()
 {

@@ -175,7 +175,7 @@ private define write_completion_routine (s, ar)
   if (qualifier_exists ("redraw"))
     srv->write_ar_nstr_dr (bar, clrs, s.c_.cmp_lnrs, cols, [s.c_._row, s.c_._col], COLUMNS);
   else
-    srv->write_ar_nstr_at (bar, clrs, s.c_.cmp_lnrs, cols, COLUMNS);
+    srv->write_ar_nstr (bar, clrs, s.c_.cmp_lnrs, cols, COLUMNS);
 }
 
 rl_.w_comp_rout = &write_completion_routine;
@@ -249,7 +249,7 @@ private define clear (s, pos)
   ifnot (qualifier_exists ("dont_redraw"))
     srv->write_ar_dr (ar, clrs, s.c_.lnrs, cols, pos);
   else
-    srv->write_ar_at (ar, clrs, s.c_.lnrs, cols);
+    srv->write_ar (ar, clrs, s.c_.lnrs, cols);
 
 }
 

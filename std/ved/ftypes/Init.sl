@@ -38,6 +38,9 @@ typedef struct
   _shiftwidth,
   ved,
   draw,
+  write_nstr,
+  write_nstr_dr,
+  line,
   quit,
   getlines,
   writefile,
@@ -67,6 +70,20 @@ private define getlines (s)
 }
 
 private define quit (t)
+{
+  () = evalfile (sprintf ("%s/share/%s", path_dirname (__FILE__), _function_name ()), t);
+
+  return __get_reference (sprintf ("%s->%s", t, _function_name ()));
+}
+
+private define write_nstr_dr (t)
+{
+  () = evalfile (sprintf ("%s/share/%s", path_dirname (__FILE__), _function_name ()), t);
+
+  return __get_reference (sprintf ("%s->%s", t, _function_name ()));
+}
+
+private define write_nstr (t)
 {
   () = evalfile (sprintf ("%s/share/%s", path_dirname (__FILE__), _function_name ()), t);
 
@@ -104,6 +121,8 @@ define init (ftype)
   type.getlines = &getlines;
   type.ved = ved (ftype);
   type.draw = draw (ftype);
+  type.write_nstr = write_nstr (ftype);
+  type.write_nstr_dr = write_nstr_dr (ftype);
   type.quit = quit (ftype);
   type.writefile  = writetofile (ftype);
 

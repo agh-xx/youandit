@@ -7,7 +7,7 @@ f_ = struct
 
 private define write_line (s, line, clr, dim, pos)
 {
-  srv->write_nstring_dr (line, COLUMNS, clr, [dim, pos]);
+  srv->write_nstr_dr (line, COLUMNS, clr, [dim, pos]);
 }
 
 f_.writeline = &write_line;

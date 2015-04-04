@@ -41,7 +41,7 @@ define main (self, ar, col, len)
         }
       }
 
-    srv->write_ar_nstr_at (lar, clrs, rows, cols, COLUMNS);
+    srv->write_ar_nstr (lar, clrs, rows, cols, COLUMNS);
     }
 
   _for i (0, length (nar) - 1)
@@ -64,7 +64,7 @@ define main (self, ar, col, len)
   else
     PRINTROWS = [lrow - length (nar):lrow - 1];
 
-  srv->write_ar_at (nar, qualifier ("color", COLOR.focus), PRINTROWS, 0);
+  srv->write_ar (nar, qualifier ("color", COLOR.focus), PRINTROWS, 0);
 
   ifnot (NULL == header)
     {

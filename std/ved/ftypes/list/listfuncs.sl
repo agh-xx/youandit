@@ -1,9 +1,76 @@
 private variable
+  fnames = Assoc_Type[Frame_Type],
   frame = 1,
-  frames = Frame_Type[2];
+  prev_fn = NULL,
+  defrows = {[1:LINES - 9], [LINES - 8:LINES - 3]};
 
-frames[0] = @Frame_Type;
-frames[1] = @Frame_Type;
+private define myquit ()
+{
+  variable
+    fn,
+    chr,
+    fns = assoc_get_keys (fnames);
+
+  _for fn (0, length (fns) - 1)
+    {
+    cw_ = fnames[fns[fn]];
+    if (cw_._flags & RDONLY || 0 == cw_._flags & MODIFIED ||
+        (0 == qualifier_exists ("force") && "q!" == rl_.argv[0]))
+      continue;
+
+    send_msg_dr (sprintf ("%s: save changes? y[es]|n[o]", cw_._fname), 0, NULL, NULL);
+
+    chr = get_char ();
+    while (0 == any (chr == ['y', 'n']))
+      chr = get_char ();
+    
+    if ('n' == chr)
+      continue;
+
+    ifnot (0 == s_.writefile (cw_._fname))
+      {
+      send_msg_dr (sprintf ("%s, press q to quit without saving", errno_string (errno)),
+        1, NULL, NULL);
+
+      if ('q' == get_char ())
+        return;
+      }
+    }
+  
+  send_msg (" ", 0);
+  exit_me (0);
+}
+
+
+private define add (s, rows)
+{
+  if (assoc_key_exists (fnames, s.fname))
+    return;
+
+  fnames[s.fname] = @Frame_Type;
+
+  variable
+    c = fnames[s.fname],
+    len = length (rows);
+  
+  c.rows = rows;
+  c.ptr = Integer_Type[2];
+  c.cols = Integer_Type[len];
+  c.cols[*] = 0;
+  c.clrs = Integer_Type[len];
+  c.clrs[*] = 0;
+  c._avlins = len - 1;
+  c._maxlen = COLUMNS;
+  c._flags = 0;
+  c.lines = readfile (s.fname);
+  c._len = length (c.lines) - 1;
+  c._fname = s.fname;
+  c.st_ = stat_file (c._fname);
+  c._i = c._len >= s.lnr - 1 ? s.lnr - 1 : 0;
+  c.ptr[0] = qualifier ("row", 1);
+  c.ptr[1] = qualifier ("col", s.col - 1);
+  c._indent = qualifier ("indent", 0);
+}
 
 private define togglecur ()
 {
@@ -11,47 +78,15 @@ private define togglecur ()
   srv->set_color_in_region (INFOCLRBG, cw_.rows[-1], 0, 1, COLUMNS);
   IMG[cw_.rows[-1]][1] = INFOCLRBG;
   frame = frame ? 0 : 1;
-  cw_ = frames[frame];
+  prev_fn = cw_._fname;
+}
+
+private define set_cw (fname)
+{
+  cw_ = fnames[fname];
   cw_.clrs[-1] = INFOCLRFG;
   IMG[cw_.rows[-1]][1] = INFOCLRFG;
   srv->set_color_in_region (INFOCLRFG, cw_.rows[-1], 0, 1, COLUMNS);
-}
-
-private define init (s)
-{
-  frames[1].rows = [LINES - 8:LINES - 3];
-  frames[0].rows = [1:LINES - 9];
-
-  variable len = length (frames[1].rows);
-
-  frames[1].ptr = Integer_Type[2];
-  frames[1].cols = Integer_Type[len];
-  frames[1].cols[*] = 0;
-  frames[1].clrs = Integer_Type[len];
-  frames[1].clrs[*] = 0;
-  frames[1].clrs[-1] = INFOCLRFG;
-  frames[1]._avlins = len - 1;
-  frames[1]._maxlen = COLUMNS;
-  frames[1].ptr[0] = frames[1].rows[0];
-  frames[1].ptr[1] = 0;
-  frames[1]._flags = 0;
-  frames[1]._i = 0;
- 
-  len = length (frames[0].rows);
-
-  frames[0].cols = Integer_Type[len];
-  frames[0].cols[*] = 0;
-  frames[0].clrs = Integer_Type[len];
-  frames[0].clrs[*] = 0;
-  frames[0].clrs[-1] = INFOCLRBG;
-  frames[0]._avlins = len - 1;
-  frames[0]._maxlen = COLUMNS;
-  frames[0].ptr = Integer_Type[2];
-  frames[0].ptr[0] = frames[0].rows[0];
-  frames[0].ptr[1] = 0;
-  frames[0]._flags = 0;
-  frames[0]._indent = 0;
-  frames[0]._i = 0;
 }
 
 private define getitem ()
@@ -61,7 +96,12 @@ private define getitem ()
     tok = strchop (line, '|', 0),
     col = atoi (strtok (tok[1])[2]),
     lnr = atoi (strtok (tok[1])[0]),
-    fname = sprintf ("%s/%s", getcwd (), tok[0]);
+    fname;
+ 
+  ifnot (path_is_absolute (tok[0]))
+    fname = path_concat (getcwd (), tok[0]);
+  else
+    fname = tok[0];
 
   if (-1 == access (fname, F_OK))
     {
@@ -74,26 +114,30 @@ private define getitem ()
 
 private define drawfile ()
 {
+  ifnot (frame)
+    return;
+    
   variable l = getitem ();
- 
+
   if (NULL == l)
     return;
- 
-  togglecur ();
 
-  cw_.lines = readfile (l.fname);
-  cw_._len = length (frames[0].lines) - 1;
-  cw_._fname = l.fname;
-  cw_.st_ = stat_file (cw_._fname);
-  cw_._i = cw_._len >= l.lnr ? l.lnr - 1 : 0;
-  cw_.ptr[0] = 1;
-  cw_.ptr[1] = l.col - 1;
+  togglecur ();
+  
+  add (l, defrows[0]);
+  set_cw (l.fname);
+ 
   s_.draw ();
 }
 
 private define chframe ()
 {
+  if (1 == length (fnames))
+    return;
+  variable fn = prev_fn;
   togglecur ();
+  set_cw (fn);
+
   srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
 }
 
@@ -102,23 +146,30 @@ pagerf[string (keys->CTRL_w)] = &chframe;
 
 pagerc = array_map (Integer_Type, &integer, assoc_get_keys (pagerf));
 
-define ved (s)
+define ved ()
 {
-  cw_ = frames[1];
+  s_.quit = &myquit;
 
-  cw_._fname = get_file ();
-  cw_.st_ = stat_file (cw_._fname);
-  cw_._indent = 0;
-  cw_.lines = s_.getlines ();
-  cw_._len = length (cw_.lines) - 1;
+  clinef["q"] = &myquit;
+  clinef["q!"] = &myquit;
 
-  init (s);
- 
+  variable s = struct
+    {
+    fname = get_file (),
+    lnr = 1,
+    col = 0,
+    };
+
+  add (s, defrows[1];row = defrows[1][0], col = 0);
+
+  set_cw (s.fname);
+  prev_fn = s.fname;
+
   clear (1, LINES);
 
   srv->set_color_in_region (INFOCLRBG, cw_.rows[0] - 1, 0, 1, COLUMNS);
-
-  s.draw ();
+  
+  s_.draw ();
 
   variable func = get_func ();
   if (func)
@@ -130,7 +181,9 @@ define ved (s)
 
   if (DRAWONLY)
     return;
- 
+
+  topline_dr (" (ved)  -- PAGER --");
+
   forever
     {
     count = -1;
@@ -159,4 +212,3 @@ define ved (s)
       (@clinef["q"]) (;force);
     }
 }
-

@@ -44,7 +44,7 @@ define ved (s)
   cw_.ptr[1] = 0;
 
   cw_._i = 0;
-
+  
   s.draw ();
 
   variable func = get_func ();
@@ -58,6 +58,8 @@ define ved (s)
   if (DRAWONLY)
     return;
  
+  topline_dr (" (ved)  -- PAGER --");
+
   forever
     {
     count = -1;

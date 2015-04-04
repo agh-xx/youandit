@@ -13,7 +13,7 @@ define main (self, row, col, buf, frame, frame_size, len)
     srv->clear_frame (frame_size, self.dim[frame].rowfirst,
       self.dim[frame].rowlast, COLOR.normal, qualifier_exists ("clear_infoline"));
 
-    srv->write_ar_at (self.getbuf (buf, qualifier ("file", buf.fname)), COLOR.normal, buf.rows, 0);
+    srv->write_ar (self.getbuf (buf, qualifier ("file", buf.fname)), COLOR.normal, buf.rows, 0);
     }
 
   if (col > linelen)

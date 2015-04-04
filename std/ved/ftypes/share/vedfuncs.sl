@@ -15,9 +15,25 @@ define clear (frow, lrow)
   srv->write_ar_nstr_dr (ar, clrs, rows, cols, pos, COLUMNS);
 }
 
+define topline_dr (str)
+{
+  variable t = strftime ("[%a %d %b %I:%M:%S]");
+
+  s_.write_nstr_dr (str + repeat (" ", COLUMNS - strlen (str) - strlen (t)) + t,
+    16, 0, 0, [cw_.ptr[0], cw_.ptr[1]]); 
+}
+
+define topline (str)
+{
+  variable t = strftime ("[%a %d %b %I:%M:%S]");
+
+  s_.write_nstr (str + repeat (" ", COLUMNS - strlen (str) - strlen (t)) + t,
+    16, 0); 
+}
+
 define write_prompt (str, col)
 {
-  srv->write_nstring_dr (str, COLUMNS, PROMPTCLR,
+  srv->write_nstr_dr (str, COLUMNS, PROMPTCLR,
     [PROMPTROW, 0, qualifier ("row", PROMPTROW), col]);
 }
 
@@ -27,7 +43,7 @@ define send_msg_dr (str, clr, row, col)
     lcol = NULL == col ? strlen (str) + 1 : col,
     lrow = NULL == row ? MSGROW : row;
 
-  srv->write_nstring_dr (str, COLUMNS, clr, [MSGROW, 0, lrow, lcol]);
+  srv->write_nstr_dr (str, COLUMNS, clr, [MSGROW, 0, lrow, lcol]);
 }
 
 define send_msg (str, clr)
@@ -101,7 +117,7 @@ define tail ()
 
 define draw_tail ()
 {
-  srv->write_nstring_dr (tail, COLUMNS, INFOCLRFG, [cw_.rows[-1], 0, cw_.ptr[0], cw_.ptr[1]]);
+  srv->write_nstr_dr (tail, COLUMNS, INFOCLRFG, [cw_.rows[-1], 0, cw_.ptr[0], cw_.ptr[1]]);
 }
 
 define reread ()

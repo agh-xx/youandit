@@ -1,6 +1,6 @@
 private define getline (s, line, prev_l, next_l)
 {
-  srv->write_nstring_dr ("-- INSERT -- ", COLUMNS, 0, [0, 0, w_.ptr[0], w_.ptr[1]]);
+  srv->write_nstr_dr ("-- INSERT -- ", COLUMNS, 0, [0, 0, w_.ptr[0], w_.ptr[1]]);
   s.c_ = @Rline_Type;
   s.c_._col = w_.ptr[1];
   s.c_._row = w_.ptr[0];
@@ -15,7 +15,7 @@ private define getline (s, line, prev_l, next_l)
       if (0 < w_.ptr[1] - s_._indent)
         w_.ptr[1]--;
 
-      srv->write_nstring_dr (" ", COLUMNS, 0, [0, 0, w_.ptr[0], w_.ptr[1]]);
+      srv->write_nstr_dr (" ", COLUMNS, 0, [0, 0, w_.ptr[0], w_.ptr[1]]);
       return;
       }
  
@@ -39,7 +39,7 @@ private define getline (s, line, prev_l, next_l)
           + substr (@line, s.c_._col + 1, - 1);
         s.c_._col++;
         w_.ptr[1]++;
-        srv->write_nstring_dr (@line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
+        srv->write_nstr_dr (@line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
         }
 
       continue;
@@ -53,7 +53,7 @@ private define getline (s, line, prev_l, next_l)
           substr (@line, s.c_._col + 1, - 1);
         s.c_._col++;
         w_.ptr[1]++;
-        srv->write_nstring_dr (@line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
+        srv->write_nstr_dr (@line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
         }
 
       continue;
@@ -98,7 +98,7 @@ private define getline (s, line, prev_l, next_l)
         s.c_._col--;
         }
 
-      srv->write_nstring_dr (@line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
+      srv->write_nstr_dr (@line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
  
       continue;
       }
@@ -107,7 +107,7 @@ private define getline (s, line, prev_l, next_l)
       {
       @line = substr (@line, 1, s.c_._col) + substr (@line, s.c_._col + 2, - 1);
 
-      srv->write_nstring_dr (@line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
+      srv->write_nstr_dr (@line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
  
       continue;
       }
@@ -117,7 +117,7 @@ private define getline (s, line, prev_l, next_l)
       @line = substr (@line, 1, s.c_._col) + char (s.c_._chr) +  substr (@line, s.c_._col + 1, - 1);
       s.c_._col++;
       w_.ptr[1]++;
-      srv->write_nstring_dr (@line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
+      srv->write_nstr_dr (@line, COLUMNS, 0, [w_.ptr[0], 0, w_.ptr[0], w_.ptr[1]]);
       continue;
       }
     }

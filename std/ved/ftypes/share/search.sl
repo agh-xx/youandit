@@ -10,7 +10,7 @@ private define exit_rout ()
 {
   srv->gotorc (cw_.ptr[0], cw_.ptr[1]);
   send_msg (" ", 0);
-  srv->write_ar_nstr_at ([" "], [0], [PROMPTROW], [0], COLUMNS);
+  srv->write_ar_nstr ([" "], [0], [PROMPTROW], [0], COLUMNS);
   draw_tail ();
 }
 

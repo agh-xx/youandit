@@ -12,7 +12,7 @@ ifnot (is_defined ("DONTRECONNECT"))
      break;
     }
 
-static define write_ar_at (ar, colors, rows, cols)
+static define write_ar (ar, colors, rows, cols)
 {
   sock->send_str (SRV_SOCKET, _function_name ());
   () = sock->get_bit_send_str_ar (SRV_SOCKET, ar);
@@ -22,7 +22,7 @@ static define write_ar_at (ar, colors, rows, cols)
   () = sock->get_bit (SRV_SOCKET);
 }
 
-static define write_ar_nstr_at (ar, colors, rows, cols, len)
+static define write_ar_nstr (ar, colors, rows, cols, len)
 {
   sock->send_str (SRV_SOCKET, _function_name ());
   () = sock->get_bit_send_str_ar (SRV_SOCKET, ar);
@@ -74,7 +74,7 @@ static define write_nstring_at (str, len, color, refresh, pos)
   () = sock->get_bit (SRV_SOCKET);
 }
 
-static define write_nstring_dr (str, color, pos)
+static define write_nstr_dr (str, color, pos)
 {
   sock->send_str (SRV_SOCKET, _function_name ());
 
@@ -143,6 +143,13 @@ static define gotorc_draw (row, col)
 {
   sock->send_str (SRV_SOCKET, _function_name ());
   () = sock->get_bit_send_int_ar (SRV_SOCKET, [row, col]);
+  () = sock->get_bit (SRV_SOCKET);
+}
+
+static define draw_hline (clr, row, col, cols)
+{
+  sock->send_str (SRV_SOCKET, _function_name ());
+  sock->get_bit_send_int_ar (SRV_SOCKET, [clr, row, col, cols]);
   () = sock->get_bit (SRV_SOCKET);
 }
 
