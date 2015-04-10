@@ -8,7 +8,7 @@ private variable
 
 private define exit_rout ()
 {
-  srv->gotorc (cw_.ptr[0], cw_.ptr[1]);
+  srv->gotorc (cf_.ptr[0], cf_.ptr[1]);
   send_msg (" ", 0);
   srv->write_ar_nstr ([" "], [0], [PROMPTROW], [0], COLUMNS);
   draw_tail ();
@@ -42,14 +42,14 @@ private define search_backward (str)
   i = lnr;
 
   while (i > -1 || (i > lnr && wrapped))
-    if (pcre_exec (pat, cw_.lines[i]))
+    if (pcre_exec (pat, cf_.lines[i]))
       {
       match = pcre_nth_match (pat, 0);
       ar = [
         sprintf ("row %d|", i + 1),
-        substrbytes (cw_.lines[i], 1, match[0]),
-        substrbytes (cw_.lines[i], match[0] + 1, match[1] - match[0]),
-        substrbytes (cw_.lines[i], match[1] + 1, -1)];
+        substrbytes (cf_.lines[i], 1, match[0]),
+        substrbytes (cf_.lines[i], match[0] + 1, match[1] - match[0]),
+        substrbytes (cf_.lines[i], match[1] + 1, -1)];
       cols = strlen (ar[[:-2]]);
       cols = [0, array_map (Integer_Type, &int, cumsum (cols))];
       clrs = [0, 0, PROMPTCLR, 0];
@@ -70,7 +70,7 @@ private define search_backward (str)
           break;
         else
           {
-          i = cw_._len;
+          i = cf_._len;
           wrapped = 1;
           }
       else
@@ -107,15 +107,15 @@ private define search_forward (str)
  
   i = lnr;
  
-  while (i <= cw_._len || (i < lnr && wrapped))
-    if (pcre_exec (pat, cw_.lines[i]))
+  while (i <= cf_._len || (i < lnr && wrapped))
+    if (pcre_exec (pat, cf_.lines[i]))
       {
       match = pcre_nth_match (pat, 0);
       ar = [
         sprintf ("row %d|", i + 1),
-        substrbytes (cw_.lines[i], 1, match[0]),
-        substrbytes (cw_.lines[i], match[0] + 1, match[1] - match[0]),
-        substrbytes (cw_.lines[i], match[1] + 1, -1)];
+        substrbytes (cf_.lines[i], 1, match[0]),
+        substrbytes (cf_.lines[i], match[0] + 1, match[1] - match[0]),
+        substrbytes (cf_.lines[i], match[1] + 1, -1)];
       cols = strlen (ar[[:-2]]);
       cols = [0, array_map (Integer_Type, &int, cumsum (cols))];
       clrs = [0, 0, PROMPTCLR, 0];
@@ -131,7 +131,7 @@ private define search_forward (str)
       return;
       }
     else
-      if (i == cw_._len)
+      if (i == cf_._len)
         if (wrapped)
           break;
         else
@@ -162,7 +162,7 @@ define search ()
  
   origlnr = lnr;
 
-  type = keys->BSLASH == cw_._chr ? "forward" : "backward";
+  type = keys->BSLASH == cf_._chr ? "forward" : "backward";
   pchr = type == "forward" ? "/" : "?";
   str = pchr;
   col = 1;
@@ -238,9 +238,9 @@ define search ()
         if (NULL == histindex)
           histindex = 0;
 
-        cw_._i = lnr;
-        cw_.ptr[0] = cw_.rows[0];
-        cw_.ptr[1] = 0;
+        cf_._i = lnr;
+        cf_.ptr[0] = cf_.rows[0];
+        cf_.ptr[1] = 0;
         s_.draw ();
         }
 
@@ -283,13 +283,13 @@ define search ()
     if (chr == keys->CTRL_n)
       {
       if (type == "forward")
-        if (lnr == cw_._len)
+        if (lnr == cf_._len)
           lnr = 0;
         else
           lnr++;
       else
         ifnot (lnr)
-          lnr = cw_._len;
+          lnr = cf_._len;
         else
           lnr--;
 
@@ -320,22 +320,22 @@ private define search_word ()
  
   lnr = v_lnr ('.');
 
-  type = '*' == cw_._chr ? "forward" : "backward";
+  type = '*' == cf_._chr ? "forward" : "backward";
  
   typesearch = type == "forward" ? &search_forward : &search_backward;
 
   if (type == "forward")
-    if (lnr == cw_._len)
+    if (lnr == cf_._len)
       lnr = 0;
     else
       lnr++;
   else
     if (lnr == 0)
-      lnr = cw_._len;
+      lnr = cf_._len;
     else
       lnr--;
 
-  col = cw_.ptr[1];
+  col = cf_.ptr[1];
   lcol = col;
 
   if (isblank (line[lcol]))
@@ -368,9 +368,9 @@ private define search_word ()
         if (NULL == histindex)
           histindex = 0;
 
-        cw_._i = lnr;
-        cw_.ptr[0] = cw_.rows[0];
-        cw_.ptr[1] = 0;
+        cf_._i = lnr;
+        cf_.ptr[0] = cf_.rows[0];
+        cf_.ptr[1] = 0;
         s_.draw ();
         }
 
@@ -381,13 +381,13 @@ private define search_word ()
     if (chr == keys->CTRL_n)
       {
       if (type == "forward")
-        if (lnr == cw_._len)
+        if (lnr == cf_._len)
           lnr = 0;
         else
           lnr++;
       else
         ifnot (lnr)
-          lnr = cw_._len;
+          lnr = cf_._len;
         else
           lnr--;
 

@@ -1,6 +1,6 @@
 private define write_line (fp, line)
 {
-  line = substr (line, cw_._indent + 1, -1);
+  line = substr (line, cf_._indent + 1, -1);
   return fwrite (line, fp);
 }
 
@@ -13,8 +13,8 @@ static define writetofile (s, file)
   if (NULL == fp)
     return errno;
 
-  _for i (0, length (cw_.lines) - 1)
-    if (-1 == write_line (fp, cw_.lines[i] + "\n"))
+  _for i (0, length (cf_.lines) - 1)
+    if (-1 == write_line (fp, cf_.lines[i] + "\n"))
       return errno;
 
   () = fclose (fp);

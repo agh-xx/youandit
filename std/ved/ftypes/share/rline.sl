@@ -23,7 +23,7 @@ rlf_ = struct
 
 private define quit ()
 {
-  if (cw_._flags & RDONLY || 0 == cw_._flags & MODIFIED ||
+  if (cf_._flags & RDONLY || 0 == cf_._flags & MODIFIED ||
       (0 == qualifier_exists ("force") && "q!" == rl_.argv[0]))
     s_.quit (0);
  
@@ -44,13 +44,13 @@ private define write_file ()
  
   ifnot (length (args))
     {
-    if (cw_._flags & RDONLY)
+    if (cf_._flags & RDONLY)
       {
-      send_msg_dr ("file is read only", 1, cw_.ptr[0], cw_.ptr[1]);
+      send_msg_dr ("file is read only", 1, cf_.ptr[0], cf_.ptr[1]);
       return;
       }
 
-    file = cw_._fname;
+    file = cf_._fname;
     }
   else
     {
@@ -62,7 +62,7 @@ private define write_file ()
         send_msg_dr ("file exists, w! to overwrite, press any key to continue", 1,
           NULL, NULL);
         () = get_char ();
-        send_msg_dr (" ", 0, cw_.ptr[0], cw_.ptr[1]);
+        send_msg_dr (" ", 0, cf_.ptr[0], cf_.ptr[1]);
         return;
         }
 
@@ -71,7 +71,7 @@ private define write_file ()
         send_msg_dr ("file is not writable, press any key to continue", 1,
           NULL, NULL);
         () = get_char ();
-        send_msg_dr (" ", 0, cw_.ptr[0], cw_.ptr[1]);
+        send_msg_dr (" ", 0, cf_.ptr[0], cf_.ptr[1]);
         return;
         }
       }
@@ -82,12 +82,12 @@ private define write_file ()
     send_msg_dr (sprintf ("%s, press any key to continue", errno_string (errno)), 1,
       NULL, NULL);
     () = get_char ();
-    send_msg_dr (" ", 0, cw_.ptr[0], cw_.ptr[1]);
+    send_msg_dr (" ", 0, cf_.ptr[0], cf_.ptr[1]);
     return;
     }
  
-  if (file == cw_._fname)
-    cw_._flags = cw_._flags & ~MODIFIED;
+  if (file == cf_._fname)
+    cf_._flags = cf_._flags & ~MODIFIED;
 }
 
 private define write_quit ()
@@ -104,7 +104,7 @@ clinef["wq"] = &write_quit;
 
 clinec = assoc_get_keys (clinef);
 
-private define init ()
+private define init (s)
 {
   rl_ = @Rline_Type;
   rl_._col = 1;
@@ -307,7 +307,7 @@ private define insert_at (s)
 
 rlf_.insert_at = &insert_at;
 
-private define parse_args ()
+private define parse_args (s)
 {
   variable
     i,
@@ -494,12 +494,12 @@ private define exec_line (s)
   variable list = {};
 
   array_map (Void_Type, &list_append, list, rl_.argv[[1:]]);
-  rlf_.clear (cw_.ptr;dont_redraw);
+  rlf_.clear (cf_.ptr;dont_redraw);
 
   if (any (rl_.argv[0] == rl_.com))
     (@clinef[rl_.argv[0]]) (__push_list (list));
 
-  rlf_.restore (cw_.ptr);
+  rlf_.restore (cf_.ptr);
 }
 
 rlf_.execline = &exec_line;
@@ -507,9 +507,9 @@ rlf_.execline = &exec_line;
 private define readline (s)
 {
   rlf_.init ();
-  
+ 
   topline (" (ved)  -- COMMAND LINE --");
-  
+ 
   rlf_.prompt ();
 
   forever
@@ -518,9 +518,9 @@ private define readline (s)
 
     if (033 == rl_._chr)
       {
-      rlf_.clear (cw_.ptr;dont_redraw);
+      rlf_.clear (cf_.ptr;dont_redraw);
       topline (" (ved)  -- PAGER --");
-      rlf_.restore (cw_.ptr);
+      rlf_.restore (cf_.ptr);
       break;
       }
 
@@ -775,7 +775,7 @@ private define fname_completion (s, start)
 
     if ('\r' == chr || 0 == chr || 0 == (' ' < chr <= '~'))
       {
-      rlf_.restore ('\r' == chr ? cw_.ptr : [rl_._row, rl_._col]);
+      rlf_.restore ('\r' == chr ? cf_.ptr : [rl_._row, rl_._col]);
       return '\r' == chr;
       }
 
@@ -1081,12 +1081,13 @@ private define getline (s, line, prev_l, next_l)
   topline_dr (" (ved)  -- INSERT --");
 
   variable
-    l,
+    lline,
     i,
+    modified = qualifier ("modified", 0),
     gl_ = @Rline_Type;
 
-  gl_._col = cw_.ptr[1];
-  gl_._row = cw_.ptr[0];
+  gl_._col = cf_.ptr[1];
+  gl_._row = cf_.ptr[0];
 
   forever
     {
@@ -1094,70 +1095,68 @@ private define getline (s, line, prev_l, next_l)
 
     if (033 == gl_._chr)
       {
-      if (0 < cw_.ptr[1] - cw_._indent)
-        cw_.ptr[1]--;
+      if (0 < cf_.ptr[1] - cf_._indent)
+        cf_.ptr[1]--;
+ 
+      if (modified)
+        {
+        set_modified ();
+ 
+        cf_.lins[cf_.ptr[0] - cf_.rows[0]] = @line;
+        cf_.lines["next" == qualifier ("dir") ? qualifier ("i") + 1 :qualifier ("i")] = @line;
 
-      cw_._flags = cw_._flags | MODIFIED;
-     
-      cw_.lins[cw_.ptr[0] - cw_.rows[0]] = @line;
-      cw_.lines["next" == qualifier ("dir") ? qualifier ("i") + 1 :qualifier ("i")] = @line;
+        cf_.st_.st_size = calcsize (cf_.lines);
+        }
 
-      cw_.st_.st_size += strbytelen (@line);
+      topline (" (ved)  -- PAGER --");
+      draw_tail ();
 
-      topline_dr (" (ved)  -- PAGER --");
       return;
       }
 
     if ('\r' == gl_._chr)
-      if (strlen (@line) == cw_.ptr[1])
+      if (strlen (@line) == cf_.ptr[1])
         {
-        cw_._flags = cw_._flags | MODIFIED;
-       
-        cw_.lins[cw_.ptr[0] - cw_.rows[0]] = @line;
-        cw_.lines["next" == qualifier ("dir") ? qualifier ("i") + 1 :qualifier ("i")] = @line;
+        cf_.lins[cf_.ptr[0] - cf_.rows[0]] = @line;
+        cf_.lines["next" == qualifier ("dir") ? qualifier ("i") + 1 :qualifier ("i")] = @line;
 
-        cw_.st_.st_size += strbytelen (@line);
-        
-        cw_._chr = 'o';
-        
-        (@pagerf[string ('o')]);
+        cf_._chr = 'o';
+ 
+        (@pagerf[string ('o')]) (;modified = 1);
 
         return;
         }
       else
         {
-        cw_._flags = cw_._flags | MODIFIED;
-        l = 0 == cw_.ptr[1] - cw_._indent ? " " : substr (@line, 1, cw_.ptr[1]);
+        lline = 0 == cf_.ptr[1] - cf_._indent ? " " : substr (@line, 1, cf_.ptr[1]);
         i = qualifier ("i");
-        @line = substr (@line, cw_.ptr[1] + 1, -1);
+        @line = substr (@line, cf_.ptr[1] + 1, -1);
 
-        prev_l = l;
+        prev_l = lline;
 
-        if (i + 1 >= cw_._len)
+        if (i + 1 >= cf_._len)
           next_l = "";
         else
-          next_l = v_lin (cw_.ptr[0] + 1);
+          next_l = v_lin (cf_.ptr[0] + 1);
 
-        cw_.st_.st_size += strbytelen (l);
+        cf_.ptr[1] = cf_._indent;
+        cf_._i = cf_._ii;
 
-        cw_.ptr[1] = cw_._indent;
-        cw_._i = cw_._ii;
-
-        if (cw_.ptr[0] == cw_.rows[-2] && cw_.ptr[0] + 1 > cw_._avlins)
-          cw_._i++;
+        if (cf_.ptr[0] == cf_.rows[-2] && cf_.ptr[0] + 1 > cf_._avlins)
+          cf_._i++;
         else
-          cw_.ptr[0]++;
+          cf_.ptr[0]++;
 
         ifnot (i)
-          cw_.lines = [l, @line, cw_.lines[[i + 1:]]];
+          cf_.lines = [lline, @line, cf_.lines[[i + 1:]]];
         else
-          cw_.lines = [cw_.lines[[:i - 1]], l, @line, cw_.lines[[i + 1:]]];
+          cf_.lines = [cf_.lines[[:i - 1]], lline, @line, cf_.lines[[i + 1:]]];
 
-        cw_._len++;
-        
+        cf_._len++;
+ 
         s_.draw ();
-        
-        rlf_.getline (line, prev_l, next_l;dir = "next", i = i);
+ 
+        rlf_.getline (line, prev_l, next_l;dir = "next", i = i, modified = 1);
 
         return;
         }
@@ -1168,18 +1167,14 @@ private define getline (s, line, prev_l, next_l)
       ifnot (i)
         continue;
 
-      cw_._flags = cw_._flags | MODIFIED;
-       
-      cw_.lins[cw_.ptr[0] - cw_.rows[0]] = @line;
-      cw_.lines["next" == qualifier ("dir") ? qualifier ("i") + 1 :qualifier ("i")] = @line;
+      cf_.lins[cf_.ptr[0] - cf_.rows[0]] = @line;
+      cf_.lines["next" == qualifier ("dir") ? qualifier ("i") + 1 :qualifier ("i")] = @line;
 
-      cw_.st_.st_size += strbytelen (@line);
-        
       (@pagerf[string (keys->UP)]);
 
-      cw_._chr = 'i';
+      cf_._chr = 'i';
 
-      (@pagerf[string ('i')]);
+      (@pagerf[string ('i')]) (;modified = modified);
 
       return;
       }
@@ -1187,31 +1182,28 @@ private define getline (s, line, prev_l, next_l)
     if (keys->DOWN == gl_._chr)
       {
       i = v_lnr ('.');
-      ifnot (i < cw_._len)
+      ifnot (i < cf_._len)
         continue;
 
-      cw_._flags = cw_._flags | MODIFIED;
-       
-      cw_.lins[cw_.ptr[0] - cw_.rows[0]] = @line;
-      cw_.lines["next" == qualifier ("dir") ? qualifier ("i") + 1 :qualifier ("i")] = @line;
+      cf_.lins[cf_.ptr[0] - cf_.rows[0]] = @line;
+      cf_.lines["next" == qualifier ("dir") ? qualifier ("i") + 1 :qualifier ("i")] = @line;
 
-      cw_.st_.st_size += strbytelen (@line);
-        
       (@pagerf[string (keys->DOWN)]);
 
-      cw_._chr = 'i';
+      cf_._chr = 'i';
 
-      (@pagerf[string ('i')]);
+      (@pagerf[string ('i')]) (;modified = modified);
 
       return;
       }
+
     if (any (keys->rmap.left == gl_._chr))
       {
-      if (0 < cw_.ptr[1] - cw_._indent)
+      if (0 < cf_.ptr[1] - cf_._indent)
         {
         gl_._col--;
-        cw_.ptr[1]--;
-        srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
+        cf_.ptr[1]--;
+        srv->gotorc_draw (cf_.ptr[0], cf_.ptr[1]);
         }
 
       continue;
@@ -1219,27 +1211,29 @@ private define getline (s, line, prev_l, next_l)
  
     if (any (keys->CTRL_y == gl_._chr))
       {
-      if (cw_.ptr[1] < strlen (prev_l))
+      if (cf_.ptr[1] < strlen (prev_l))
         {
-        @line = substr (@line, 1, gl_._col) + substr (prev_l, cw_.ptr[1] + 1, 1)
+        @line = substr (@line, 1, gl_._col) + substr (prev_l, cf_.ptr[1] + 1, 1)
           + substr (@line, gl_._col + 1, - 1);
         gl_._col++;
-        cw_.ptr[1]++;
-        srv->write_nstr_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
+        cf_.ptr[1]++;
+        srv->write_nstr_dr (@line, COLUMNS, 0, [cf_.ptr[0], 0, cf_.ptr[0], cf_.ptr[1]]);
+        modified = 1;
         }
 
       continue;
       }
 
-    if (any (keys->rmap.end == gl_._chr))
+    if (any (keys->CTRL_e == gl_._chr))
       {
-      if (cw_.ptr[1] < strlen (next_l))
+      if (cf_.ptr[1] < strlen (next_l))
         {
-        @line = substr (@line, 1, gl_._col) + substr (next_l, cw_.ptr[1] + 1, 1) +
+        @line = substr (@line, 1, gl_._col) + substr (next_l, cf_.ptr[1] + 1, 1) +
           substr (@line, gl_._col + 1, - 1);
         gl_._col++;
-        cw_.ptr[1]++;
-        srv->write_nstr_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
+        cf_.ptr[1]++;
+        srv->write_nstr_dr (@line, COLUMNS, 0, [cf_.ptr[0], 0, cf_.ptr[0], cf_.ptr[1]]);
+        modified = 1;
         }
 
       continue;
@@ -1250,8 +1244,8 @@ private define getline (s, line, prev_l, next_l)
       if (gl_._col < strlen (@line))
         {
         gl_._col++;
-        cw_.ptr[1]++;
-        srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
+        cf_.ptr[1]++;
+        srv->gotorc_draw (cf_.ptr[0], cf_.ptr[1]);
         }
 
       continue;
@@ -1259,9 +1253,9 @@ private define getline (s, line, prev_l, next_l)
 
     if (any (keys->rmap.home == gl_._chr))
       {
-      gl_._col = cw_._indent;
-      cw_.ptr[1] = cw_._indent;
-      srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
+      gl_._col = cf_._indent;
+      cf_.ptr[1] = cf_._indent;
+      srv->gotorc_draw (cf_.ptr[0], cf_.ptr[1]);
 
       continue;
       }
@@ -1269,23 +1263,23 @@ private define getline (s, line, prev_l, next_l)
     if (any (keys->rmap.end == gl_._chr))
       {
       gl_._col = strlen (@line);
-      cw_.ptr[1] = strlen (@line);
-      srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);;
+      cf_.ptr[1] = strlen (@line);
+      srv->gotorc_draw (cf_.ptr[0], cf_.ptr[1]);;
 
       continue;
       }
 
     if (any (keys->rmap.backspace == gl_._chr))
       {
-      if (0 < cw_.ptr[1] - cw_._indent)
+      if (0 < cf_.ptr[1] - cf_._indent)
         {
         @line = substr (@line, 1, gl_._col - 1) + substr (@line, gl_._col + 1, - 1);
-        cw_.ptr[1]--;
+        cf_.ptr[1]--;
         gl_._col--;
         }
 
-      srv->write_nstr_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
- 
+      srv->write_nstr_dr (@line, COLUMNS, 0, [cf_.ptr[0], 0, cf_.ptr[0], cf_.ptr[1]]);
+      modified = 1;
       continue;
       }
 
@@ -1293,8 +1287,8 @@ private define getline (s, line, prev_l, next_l)
       {
       @line = substr (@line, 1, gl_._col) + substr (@line, gl_._col + 2, - 1);
 
-      srv->write_nstr_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
- 
+      srv->write_nstr_dr (@line, COLUMNS, 0, [cf_.ptr[0], 0, cf_.ptr[0], cf_.ptr[1]]);
+      modified = 1;
       continue;
       }
 
@@ -1302,8 +1296,21 @@ private define getline (s, line, prev_l, next_l)
       {
       @line = substr (@line, 1, gl_._col) + char (gl_._chr) +  substr (@line, gl_._col + 1, - 1);
       gl_._col++;
-      cw_.ptr[1]++;
-      srv->write_nstr_dr (@line, COLUMNS, 0, [cw_.ptr[0], 0, cw_.ptr[0], cw_.ptr[1]]);
+      if (strlen (@line) < cf_._maxlen)
+        {
+        cf_.ptr[1]++;
+        s_.write_nstr (@line, 0, cf_.ptr[0]);
+        draw_tail (;line = @line, col = cf_.ptr[1] + 1);
+%        srv->write_nstr_dr (@line, COLUMNS, 0, [cf_.ptr[0], 0, cf_.ptr[0], cf_.ptr[1]]);
+        }
+      else
+        {
+        lline = substr (@line, strlen (@line) - cf_._maxlen + 1, -1);
+        s_.write_nstr (lline, 0, cf_.ptr[0]);
+        draw_tail (;lline = @line, col = gl_._col);
+        }
+
+      modified = 1;
       continue;
       }
     }

@@ -1,5 +1,7 @@
 ineed ("vedfuncs");
+ineed ("diff");
 ineed ("viewer");
+ineed ("undo");
 ineed ("search");
 ineed ("rline");
 ineed ("ed");
@@ -20,31 +22,42 @@ set_img ();
 
 define ved (s)
 {
-  cw_ = @Frame_Type;
+  cf_ = @Frame_Type;
  
-  cw_._maxlen = COLUMNS;
-  cw_._fname = get_file ();
-  cw_.st_ = stat_file (cw_._fname);
-  cw_.rows = get_rows ();
-  cw_._indent = 0;
-  cw_.lines = s_.getlines ();
-  cw_._flags = 0;
+  cf_._maxlen = COLUMNS;
+  cf_._fname = get_file ();
+  cf_.st_ = stat_file (cf_._fname);
+  if (NULL == cf_.st_)
+    cf_.st_ = struct
+      {
+      st_atime,
+      st_mtime,
+      st_uid = getuid (),
+      st_gid = getgid (),
+      st_size = 0
+      };
+  cf_.rows = get_rows ();
+  cf_._indent = 0;
+  cf_.lines = s_.getlines ();
+  cf_._flags = 0;
  
-  cw_.ptr = Integer_Type[2];
+  cf_.ptr = Integer_Type[2];
 
   write_prompt (" ", 0);
-  cw_._len = length (cw_.lines) - 1;
-  cw_.cols = Integer_Type[length (cw_.rows)];
-  cw_.cols[*] = 0;
-  cw_.clrs = Integer_Type[length (cw_.rows)];
-  cw_.clrs[*] = 0;
-  cw_.clrs[-1] = INFOCLRFG;
-  cw_._avlins = length (cw_.rows) - 2;
-  cw_.ptr[0] = cw_.rows[0];
-  cw_.ptr[1] = 0;
+  cf_._len = length (cf_.lines) - 1;
+  cf_.cols = Integer_Type[length (cf_.rows)];
+  cf_.cols[*] = 0;
+  cf_.clrs = Integer_Type[length (cf_.rows)];
+  cf_.clrs[*] = 0;
+  cf_.clrs[-1] = INFOCLRFG;
+  cf_._avlins = length (cf_.rows) - 2;
+  cf_.ptr[0] = cf_.rows[0];
+  cf_.ptr[1] = cf_._indent;
+  cf_._findex = 0;
+  cf_._index = 0;
 
-  cw_._i = 0;
-  
+  cf_._i = 0;
+ 
   s.draw ();
 
   variable func = get_func ();
@@ -63,28 +76,30 @@ define ved (s)
   forever
     {
     count = -1;
-    cw_._chr = get_char ();
+    cf_._chr = get_char ();
  
-    if ('1' <= cw_._chr <= '9')
+    if ('1' <= cf_._chr <= '9')
       {
       count = "";
  
-      while ('0' <= cw_._chr <= '9')
+      while ('0' <= cf_._chr <= '9')
         {
-        count += char (cw_._chr);
-        cw_._chr = get_char ();
+        count += char (cf_._chr);
+        cf_._chr = get_char ();
         }
 
       count = integer (count);
       }
 
-    if (any (pagerc == cw_._chr))
-      (@pagerf[string (cw_._chr)]);
+    if (any (pagerc == cf_._chr))
+      (@pagerf[string (cf_._chr)]);
  
-    if (':' == cw_._chr)
+    if (':' == cf_._chr)
       rlf_.read ();
 
-    if (cw_._chr == 'q')
+    if (cf_._chr == 'q')
       (@clinef["q"]) (;force);
+
+%send_msg_dr (string (_stkdepth ()), 1, cf_.ptr[0], cf_.ptr[1]);
     }
 }

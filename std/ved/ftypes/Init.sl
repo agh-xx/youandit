@@ -1,13 +1,17 @@
 public variable
-  cw_,
+  cf_,
   rl_,
   rlf_,
   count = 0,
   IMG,
+  UNDO = String_Type[0],
+  UNDOSET = {},
+  undolevel = 0,
   clinef = Assoc_Type[Ref_Type],
   clinec,
   pagerf = Assoc_Type[Ref_Type],
-  pagerc;
+  pagerc,
+  is_wrapped_line = 0;
 
 typedef struct
   {
@@ -21,6 +25,8 @@ typedef struct
   _maxlen,
   _indent,
   _avlins,
+  _findex,
+  _index,
   ptr,
   rows,
   cols,
@@ -39,6 +45,7 @@ typedef struct
   ved,
   draw,
   write_nstr,
+  write_str_at,
   write_nstr_dr,
   line,
   quit,
@@ -62,11 +69,14 @@ typedef struct
 
 private define getlines (s)
 {
-  variable indent = repeat (" ", cw_._indent);
-  if (-1 == access (cw_._fname, F_OK) || 0 == cw_.st_.st_size)
+  variable indent = repeat (" ", cf_._indent);
+  if (-1 == access (cf_._fname, F_OK) || 0 == cf_.st_.st_size)
+    {
+    cf_.st_.st_size = 0;
     return [sprintf ("%s\000", indent)];
+    }
 
-  return array_map (String_Type, &sprintf, "%s%s", indent, readfile (cw_._fname));
+  return array_map (String_Type, &sprintf, "%s%s", indent, readfile (cf_._fname));
 }
 
 private define quit (t)
@@ -84,6 +94,13 @@ private define write_nstr_dr (t)
 }
 
 private define write_nstr (t)
+{
+  () = evalfile (sprintf ("%s/share/%s", path_dirname (__FILE__), _function_name ()), t);
+
+  return __get_reference (sprintf ("%s->%s", t, _function_name ()));
+}
+
+private define write_str_at (t)
 {
   () = evalfile (sprintf ("%s/share/%s", path_dirname (__FILE__), _function_name ()), t);
 
@@ -123,6 +140,7 @@ define init (ftype)
   type.draw = draw (ftype);
   type.write_nstr = write_nstr (ftype);
   type.write_nstr_dr = write_nstr_dr (ftype);
+  type.write_str_at = write_str_at (ftype);
   type.quit = quit (ftype);
   type.writefile  = writetofile (ftype);
 

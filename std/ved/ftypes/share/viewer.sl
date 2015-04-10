@@ -1,108 +1,136 @@
-private variable
-  is_wrapped_str = 0,
-  _plinlen_,
-  _linlen_;
-
-private define adjust_col ()
+define debug (str, get)
 {
-  if (_linlen_ == 0 || 0 == cw_.ptr[1] - cw_._indent)
-    cw_.ptr[1] = cw_._indent;
-  else if (_linlen_ > cw_._maxlen && cw_.ptr[1] + 1 == cw_._maxlen ||
-    (cw_.ptr[1] - cw_._indent == _plinlen_ - 1 && _linlen_ > cw_._maxlen))
-      cw_.ptr[1] = cw_._maxlen - 1;
-  else if ((0 != _plinlen_ && cw_.ptr[1] - cw_._indent == _plinlen_ - 1 && (
-      _linlen_ < cw_.ptr[1] || _linlen_ < cw_._maxlen))
-     || (cw_.ptr[1] - cw_._indent && cw_.ptr[1] - cw_._indent >= _linlen_))
-       cw_.ptr[1] = _linlen_ - 1 + cw_._indent;
+send_msg_dr (str, 1, cf_.ptr[0], cf_.ptr[1]);
+ifnot (NULL == get)
+  () = get_char ();
+}
+
+private define adjust_col (linlen, plinlen)
+{
+  if (linlen == 0 || 0 == cf_.ptr[1] - cf_._indent)
+    {
+    cf_.ptr[1] = cf_._indent;
+    cf_._findex = 0;
+    cf_._index = 0;
+    }
+  else if (linlen > cf_._maxlen && cf_.ptr[1] + 1 == cf_._maxlen ||
+    (cf_.ptr[1] - cf_._indent == plinlen - 1 && linlen > cf_._maxlen))
+      {
+      cf_.ptr[1] = cf_._maxlen - 1;
+      cf_._findex = 0;
+      cf_._index = cf_._maxlen - cf_._indent - 1;
+      }
+  else if ((0 != plinlen && cf_.ptr[1] - cf_._indent == plinlen - 1 && (
+      linlen < cf_.ptr[1] || linlen < cf_._maxlen))
+     || (cf_.ptr[1] - cf_._indent && cf_.ptr[1] - cf_._indent >= linlen))
+      {
+      cf_.ptr[1] = linlen - 1 + cf_._indent;
+      cf_._index = linlen - 1;
+      cf_._findex = 0;
+      }
 }
 
 private define down ()
 {
-  if (is_wrapped_str)
+  variable
+    lnr = v_lnr ('.'),
+    linlen,
+    plinlen;
+
+  if (lnr == cf_._len)
+    return;
+
+  if (is_wrapped_line)
     {
-    cw_._i = cw_._ii;
-    s_.draw ();
-    is_wrapped_str = 0;
+    s_.write_nstr (v_lin ('.'), 0, cf_.ptr[0]);
+    is_wrapped_line = 0;
     }
 
-  _plinlen_ = v_linlen ('.');
+  plinlen = v_linlen ('.');
 
-  if (cw_.ptr[0] < cw_.vlins[-1])
+  if (cf_.ptr[0] < cf_.vlins[-1])
     {
-    cw_.ptr[0]++;
+    cf_.ptr[0]++;
  
-    _linlen_ = v_linlen ('.');
+    linlen = v_linlen ('.');
  
-    adjust_col ();
+    adjust_col (linlen, plinlen);
 
     draw_tail ();
 
     return;
     }
 
-  if (cw_.lnrs[-1] == cw_._len)
+  if (cf_.lnrs[-1] == cf_._len)
     return;
 
-  cw_._i++;
+  cf_._i++;
  
-  s_.draw ();
+  ifnot (cf_.ptr[0] == cf_.vlins[-1])
+    cf_.ptr[0]++;
 
-  _linlen_ = v_linlen ('.');
+  s_.draw ();
  
-  adjust_col ();
+  linlen = v_linlen ('.');
  
-  srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
+  adjust_col (linlen, plinlen);
+ 
+  srv->gotorc_draw (cf_.ptr[0], cf_.ptr[1]);
 }
 
 private define up ()
 {
-  if (is_wrapped_str)
+  variable
+    linlen,
+    plinlen;
+
+  if (is_wrapped_line)
     {
-    cw_._i = cw_._ii;
-    s_.draw ();
-    is_wrapped_str = 0;
+    s_.write_nstr (v_lin ('.'), 0, cf_.ptr[0]);
+    is_wrapped_line = 0;
     }
 
-  _plinlen_ = v_linlen ('.');
+  plinlen = v_linlen ('.');
 
-  if (cw_.ptr[0] > cw_.vlins[0])
+  if (cf_.ptr[0] > cf_.vlins[0])
     {
-
-    cw_.ptr[0]--;
+    cf_.ptr[0]--;
  
-    _linlen_ = v_linlen ('.');
-      adjust_col ();
+    linlen = v_linlen ('.');
+      adjust_col (linlen, plinlen);
  
     draw_tail ();
  
     return;
     }
 
-  ifnot (cw_.lnrs[0])
+  ifnot (cf_.lnrs[0])
     return;
 
-  cw_._i--;
+  cf_._i--;
 
   s_.draw ();
  
-  _linlen_ = v_linlen ('.');
+  linlen = v_linlen ('.');
  
-  adjust_col ();
+  adjust_col (linlen, plinlen);
  
-  srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
+  srv->gotorc_draw (cf_.ptr[0], cf_.ptr[1]);
 }
 
 private define gotoline ()
 {
-  if (count <= cw_._len + 1)
+  if (count <= cf_._len + 1)
     {
-    cw_._i = count - (count ? 1 : 0);
+    cf_._i = count - (count ? 1 : 0);
     s_.draw ();
 
-    cw_.ptr[0] = cw_.rows[0];
-    cw_.ptr[1] = cw_._indent;
+    cf_.ptr[0] = cf_.rows[0];
+    cf_.ptr[1] = cf_._indent;
+    cf_._findex = 0;
+    cf_._index = 0;
 
-    srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
+    srv->gotorc_draw (cf_.ptr[0], cf_.ptr[1]);
     }
 }
 
@@ -117,22 +145,24 @@ private define eof ()
     return;
     }
 
-  cw_._i = cw_._len - cw_._avlins;
+  cf_._i = cf_._len - cf_._avlins;
 
-  cw_.ptr[1] = cw_._indent;
+  cf_.ptr[1] = cf_._indent;
+  cf_._findex = 0;
+  cf_._index = 0;
 
-  if (length (cw_.lins) < cw_._avlins - 1)
+  if (length (cf_.lins) < cf_._avlins - 1)
     {
-    cw_.ptr[0] = cw_.vlins[-1];
-    srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
+    cf_.ptr[0] = cf_.vlins[-1];
+    srv->gotorc_draw (cf_.ptr[0], cf_.ptr[1]);
     return;
     }
 
   s_.draw ();
 
-  cw_.ptr[0] = cw_.vlins[-1];
+  cf_.ptr[0] = cf_.vlins[-1];
 
-  srv->gotorc_draw (cw_.ptr[0], cw_.ptr[1]);
+  srv->gotorc_draw (cf_.ptr[0], cf_.ptr[1]);
 }
 
 private define bof ()
@@ -143,122 +173,190 @@ private define bof ()
     return;
     }
 
-  cw_._i = 0;
+  cf_._i = 0;
  
-  cw_.ptr[0] = cw_.rows[0];
-  cw_.ptr[1] = cw_._indent;
+  cf_.ptr[0] = cf_.rows[0];
+  cf_.ptr[1] = cf_._indent;
+  cf_._findex = 0;
+  cf_._index = 0;
  
   s_.draw ();
 }
 
 private define page_down ()
 {
-  if (cw_._i + cw_._avlins > cw_._len)
+  if (cf_._i + cf_._avlins > cf_._len)
     return;
 
-  cw_._i += (cw_._avlins);
+  is_wrapped_line = 0;
+  cf_._i += (cf_._avlins);
 
-  cw_.ptr[1] = cw_._indent;
+  cf_.ptr[1] = cf_._indent;
+  cf_._index = cf_._indent;
+  cf_._findex = cf_._indent;
 
   s_.draw ();
 }
 
 private define page_up ()
 {
-  ifnot (cw_.lnrs[0] - 1)
+  ifnot (cf_.lnrs[0] - 1)
     return;
  
-  if (cw_.lnrs[0] >= cw_._avlins)
-    cw_._i = cw_.lnrs[0] - cw_._avlins;
+  if (cf_.lnrs[0] >= cf_._avlins)
+    cf_._i = cf_.lnrs[0] - cf_._avlins;
   else
-    cw_._i = 0;
+    cf_._i = 0;
 
-  cw_.ptr[1] = cw_._indent;
+  is_wrapped_line = 0;
+  cf_.ptr[1] = cf_._indent;
+  cf_._findex = cf_._indent;
+  cf_._index = cf_._indent;
 
   s_.draw ();
 }
 
+private define left ()
+{
+  ifnot (cf_.ptr[1] - cf_._indent)
+    ifnot (is_wrapped_line)
+      return;
+
+  cf_._index--;
+
+  if (is_wrapped_line)
+    {
+    ifnot (cf_.ptr[1] - cf_._indent)
+      {
+      cf_._findex--;
+ 
+      ifnot (cf_._findex)
+        is_wrapped_line = 0;
+
+      variable line;
+      if (is_wrapped_line)
+        line = substr (v_lin ('.'), cf_._findex + 1, cf_._maxlen);
+      else
+        line = v_lin ('.');
+
+      s_.write_nstr (line, 0, cf_.ptr[0]);
+      }
+    else
+      cf_.ptr[1]--;
+    }
+  else
+    cf_.ptr[1]--;
+
+  draw_tail ();
+}
+
 private define right ()
 {
-  _linlen_ = v_linlen (cw_.ptr[0]);
+  variable linlen = v_linlen (cf_.ptr[0]);
+  if (cf_._index == linlen - 1)
+    return;
 
-  if (cw_.ptr[1] - cw_._indent < _linlen_ - 1 && cw_.ptr[1] < cw_._maxlen - 1)
-   (cw_.ptr[1]++, draw_tail ());
-  else if (_linlen_ + cw_._indent > cw_._maxlen && cw_.ptr[1] + 1 == cw_._maxlen)
+  if (cf_.ptr[1] < cf_._maxlen - 1)
     {
-    srv->write_wrapped_str_dr (substr (v_lin ('.'), cw_._indent + 1, -1),
-     11, [cw_.ptr[0], _linlen_ >= COLUMNS ? 0 : cw_._indent],
-     [_linlen_ / cw_._maxlen + (_linlen_ mod cw_._maxlen ? 1 : 0),
-      COLUMNS],
-      1, [cw_.ptr[0], cw_.ptr[1]]);
-
-    is_wrapped_str = 1;
+    cf_.ptr[1]++;
+    cf_._index++;
+    draw_tail ();
+    return;
     }
+ 
+  cf_._index++;
+  cf_._findex++;
+
+  variable line = substr (v_lin ('.'), cf_._findex + 1, cf_._maxlen);
+
+  s_.write_nstr (line, 0, cf_.ptr[0]);
+
+  is_wrapped_line = 1;
+
+  draw_tail ();
 }
 
 private define eos ()
 {
-  _linlen_ = v_linlen ('.');
+  variable linlen = v_linlen ('.');
 
-  if (_linlen_ > cw_._maxlen)
-    cw_.ptr[1] = cw_._maxlen - 1;
-  else if (0 == _linlen_)
-    cw_.ptr[1] = cw_._indent;
+  if (linlen > cf_._maxlen)
+    {
+    cf_.ptr[1] = cf_._maxlen - 1;
+    cf_._index = cf_._findex + cf_._maxlen - 1;
+    }
+  else if (0 == linlen)
+    {
+    cf_.ptr[1] = cf_._indent;
+    cf_._index = 0;
+    cf_._findex = 0;
+    }
   else
-    cw_.ptr[1] = _linlen_ + cw_._indent - 1;
+    {
+    cf_.ptr[1] = linlen + cf_._indent - 1;
+    cf_._findex = 0;
+    cf_._index = linlen - 1;
+    }
 
   draw_tail ();
 }
 
 private define eol ()
 {
-  _linlen_ = v_linlen (cw_.ptr[0]);
+  variable linlen = v_linlen (cf_.ptr[0]);
+ 
+  cf_._index = linlen - 1;
 
-  if (_linlen_ < cw_._maxlen)
-    cw_.ptr[1] = _linlen_ + cw_._indent - 1;
+  if (linlen < cf_._maxlen)
+    cf_.ptr[1] = linlen + cf_._indent - 1;
   else
     {
-    srv->write_wrapped_str_dr (substr (v_lin ('.'), cw_._indent + 1, -1),
-     11, [cw_.ptr[0], _linlen_ >= COLUMNS ? 0 : cw_._indent],
-     [_linlen_ / cw_._maxlen + (_linlen_ mod cw_._maxlen ? 1 : 0),
-      cw_._maxlen - cw_._indent + (COLUMNS - cw_._maxlen)],
-      1, [cw_.ptr[0], cw_.ptr[1]]);
+    cf_.ptr[1] = cf_._maxlen - 1;
 
-    is_wrapped_str = 1;
+    cf_._findex = linlen - cf_._maxlen;
+
+    variable line = substr (v_lin ('.'), cf_._findex + 1, cf_._maxlen);
+ 
+    s_.write_nstr (line, 0, cf_.ptr[0]);
+
+    is_wrapped_line = 1;
     }
  
   draw_tail ();
 }
 
-private define left ()
-{
-  ifnot (cw_.ptr[1] - cw_._indent)
-    return;
-
-  cw_.ptr[1]--;
-
-  draw_tail ();
-}
-
 private define bol ()
 {
-  cw_.ptr[1] = cw_._indent;
+  cf_.ptr[1] = cf_._indent;
+  cf_._findex = cf_._indent;
+  cf_._index = cf_._indent;
+
+  if (is_wrapped_line)
+    {
+    variable line = v_lin ('.');
+    s_.write_nstr (line, 0, cf_.ptr[0]);
+    is_wrapped_line = 0;
+    }
+
   draw_tail ();
 }
 
 private define bolnblnk ()
 {
-  cw_.ptr[1] = cw_._indent;
+  cf_.ptr[1] = cf_._indent;
 
-  _linlen_ = v_linlen ('.');
+  variable linlen = v_linlen ('.');
 
-  loop (_linlen_)
+  loop (linlen)
     {
-    ifnot (isblank (cw_.lins[cw_.ptr[0] - cw_.rows[0]][cw_.ptr[1]]))
+    ifnot (isblank (cf_.lins[cf_.ptr[0] - cf_.rows[0]][cf_.ptr[1]]))
       break;
 
-    cw_.ptr[1]++;
+    cf_.ptr[1]++;
     }
+
+  cf_._findex = 0;
+  cf_._index = cf_.ptr[1] - cf_._indent;
 
   draw_tail ();
 }
@@ -267,7 +365,6 @@ pagerf[string (keys->DOWN)] = &down;
 pagerf[string ('j')] = &down;
 pagerf[string ('k')] = &up;
 pagerf[string (keys->UP)] = &up;
-pagerf[string (keys->END)] = &eof;
 pagerf[string ('G')]= &eof;
 pagerf[string (keys->HOME)] = &bof;
 pagerf[string ('g')]= &bof;
@@ -280,6 +377,7 @@ pagerf[string ('l')] = &right;
 pagerf[string ('h')] = &left;
 pagerf[string (keys->LEFT)] = &left;
 pagerf[string ('-')] = &eos;
+pagerf[string (keys->END)] = &eol;
 pagerf[string ('$')] = &eol;
 pagerf[string ('^')] = &bolnblnk;
 pagerf[string ('0')] = &bol;

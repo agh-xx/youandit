@@ -188,7 +188,7 @@ private define _copy (s, source, dest, st_source, st_dest)
     retval,
     backup = NULL,
     backuptext = "";
-  
+ 
   ifnot (Accept_All_As_Yes)
     if (s.interactive_copy)
       {
@@ -206,7 +206,7 @@ private define _copy (s, source, dest, st_source, st_dest)
 
       if ('q' == retval)
         return -1;
-   
+ 
       Accept_All_As_Yes = 'Y' == retval;
       }
 

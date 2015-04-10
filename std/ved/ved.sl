@@ -144,7 +144,9 @@ define ved ()
       sprintf ("LANG=%s", getenv ("LANG")),
       sprintf ("STDNS=%s", STDNS),
       sprintf ("SRV_SOCKADDR=%s", SRV_SOCKADDR),
-      sprintf ("SRV_FILENO=%d", _fileno (SRV_SOCKET))],
+      sprintf ("SRV_FILENO=%d", _fileno (SRV_SOCKET)),
+      sprintf ("PATH=%s", getenv ("PATH")),
+      ],
     p = doproc (),
     funcs = Assoc_Type[Ref_Type];
  

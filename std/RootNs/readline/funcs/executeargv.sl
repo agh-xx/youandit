@@ -99,7 +99,7 @@ define main (self, argv)
           throw GotoPrompt;
           }
  
-        ved (mainfname);
+        ved (mainfname;drawwind);
 
         throw GotoPrompt;
         }
@@ -116,9 +116,7 @@ define main (self, argv)
           throw GotoPrompt;
           }
 
-        ved (mainfname;ftype = "list");
-        CW.drawwind ();
-        root.topline ();
+        ved (mainfname;ftype = "list", drawwind);
 
         throw GotoPrompt;
         }

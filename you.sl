@@ -467,6 +467,12 @@ catch ImportError:
     ["IMPORT ERROR", exception_to_array]);
   exit (1);
   }
+catch ParseError:
+  {
+  () = array_map (Integer_Type, &fprintf, stderr, "%s\n",
+    ["PARSE ERROR", exception_to_array]);
+  exit (1);
+  }
 
 if (NULL == which ("stty"))
   {
@@ -474,9 +480,27 @@ if (NULL == which ("stty"))
   exit (1);
   }
 
+if (NULL == which ("diff"))
+  {
+  () = fputs ("diff executable hasn't been found in PATH\n", stderr);
+  exit (1);
+  }
+
+if (NULL == which ("patch"))
+  {
+  () = fputs ("patch executable hasn't been found in PATH\n", stderr);
+  exit (1);
+  }
+
 if (NULL == which ("ps"))
   {
   () = fputs ("ps executable hasn't been found in PATH\n", stderr);
+  exit (1);
+  }
+
+if (NULL == which ("git"))
+  {
+  () = fputs ("git executable hasn't been found in PATH\n", stderr);
   exit (1);
   }
 

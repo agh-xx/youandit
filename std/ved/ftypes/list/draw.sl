@@ -2,54 +2,54 @@ ineed ("listfuncs");
 
 define draw ()
 {
-  if (-1 == cw_._len)
+  if (-1 == cf_._len)
     {
-    srv->write_ar_dr ([repeat (" ", COLUMNS), tail ()], [0, 0], [2, cw_.rows[-1], [0],
-      [cw_.ptr[0], cw_.ptr[1]]]);
+    srv->write_ar_dr ([repeat (" ", COLUMNS), tail ()], [0, 0], [2, cf_.rows[-1], [0],
+      [cf_.ptr[0], cf_.ptr[1]]]);
     return;
     }
 
-  cw_.lnrs = Integer_Type[0];
-  cw_.lins = String_Type[0];
+  cf_.lnrs = Integer_Type[0];
+  cf_.lins = String_Type[0];
 
   variable
-    i = cw_.rows[0],
+    i = cf_.rows[0],
     ar = String_Type[0];
 
-  cw_._ii = cw_._i;
+  cf_._ii = cf_._i;
 
-  while (cw_._i <= cw_._len && i <= cw_.rows[-2])
+  while (cf_._i <= cf_._len && i <= cf_.rows[-2])
     {
-    cw_.lnrs = [cw_.lnrs, cw_._i];
-    cw_.lins = [cw_.lins, cw_.lines[cw_._i]];
-    cw_._i++;
+    cf_.lnrs = [cf_.lnrs, cf_._i];
+    cf_.lins = [cf_.lins, cf_.lines[cf_._i]];
+    cf_._i++;
     i++;
     }
 
-  cw_.vlins = [cw_.rows[0]:cw_.rows[0] + length (cw_.lins) - 1];
+  cf_.vlins = [cf_.rows[0]:cf_.rows[0] + length (cf_.lins) - 1];
 
-  cw_._i = cw_._i - (i) + cw_.rows[0];
+  cf_._i = cf_._i - (i) + cf_.rows[0];
 
-  if (-1 == cw_._i)
-    cw_._i = 0;
+  if (-1 == cf_._i)
+    cf_._i = 0;
 
-  if (cw_.ptr[0] >= i)
-    cw_.ptr[0] = i - 1;
+  if (cf_.ptr[0] >= i)
+    cf_.ptr[0] = i - 1;
 
 
-  ar = array_map (String_Type, &substr, cw_.lins, 1, cw_._maxlen);
+  ar = array_map (String_Type, &substr, cf_.lins, 1, cf_._maxlen);
 
-  if (length (ar) < length (cw_.rows) - 1)
+  if (length (ar) < length (cf_.rows) - 1)
     {
-    variable t = String_Type[length (cw_.rows) - length (ar) - 1];
+    variable t = String_Type[length (cf_.rows) - length (ar) - 1];
     t[*] = " ";
     ar = [ar, t];
     }
 
-  ar = [ar, tail];
+  ar = [ar, tail (;;__qualifiers ())];
  
   _for i (0, length (ar) - 1)
-    IMG[cw_.rows[i]] = {[ar[i]], [cw_.clrs[i]], [cw_.rows[i]], [cw_.cols[i]]};
+    IMG[cf_.rows[i]] = {[ar[i]], [cf_.clrs[i]], [cf_.rows[i]], [cf_.cols[i]]};
 
-  srv->write_ar_nstr_dr (ar, cw_.clrs, cw_.rows, cw_.cols, [cw_.ptr[0], cw_.ptr[1]], COLUMNS);
+  srv->write_ar_nstr_dr (ar, cf_.clrs, cf_.rows, cf_.cols, [cf_.ptr[0], cf_.ptr[1]], COLUMNS);
 }

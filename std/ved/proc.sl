@@ -40,6 +40,7 @@ set_slang_load_path (sprintf ("%s/ftypes/share%c%s", MYPATH, path_get_delimiter 
 set_import_module_path (getenv ("IMPORT_PATH"));
 
 import ("socket");
+import ("fork");
 import ("pcre");
 
 $1 = socket (PF_UNIX, SOCK_STREAM, 0);
@@ -55,6 +56,7 @@ try
   () = evalfile (sprintf ("%s/keys", MYPATH), "keys");
   () = evalfile (sprintf ("%s/I_Ns/lib/except_to_arr", STDNS));
   () = evalfile (sprintf ("%s/I_Ns/lib/std", STDNS));
+  () = evalfile (sprintf ("%s/proc/Init", STDNS), "proc");
   () = evalfile (sprintf ("%s/I_Ns/lib/need", STDNS), "i");
   () = evalfile (sprintf ("%s/ftypes/Init", MYPATH), "ft");
   }

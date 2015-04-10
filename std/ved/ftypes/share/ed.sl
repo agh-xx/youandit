@@ -1,7 +1,9 @@
+ineed ("insert_mode");
+
 private define indent_in ()
 {
   variable
-    i_ = cw_._indent,
+    i_ = cf_._indent,
     i = v_lnr ('.'),
     line = v_lin ('.');
 
@@ -16,17 +18,19 @@ private define indent_in ()
 
   line = substr (line, i_ + 1, -1);
 
-  cw_.lins[cw_.ptr[0] - cw_.rows[0]] = line;
-  cw_.lines[i] = line;
-  cw_.ptr[1] -= i_;
+  cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
+  cf_.lines[i] = line;
+  cf_.ptr[1] -= i_;
 
-  if (0 > cw_.ptr[1] - cw_._indent)
-    cw_.ptr[1] = cw_._indent;
+  if (0 > cf_.ptr[1] - cf_._indent)
+    cf_.ptr[1] = cf_._indent;
 
-  cw_._flags = cw_._flags | MODIFIED;
-  cw_.st_.st_size += s_._shiftwidth;
+  set_modified ();
 
-  s_.write_nstr (line, 0, cw_.ptr[0]);
+  cf_.st_.st_size += s_._shiftwidth;
+
+  s_.write_nstr (line, 0, cf_.ptr[0]);
+ 
   draw_tail ();
 }
 
@@ -38,18 +42,41 @@ private define indent_out ()
 
   line = sprintf ("%s%s", repeat (" ", s_._shiftwidth), line);
 
-  cw_.lins[cw_.ptr[0] - cw_.rows[0]] = line;
-  cw_.lines[i] = line;
-  cw_.ptr[1] += s_._shiftwidth;
+  cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
+  cf_.lines[i] = line;
+  cf_.ptr[1] += s_._shiftwidth;
 
-  if (cw_.ptr[1] >= cw_._maxlen)
-    cw_.ptr[1] = cw_._maxlen - 1;
+  if (cf_.ptr[1] >= cf_._maxlen)
+    cf_.ptr[1] = cf_._maxlen - 1;
 
-  cw_._flags = cw_._flags | MODIFIED;
-  cw_.st_.st_size += s_._shiftwidth;
+  set_modified ();
 
-  s_.write_nstr (line, 0, cw_.ptr[0]);
+  cf_.st_.st_size += s_._shiftwidth;
+
+  s_.write_nstr (line, 0, cf_.ptr[0]);
+
   draw_tail ();
+}
+
+private define join_line ()
+{
+  variable
+    i = v_lnr ('.'),
+    line = v_lin ('.');
+
+  if (0 == cf_._len || i == cf_._len)
+    return;
+
+  cf_.lines[i] = line + " " + cf_.lines[i + 1];
+  cf_.lines[i + 1] = NULL;
+  cf_.lines = cf_.lines[wherenot (_isnull (cf_.lines))];
+  cf_._len--;
+ 
+  cf_._i = cf_._ii;
+ 
+  set_modified ();
+
+  s_.draw ();
 }
 
 private define del_line ()
@@ -58,37 +85,37 @@ private define del_line ()
     i = v_lnr ('.'),
     line = v_lin ('.');
 
-  if (0 == cw_._len && (0 == v_linlen ('.') || " " == line))
+  if (0 == cf_._len && (0 == v_linlen ('.') || " " == line))
     return 1;
 
   ifnot (i)
-    ifnot (cw_._len)
+    ifnot (cf_._len)
       {
-      cw_.lines[0] = " ";
-      cw_.st_.st_size = 0;
-      cw_.ptr[1] = cw_._indent;
-      cw_._flags = cw_._flags | MODIFIED;
+      cf_.lines[0] = " ";
+      cf_.st_.st_size = 0;
+      cf_.ptr[1] = cf_._indent;
+      set_modified ();
       return 0;
       }
-    
-  cw_.lines[i] = NULL;
-  cw_.lines = cw_.lines[wherenot (_isnull (cw_.lines))];
-  cw_._len--;
  
-  cw_._i = cw_._ii;
+  cf_.lines[i] = NULL;
+  cf_.lines = cf_.lines[wherenot (_isnull (cf_.lines))];
+  cf_._len--;
  
-  cw_.ptr[1] = cw_._indent;
+  cf_._i = cf_._ii;
+ 
+  cf_.ptr[1] = cf_._indent;
 
-  if (cw_.ptr[0] == cw_.vlins[-1] && 1 < length (cw_.vlins))
-    cw_.ptr[0]--;
+  if (cf_.ptr[0] == cf_.vlins[-1] && 1 < length (cf_.vlins))
+    cf_.ptr[0]--;
 
-  cw_.st_.st_size -= strbytelen (line);
+  cf_.st_.st_size -= strbytelen (line);
 
-  cw_._flags = cw_._flags | MODIFIED;
+  if (cf_._i > cf_._len)
+    cf_._i = cf_._len;
+ 
+  set_modified (;_i = cf_._i);
 
-  if (cw_._i > cw_._len)
-    cw_._i = cw_._len;
-  
   return 0;
 }
 
@@ -97,10 +124,9 @@ private define del_word ()
   variable
     end,
     start,
-    col = cw_.ptr[1],
+    col = cf_.ptr[1],
     i = v_lnr ('.'),
-    line = v_lin ('.'),
-    len = strlen (line);
+    line = v_lin ('.');
  
   if (isblank (line[col]))
     return;
@@ -109,82 +135,89 @@ private define del_word ()
 
   line = sprintf ("%s%s", substr (line, 1, start), substr (line, end + 2, -1));
  
-  cw_._flags = cw_._flags | MODIFIED;
+  cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
+  cf_.lines[i] = line;
+  cf_.ptr[1] = start;
+
+  set_modified ();
  
-  cw_.lins[cw_.ptr[0] - cw_.rows[0]] = line;
-  cw_.lines[i] = line;
-  cw_.ptr[1] = start;
+  cf_.st_.st_size = calcsize (cf_.lines);
 
-  cw_.st_.st_size -= len - strbytelen (line);
+  s_.write_nstr (line, 0, cf_.ptr[0]);
 
-  s_.write_nstr_dr (line, 0, cw_.ptr[0], 0, [cw_.ptr[0], cw_.ptr[1]]);
+  draw_tail ();
 }
 
 private define chang_chr ()
 {
   variable
     chr = get_char (),
-    col = cw_.ptr[1],
+    col = cf_.ptr[1],
     i = v_lnr ('.'),
     line = v_lin ('.');
 
   if (' ' <= chr <= 126 || 902 <= chr <= 974)
     {
-    cw_.st_.st_size -= strbytelen (line);
+    cf_.st_.st_size -= strbytelen (line);
     line = substr (line, 1, col) + char (chr) + substr (line, col + 2, - 1);
-    cw_.lins[cw_.ptr[0] - cw_.rows[0]] = line;
-    cw_.lines[i] = line;
-    cw_.st_.st_size += strbytelen (line);
-    cw_._flags = cw_._flags | MODIFIED;
-    s_.write_nstr_dr (line, 0, cw_.ptr[0], 0, [cw_.ptr[0], cw_.ptr[1]]);
+    cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
+    cf_.lines[i] = line;
+    cf_.st_.st_size += strbytelen (line);
+    set_modified ();
+    s_.write_nstr (line, 0, cf_.ptr[0]);
+    draw_tail ();
     }
 }
 
 private define del_chr ()
 {
   variable
-    col = cw_.ptr[1],
+    col = cf_.ptr[1],
     i = v_lnr ('.'),
     line = v_lin ('.'),
-    len = strlen (line),
-    blen = strbytelen (line);
+    len = strlen (line);
 
-  if ((0 == cw_.ptr[1] - cw_._indent && 'X' == cw_._chr) || 0 > len - cw_._indent)
+  if ((0 == cf_.ptr[1] - cf_._indent && 'X' == cf_._chr) || 0 > len - cf_._indent)
     return;
  
-  if (any (['x', keys->rmap.delete] == cw_._chr))
+  if (any (['x', keys->rmap.delete] == cf_._chr))
     {
     line = substr (line, 1, col) + substr (line, col + 2, - 1);
-    if (cw_.ptr[1] == strlen (line))
-      cw_.ptr[1]--;
+    if (cf_.ptr[1] == strlen (line))
+      cf_.ptr[1]--;
     }
   else
-    if (0 < cw_.ptr[1] - cw_._indent)
+    if (0 < cf_.ptr[1] - cf_._indent)
       {
       line = substr (line, 1, col - 1) + substr (line, col + 1, - 1);
-      cw_.ptr[1]--;
+      cf_.ptr[1]--;
       }
-
-  if (cw_.ptr[1] - cw_._indent < 0)
-    cw_.ptr[1] = cw_._indent;
-
-  cw_.lins[cw_.ptr[0] - cw_.rows[0]] = line;
-  cw_.lines[i] = line;
-
-  cw_.st_.st_size -= blen - strbytelen (line);
  
-  cw_._flags = cw_._flags | MODIFIED;
+  ifnot (strlen (line))
+    line = sprintf ("%s ", repeat (" ", cf_._indent));
+
+  if (cf_.ptr[1] - cf_._indent < 0)
+    cf_.ptr[1] = cf_._indent;
+
+  cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
+  cf_.lines[i] = line;
+
+  cf_.st_.st_size = calcsize (cf_.lines);
  
-  s_.write_nstr_dr (line, 0, cw_.ptr[0], 0, [cw_.ptr[0], cw_.ptr[1]]);
+  set_modified ();
+ 
+  s_.write_nstr (line, 0, cf_.ptr[0]);
+ 
+  draw_tail ();
 }
 
 private define del ()
 {
-  cw_._chr = get_char ();
+  cf_._chr = get_char ();
  
-  if (any (['d', 'w' == cw_._chr]))
+  if (any (['d', 'w' == cf_._chr]))
     {
-    if ('d' == cw_._chr)
+    if ('d' == cf_._chr)
       {
       if (1 == del_line ())
         return;
@@ -192,7 +225,7 @@ private define del ()
       s_.draw ();
       }
 %% will change to W and del_Word
-    if ('w' == cw_._chr)
+    if ('w' == cf_._chr)
       del_word ();
     }
 }
@@ -200,47 +233,48 @@ private define del ()
 private define del_to_end ()
 {
   variable
-    col = cw_.ptr[1],
+    col = cf_.ptr[1],
     i = v_lnr ('.'),
     line = v_lin ('.'),
     len = strlen (line);
  
-  if (cw_.ptr[1] == len)
+  if (cf_.ptr[1] == len)
     return;
  
-  cw_.st_.st_size -= strbytelen (line);
-
-  ifnot (cw_.ptr[1] - cw_._indent)
+  ifnot (cf_.ptr[1] - cf_._indent)
     {
-    line = repeat (" ", cw_._indent);
+    line = repeat (" ", cf_._indent);
     ifnot (strlen (line))
       line = " ";
  
-    cw_.ptr[1] = cw_._indent;
+    cf_.ptr[1] = cf_._indent;
 
-    cw_.lines[i] = line;
-    cw_.lins[cw_.ptr[0] - cw_.rows[0]] = line;
+    cf_.lines[i] = line;
+    cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
  
-    cw_._flags = cw_._flags | MODIFIED;
+    set_modified ();
 
-    s_.write_nstr (line, 0, cw_.ptr[0]);
+    cf_.st_.st_size = calcsize (cf_.lines);
+
+    s_.write_nstr (line, 0, cf_.ptr[0]);
 
     draw_tail ();
+
     return;
     }
 
   line = substr (line, 1, col);
 
-  cw_.lins[cw_.ptr[0] - cw_.rows[0]] = line;
-  cw_.lines[i] = line;
+  cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
+  cf_.lines[i] = line;
  
-  cw_._flags = cw_._flags | MODIFIED;
+  cf_.st_.st_size = calcsize (cf_.lines);
 
-  cw_.st_.st_size += strbytelen (line);
+  cf_.ptr[1]--;
 
-  cw_.ptr[1]--;
+  set_modified ();
 
-  s_.write_nstr (line, 0, cw_.ptr[0]);
+  s_.write_nstr (line, 0, cf_.ptr[0]);
 
   draw_tail ();
 }
@@ -250,84 +284,96 @@ private define edit_line ()
   variable
     prev_l,
     next_l,
-    col = cw_.ptr[1],
-    i = v_lnr ('.'),
+    lline,
+    lnr = v_lnr ('.'),
     line = v_lin ('.'),
     len = strlen (line);
 
-  ifnot (i)
+  ifnot (lnr)
     prev_l = "";
   else
-    prev_l = v_lin (cw_.ptr[0] - 1);
+    prev_l = v_lin (cf_.ptr[0] - 1);
 
-  if (i == cw_._len)
+  if (lnr == cf_._len)
     next_l = "";
   else
-    next_l = cw_.lines[i+1];
+    next_l = cf_.lines[lnr + 1];
  
-  if ('C' == cw_._chr)
-    line = substr (line, 1, col);
-  else if ('a' == cw_._chr)
-    cw_.ptr[1]++;
-  else if ('A' == cw_._chr)
-    cw_.ptr[1] = len;
+  if ('C' == cf_._chr)
+    line = substr (line, 1, cf_._index);
+  else if ('a' == cf_._chr)
+    {
+    cf_._index++;
+    cf_.ptr[1]++;
+    }
+  else if ('A' == cf_._chr)
+    {
+    cf_._index = len;
+    cf_.ptr[1] = len;
+    }
  
-  cw_.st_.st_size -= strbytelen (line);
+  if (cf_._index - cf_._indent > cf_._maxlen)
+    lline = substr (line, cf_._findex + 1, cf_._maxlen);
+  else
+    lline = line;
 
-  s_.write_nstr_dr (line, 0, cw_.ptr[0], 0, [cw_.ptr[0], cw_.ptr[1]]);
+  s_.write_nstr_dr (line, 0, cf_.ptr[0], 0, [cf_.ptr[0], cf_.ptr[1]]);
 
-  rlf_.getline (&line, prev_l, next_l;dir = "prev", i = i);
+  if ('C' == cf_._chr)
+    insert (&line, lnr, prev_l, next_l;;struct {@__qualifiers (), modified});
+  else
+    insert (&line, lnr, prev_l, next_l;;__qualifiers ());
 }
 
 private define newline ()
 {
   variable
-    dir = cw_._chr == 'O' ? "prev" : "next",
+    dir = cf_._chr == 'O' ? "prev" : "next",
     prev_l,
     next_l,
-    col = cw_.ptr[1],
-    i = v_lnr ('.'),
+    col = cf_.ptr[1],
+    lnr = v_lnr ('.'),
     line = v_lin ('.'),
     len = strlen (line);
 
     if ("prev" == dir)
-      ifnot (i)
+      ifnot (lnr)
         prev_l = "";
       else
-        prev_l = v_lin (cw_.ptr[0] - 1);
+        prev_l = v_lin (cf_.ptr[0] - 1);
     else
       prev_l = line;
-  
+ 
   if ("prev" == dir)
     next_l = line;
   else
-    if (i == cw_._len)
+    if (lnr == cf_._len)
       next_l = "";
     else
-      next_l = v_lin (cw_.ptr[0] + 1);
-  
-  cw_._len++;
+      next_l = v_lin (cf_.ptr[0] + 1);
+ 
+  cf_._len++;
 
-  if (0 == i && "prev" == dir)
-    cw_.lines = [" ", cw_.lines];
+  if (0 == lnr && "prev" == dir)
+    cf_.lines = [" ", cf_.lines];
   else
-    cw_.lines = [cw_.lines[[:"next" == dir ? i : i - 1]], " ",
-      cw_.lines[["next" == dir ? i + 1 : i:]]];
+    cf_.lines = [cf_.lines[[:"next" == dir ? lnr : lnr - 1]], " ",
+      cf_.lines[["next" == dir ? lnr + 1 : lnr:]]];
 
-  cw_._i = i == 0 ? 0 : cw_._ii;
-  
+  cf_._i = lnr == 0 ? 0 : cf_._ii;
+ 
   if ("next" == dir)
-    if (cw_.ptr[0] == cw_.rows[-2] && cw_.ptr[0] + 1 > cw_._avlins)
-      cw_._i++;
+    if (cf_.ptr[0] == cf_.rows[-2] && cf_.ptr[0] + 1 > cf_._avlins)
+      cf_._i++;
     else
-      cw_.ptr[0]++;
+      cf_.ptr[0]++;
 
-  cw_.ptr[1] = cw_._indent;
-  
+  cf_.ptr[1] = cf_._indent;
+ 
   s_.draw ();
-  
+ 
   line = "";
-  rlf_.getline (&line, prev_l, next_l;dir = dir, i = i);
+  insert (&line, "next" == dir ? lnr + 1 : lnr, prev_l, next_l;;__qualifiers ());
 }
 
 pagerf[string ('o')] = &newline;
@@ -344,8 +390,6 @@ pagerf[string ('i')] = &edit_line;
 pagerf[string ('a')] = &edit_line;
 pagerf[string ('A')] = &edit_line;
 pagerf[string ('r')] = &chang_chr;
+pagerf[string ('J')] = &join_line;
 pagerf[string ('>')] = &indent_out;
 pagerf[string ('<')] = &indent_in;
-
-%pf[string (keys->CTRL_u)] = &redo;
-%pf[string ('u')] = &undo;

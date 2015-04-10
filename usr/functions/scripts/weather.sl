@@ -294,7 +294,7 @@ define weather_main ()
 
   report = create_report (json_decode (line));
  
-  ar_to_fp (report, "%s\n", stdout);
+  () = ar_to_fp (report, "%s\n", stdout);
 
   return 0;
 }
@@ -352,7 +352,7 @@ ifnot (NULL == struct_field_exists (json, "data"))
      +tmp.population);
     }
  
-  ar_to_fp (list_to_array (report), "%s\n", stdout);
+  () = ar_to_fp (list_to_array (report), "%s\n", stdout);
 
   return 0;
 }

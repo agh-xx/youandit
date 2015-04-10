@@ -105,3 +105,11 @@ static define gotorc (row, col)
   () = sock->get_bit_send_int_ar (SRV_SOCKET, [row, col]);
   () = sock->get_bit (SRV_SOCKET);
 }
+
+static define write_str_at (str, color, row, col)
+{
+  sock->send_str (SRV_SOCKET, _function_name ());
+  () = sock->get_bit_send_str (SRV_SOCKET, str);
+  () = sock->get_bit_send_int_ar (SRV_SOCKET, [color, row, col]);
+  () = sock->get_bit (SRV_SOCKET);
+}

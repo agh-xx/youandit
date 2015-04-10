@@ -7,6 +7,7 @@ It offers:
   a common interface for applications
   a readline interface (with command|filename|arg|history completion ala zsh)
   a pager (ala less)
+  a basic editor (ala vim) (under development but partly functional)
   standard utilities (which mimic the gnu-coreutils with extensions)
   a debug console and functions to manage the distribution
 
@@ -14,7 +15,7 @@ Its interface is almost like vim's editor.
 
 It was written in S-Lang mainly because the language is simple (it uses a C-like
 syntax) with a small memory footprint, great array manipulation and because
-probably is one of the fasted dynamic languages.
+probably is one of the fasted interpreted languages.
 
 This is a work in progress and it should be regarded like this in eternity, as one
 of the basic reasons which this project was started, is to be used to teach basic
@@ -22,10 +23,15 @@ programming concepts to the author first and to other people around this guy.
 
 INSTALLATION
 
-# REQUIRED dependencies:
+# Required dependencies (almost all of them are installed by default to
+# any Linux distribution):
+#
 # ps from procps-ng
 # stty from coreutils
 # sudo
+# diff
+# patch
+# git
 # libpcre (libs and headers)
 # libcurl (lib and header)
 
@@ -41,7 +47,7 @@ INSTALLATION
 # mkdir gitrepos
 # cd gitrepos
 
-# This application always follows S-Lang development, so it wont work
+# This application always follows S-Lang development, so it won't work
 # with a standard release, so
 # clone S-Lang repository
 
@@ -106,8 +112,8 @@ Defaults:USER timestamp_timeout=1
 #optionally add to /etc/fstab a tmpfs to tmp and bin, like,
 # none      somedir/tmp  tmpfs   size=200M,user  0      0
 # none      somedir/bin  tmpfs   size=15M,user,noatime,exec 0 0
-# in the last occation then everytime installation will executed at the
-# first invocation
+# in the last occation then the installation process will be executed
+# at the first invocation
 # note: bin and tmp should exist if mounted like this
 
 # Now run
