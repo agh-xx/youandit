@@ -1,6 +1,10 @@
 sigprocmask (SIG_BLOCK, [SIGINT]);
 
 public variable
+  GETCH_LANG,
+  GET_CHAR = 0x01F4,
+  GET_EL_CHAR = 0x012C,
+  DISPLAY = getenv ("DISPLAY"),
   LINES,
   COLUMNS,
   MSGROW,
@@ -15,13 +19,14 @@ public variable
   SRV_SOCKADDR = getenv ("SRV_SOCKADDR"),
   SRV_SOCKET = @FD_Type (atoi (getenv ("SRV_FILENO")));
 
+if ("NULL" == DISPLAY)
+  DISPLAY = NULL;
+
 private variable
   MYPATH = path_dirname (__FILE__),
   JUST_DRAW = 0x064,
   GOTO_EXIT = 0x0C8,
-  CHNG_LANG = 0x012C,
   GET_COLS = 0x0190,
-  GET_CHAR = 0x01F4,
   GET_FILE = 0x0258,
   GET_ROWS = 0x02BC,
   GET_FTYPE = 0x0320,
@@ -35,6 +40,8 @@ private variable
   STDNS = getenv ("STDNS"),
   PG_SOCKET;
 
+GETCH_LANG = GET_CHAR;
+
 set_slang_load_path (sprintf ("%s/ftypes/share%c%s", MYPATH, path_get_delimiter (),
       getenv ("LOAD_PATH")));
 set_import_module_path (getenv ("IMPORT_PATH"));
@@ -46,7 +53,6 @@ import ("pcre");
 $1 = socket (PF_UNIX, SOCK_STREAM, 0);
 bind ($1, PG_SOCKADDR);
 listen ($1, 1);
-
 PG_SOCKET = accept (__tmp ($1));
  
 try
@@ -109,19 +115,13 @@ define get_int_ar ()
 
 define get_char ()
 {
-  send_int (GET_CHAR);
+  send_int (GETCH_LANG);
   return get_int ();
 }
 
 define get_str ()
 {
   return sock->get_str (PG_SOCKET);
-}
-
-define chng_lang ()
-{
-  send_int (CHNG_LANG);
-  () = get_int ();
 }
 
 define get_cols ()

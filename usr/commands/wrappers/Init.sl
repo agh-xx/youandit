@@ -5,8 +5,8 @@ define main (self)
     mydir = path_dirname (__FILE__);
 
   keys["mount"] = {sprintf ("%s/mount", mydir), NULL, "mount filesystem (without args prints the mounted filesystems)",
-    ["--mountpoint= directory MountPoint",
-     "--device= filename Device"], NULL};
+    ["--mountpoint= mountpoint MountPoint",
+     "--device= device Device"], NULL};
 
   keys["file"] = {sprintf ("%s/file", mydir), NULL, "print information about files (file wrapper)",
     NULL, NULL};
@@ -18,7 +18,7 @@ define main (self)
     NULL, NULL};
 
   keys["umount"] = {sprintf ("%s/umount", mydir), NULL, "umount filesystem",
-    ["--mountpoint= directory MountPoint"], NULL};
+    ["--mountpoint= mountpoint MountPoint"], NULL};
 
   throw Return, " ", struct
     {
@@ -27,3 +27,4 @@ define main (self)
     keys = keys
     };
 }
+

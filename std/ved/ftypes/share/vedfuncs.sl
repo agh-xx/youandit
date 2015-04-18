@@ -17,7 +17,10 @@ define clear (frow, lrow)
 
 define topline_dr (str)
 {
-  variable t = strftime ("[%a %d %b %I:%M:%S]");
+  variable
+    t = strftime ("[%a %d %b %I:%M:%S]");
+
+  str += sprintf (" LANG (%s) ", GETCH_LANG == GET_CHAR ? "eng" : "el");
 
   s_.write_nstr_dr (str + repeat (" ", COLUMNS - strlen (str) - strlen (t)) + t,
     16, 0, 0, [cf_.ptr[0], cf_.ptr[1]]);
@@ -25,7 +28,10 @@ define topline_dr (str)
 
 define topline (str)
 {
-  variable t = strftime ("[%a %d %b %I:%M:%S]");
+  variable
+    t = strftime ("[%a %d %b %I:%M:%S]");
+  
+  str += sprintf (" LANG (%s) ", GETCH_LANG == GET_CHAR ? "eng" : "el");
 
   s_.write_nstr (str + repeat (" ", COLUMNS - strlen (str) - strlen (t)) + t,
     16, 0);
@@ -93,19 +99,49 @@ define v_lnr (r)
   return cf_.lnrs[r];
 }
 
+define find_word (line, col, start, end)
+{
+  variable wchars = [['0':'9'], ['a':'z'], ['A':'Z'], [913:929:1],
+    [931:937:1], [945:969:1], '_'];
+
+  wchars = array_map (String_Type, &char, wchars);
+
+  ifnot (col - cf_._indent)
+    @start = cf_._indent;
+  else
+    {
+    while (col--, col >= cf_._indent && any (wchars == substr (line, col + 1, 1)));
+
+    @start = col + 1;
+    }
+  
+  variable len = strlen (line);
+
+  while (col++, col < len && any (wchars == substr (line, col + 1, 1)));
+ 
+  @end = col - 1;
+  
+  return substr (line, @start + 1, @end - @start + 1);
+}
+
 define find_Word (line, col, start, end)
 {
   ifnot (col - cf_._indent)
     @start = cf_._indent;
   else
     {
-    while (col--, col >= cf_._indent && 0 == isblank (line[col]));
+    while (col--, col >= cf_._indent && 0 == isblank (substr (line, col + 1, 1)));
+
     @start = col + 1;
     }
- 
+  
   variable len = strlen (line);
-  while (col++, col < len && 0 == isblank (line[col]));
-    @end = col - 1;
+
+  while (col++, col < len && 0 == isblank (substr (line, col + 1, 1)));
+ 
+  @end = col - 1;
+  
+  return substr (line, @start + 1, @end - @start + 1);
 }
 
 define tail ()
@@ -162,10 +198,4 @@ define reread ()
   s_.draw ();
 }
 
-private define change_language ()
-{
-  chng_lang ();
-}
-
-pagerf[string (keys->rmap.changelang[0])] = &change_language;
 pagerf[string (keys->CTRL_l)] = &reread;

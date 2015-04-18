@@ -1,4 +1,5 @@
 private variable
+  ISSUDO = 0,
   FILE,
   FUNC,
   FTYPE,
@@ -52,10 +53,16 @@ private define send_file ()
   sock->send_str (PG_SOCKET, FILE);
 }
 
+private define send_el_chr ()
+{
+  getchar_lang = &input->el_getch;
+  sock->send_int (PG_SOCKET, (@getch));
+  getchar_lang = &input->en_getch;
+}
+
 private define send_chr ()
 {
-  variable chr = (@getch);
-  sock->send_int (PG_SOCKET, chr);
+  sock->send_int (PG_SOCKET, (@getch));
 }
 
 private define send_cols ()
@@ -90,7 +97,32 @@ private define send_promptcolor ()
 
 private define doproc ()
 {
-  variable p = @proc->init (0, 1, 1);
+  variable p;
+
+  if (ISSUDO)
+    {
+    variable passwd = root.lib.getpasswd ();
+
+    ifnot (strlen (passwd))
+      {
+      srv->send_msg ("Password is an empty string. Aborting ...", -1);
+      return NULL;
+      }
+
+    variable retval = root.lib.validate_passwd (passwd);
+
+    if (NULL == retval)
+      {
+      srv->send_msg ("This is not a valid password", -1);
+      return NULL;
+      }
+
+    p = @proc->init (1, 1, 1);
+
+    p.stdin.in = passwd;
+    }
+  else
+    p = @proc->init (0, 1, 1);
 
   p.stdout.file = CW.buffers[CW.cur.frame].fname,
   p.stdout.wr_flags = ">>";
@@ -100,7 +132,7 @@ private define doproc ()
   return p;
 }
 
-define ved ()
+private define _ved_ ()
 {
   variable
     ftypes = ["txt", "list"];
@@ -109,7 +141,22 @@ define ved ()
     FILE = CW.buffers[CW.cur.frame].fname;
   else
     FILE = ();
+
+  ifnot (access (FILE, F_OK))
+    {
+    ifnot (stat_is ("reg", stat_file (FILE).st_mode))
+      {
+      srv->send_msg_and_refresh (sprintf ("%s: is not a regular file", FILE), -1);
+      return;
+      }
  
+    if (-1 == access (FILE, R_OK) && 0 == ISSUDO)
+      {
+      srv->send_msg_and_refresh (sprintf ("%s: is not readable", FILE), -1);
+      return;
+      }
+    }
+
   COUNT = qualifier ("count");
   FUNC = qualifier ("func");
   DRAWONLY = qualifier_exists ("drawonly");
@@ -122,9 +169,9 @@ define ved ()
     retval,
     JUST_DRAW = 0x064,
     GOTO_EXIT = 0x0C8,
-    CHNG_LANG = 0x012C,
     SEND_COLS = 0x0190,
     SEND_CHAR = 0x01F4,
+    SEND_EL_CHAR = 0x012C,
     SEND_FILE = 0x0258,
     SEND_ROWS = 0x02BC,
     SEND_FTYPE = 0x0320,
@@ -145,14 +192,22 @@ define ved ()
       sprintf ("STDNS=%s", STDNS),
       sprintf ("SRV_SOCKADDR=%s", SRV_SOCKADDR),
       sprintf ("SRV_FILENO=%d", _fileno (SRV_SOCKET)),
+      sprintf ("DISPLAY=%S", getenv ("DISPLAY")),
       sprintf ("PATH=%s", getenv ("PATH")),
       ],
-    p = doproc (),
-    funcs = Assoc_Type[Ref_Type];
- 
+    funcs = Assoc_Type[Ref_Type],
+    p = doproc ();
+
+  if (NULL == p)
+    return;
+  
+  if (ISSUDO)
+    argv = [SUDO_EXEC, "-S", "-E", "-C", "140", argv];
+    %argv = [SUDO_EXEC, "-S", "-E", "-C", sprintf ("%d", _fileno (SRV_SOCKET) + 1), argv];
+
   funcs[string (JUST_DRAW)] = &just_draw;
-  funcs[string (CHNG_LANG)] = &chng_lang;
   funcs[string (SEND_CHAR)] = &send_chr;
+  funcs[string (SEND_EL_CHAR)] = &send_el_chr;
   funcs[string (SEND_COLS)] = &send_cols;
   funcs[string (SEND_FILE)] = &send_file;
   funcs[string (SEND_ROWS)] = &send_rows;
@@ -191,7 +246,23 @@ define ved ()
 
   variable status = waitpid (p.pid, 0);
   p.atexit ();
+}
+
+define ved ()
+{
+  variable args = __pop_list (_NARGS);
+  _ved_ (__push_list (args);;__qualifiers ());
 
   if (qualifier_exists ("drawwind"))
     CW.drawwind ();
+
+  ISSUDO = 0;
+}
+
+define vedsudo ()
+{
+  ISSUDO = 1;
+  variable args = __pop_list (_NARGS);
+  _ved_ (__push_list (args);;__qualifiers ());
+  ISSUDO = 0;
 }

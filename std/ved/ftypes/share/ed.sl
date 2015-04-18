@@ -21,6 +21,7 @@ private define indent_in ()
   cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
   cf_.lines[i] = line;
   cf_.ptr[1] -= i_;
+  cf_._index -= i_; 
 
   if (0 > cf_.ptr[1] - cf_._indent)
     cf_.ptr[1] = cf_._indent;
@@ -45,6 +46,7 @@ private define indent_out ()
   cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
   cf_.lines[i] = line;
   cf_.ptr[1] += s_._shiftwidth;
+  cf_._index += s_._shiftwidth;
 
   if (cf_.ptr[1] >= cf_._maxlen)
     cf_.ptr[1] = cf_._maxlen - 1;
@@ -97,7 +99,9 @@ private define del_line ()
       set_modified ();
       return 0;
       }
- 
+
+  REG["\""] = cf_.lines[i] + "\n";
+
   cf_.lines[i] = NULL;
   cf_.lines = cf_.lines[wherenot (_isnull (cf_.lines))];
   cf_._len--;
@@ -105,6 +109,7 @@ private define del_line ()
   cf_._i = cf_._ii;
  
   cf_.ptr[1] = cf_._indent;
+  cf_._index = cf_._indent;
 
   if (cf_.ptr[0] == cf_.vlins[-1] && 1 < length (cf_.vlins))
     cf_.ptr[0]--;
@@ -119,25 +124,30 @@ private define del_line ()
   return 0;
 }
 
-private define del_word ()
+private define del_word (what)
 {
   variable
     end,
+    word,
     start,
-    col = cf_.ptr[1],
+    func = islower (what) ? &find_word : &find_Word,
+    col = cf_._index,
     i = v_lnr ('.'),
     line = v_lin ('.');
  
-  if (isblank (line[col]))
+  if (isblank (substr (line, col + 1, 1)))
     return;
  
-  find_Word (line, col, &start, &end);
+  word = (@func) (line, col, &start, &end);
+  
+  REG["\""] = word;
 
   line = sprintf ("%s%s", substr (line, 1, start), substr (line, end + 2, -1));
  
   cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
   cf_.lines[i] = line;
   cf_.ptr[1] = start;
+  cf_._index = start;
 
   set_modified ();
  
@@ -152,7 +162,7 @@ private define chang_chr ()
 {
   variable
     chr = get_char (),
-    col = cf_.ptr[1],
+    col = cf_._index,
     i = v_lnr ('.'),
     line = v_lin ('.');
 
@@ -172,7 +182,7 @@ private define chang_chr ()
 private define del_chr ()
 {
   variable
-    col = cf_.ptr[1],
+    col = cf_._index,
     i = v_lnr ('.'),
     line = v_lin ('.'),
     len = strlen (line);
@@ -182,15 +192,21 @@ private define del_chr ()
  
   if (any (['x', keys->rmap.delete] == cf_._chr))
     {
+    REG["\""] = substr (line, col + 1, 1);
     line = substr (line, 1, col) + substr (line, col + 2, - 1);
-    if (cf_.ptr[1] == strlen (line))
+    if (cf_._index == strlen (line))
+      {
       cf_.ptr[1]--;
+      cf_._index--;
+      }
     }
   else
     if (0 < cf_.ptr[1] - cf_._indent)
       {
+      REG["\""] = substr (line, col, 1);
       line = substr (line, 1, col - 1) + substr (line, col + 1, - 1);
       cf_.ptr[1]--;
+      cf_._index--;
       }
  
   ifnot (strlen (line))
@@ -213,41 +229,56 @@ private define del_chr ()
 
 private define del ()
 {
-  cf_._chr = get_char ();
+  variable chr = get_char ();
  
-  if (any (['d', 'w' == cf_._chr]))
+  if (any (['d', 'w', 'W'] == chr))
     {
-    if ('d' == cf_._chr)
+    if ('d' == chr)
       {
       if (1 == del_line ())
         return;
 
       s_.draw ();
+      return;
       }
-%% will change to W and del_Word
-    if ('w' == cf_._chr)
-      del_word ();
+    
+    if ('w' == chr)
+      {
+      del_word ('w');
+      return;
+      }
+
+    if ('W' == chr)
+      {
+      del_word ('W');
+      return;
+      }
+    
     }
 }
 
 private define del_to_end ()
 {
   variable
-    col = cf_.ptr[1],
+    col = cf_._index,
     i = v_lnr ('.'),
     line = v_lin ('.'),
     len = strlen (line);
  
-  if (cf_.ptr[1] == len)
+  if (cf_._index == len)
     return;
  
   ifnot (cf_.ptr[1] - cf_._indent)
     {
+    if (strlen (line))
+      REG["\""] = line;
+
     line = repeat (" ", cf_._indent);
     ifnot (strlen (line))
       line = " ";
  
     cf_.ptr[1] = cf_._indent;
+    cf_._index = cf_._indent;
 
     cf_.lines[i] = line;
     cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
@@ -262,6 +293,10 @@ private define del_to_end ()
 
     return;
     }
+  
+  variable reg = substr (line, col, -1);
+  if (strlen (line))
+    REG["\""] = reg;
 
   line = substr (line, 1, col);
 
@@ -271,6 +306,7 @@ private define del_to_end ()
   cf_.st_.st_size = calcsize (cf_.lines);
 
   cf_.ptr[1]--;
+  cf_._index--;
 
   set_modified ();
 
@@ -331,7 +367,7 @@ private define newline ()
     dir = cf_._chr == 'O' ? "prev" : "next",
     prev_l,
     next_l,
-    col = cf_.ptr[1],
+    col = cf_._index,
     lnr = v_lnr ('.'),
     line = v_lin ('.'),
     len = strlen (line);
@@ -369,13 +405,108 @@ private define newline ()
       cf_.ptr[0]++;
 
   cf_.ptr[1] = cf_._indent;
+  cf_._index = cf_._indent;
+  cf_._findex = cf_._indent;
  
   s_.draw ();
  
-  line = "";
+  line = repeat (" ", cf_._indent);
   insert (&line, "next" == dir ? lnr + 1 : lnr, prev_l, next_l;;__qualifiers ());
 }
 
+private define Put ()
+{
+  ifnot (assoc_key_exists (REG, "\""))
+    return;
+
+  variable
+    lines = strchop (REG["\""], '\n', 0),
+    lnr = v_lnr ('.');
+
+  if ('\n' == REG["\""][-1])
+    {
+    lines = lines[[:-2]];
+    ifnot (lnr)
+      cf_.lines = [lines, cf_.lines];
+    else
+      cf_.lines = [cf_.lines[[:lnr - 1]], lines, cf_.lines[[lnr:]]];
+
+    cf_._len += length (lines);
+    }
+  else
+    cf_.lines[lnr] = substr (cf_.lines[lnr], 1, cf_._index) + strjoin (lines) +
+      substr (cf_.lines[lnr], cf_._index + 1, -1); 
+
+  cf_._i = lnr == 0 ? 0 : cf_._ii;
+ 
+  cf_.st_.st_size = calcsize (cf_.lines);
+  
+  set_modified ();
+ 
+  s_.draw ();
+}
+
+private define put ()
+{
+  ifnot (assoc_key_exists (REG, "\""))
+    return;
+
+  variable
+    lines = strchop (REG["\""], '\n', 0),
+    lnr = v_lnr ('.');
+
+  if ('\n' == REG["\""][-1])
+    {
+    lines = lines[[:-2]];
+    cf_.lines = [cf_.lines[[:lnr]], lines, cf_.lines[[lnr + 1:]]];
+    cf_._len += length (lines);
+    }
+  else
+    cf_.lines[lnr] = substr (cf_.lines[lnr], 1, cf_._index + 1) + strjoin (lines) +
+      substr (cf_.lines[lnr], cf_._index + 2, -1); 
+
+  cf_._i = lnr == 0 ? 0 : cf_._ii;
+  
+  cf_.st_.st_size = calcsize (cf_.lines);
+  
+  set_modified ();
+ 
+  s_.draw ();
+}
+
+private define toggle_case ()
+{
+  variable
+    func,
+    col = cf_._index,
+    i = v_lnr ('.'),
+    line = v_lin ('.'),
+    chr = substr (line, col + 1, 1);
+
+  chr = decode (chr)[0];
+
+  func = islower (chr) ? &toupper : &tolower;
+
+  chr = char ((@func) (chr));
+   
+  cf_.st_.st_size -= strbytelen (line);
+  line = substr (line, 1, col) + chr + substr (line, col + 2, - 1);
+  cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
+  cf_.lines[i] = line;
+  cf_.st_.st_size += strbytelen (line);
+  set_modified ();
+  
+  s_.write_nstr (line, 0, cf_.ptr[0]);
+
+  if (cf_._index - cf_._indent == v_linlen (cf_.ptr[0]) - 1)
+    draw_tail ();
+  else
+    (@pagerf[string ('l')]);
+}
+
+pagerf[string ('~')] = &toggle_case;
+pagerf[string ('P')] = &Put;
+pagerf[string ('p')] = &put;
 pagerf[string ('o')] = &newline;
 pagerf[string ('O')] = &newline;
 pagerf[string ('d')] = &del;

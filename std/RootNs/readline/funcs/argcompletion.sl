@@ -84,14 +84,19 @@ define main (self)
           self.parse_args ();
           }
         }
-      else if (any (["filename", "directory"] == type[0]))
+      else if (any (["filename", "directory", "device", "mountpoint"] == type[0]))
         {
         srv->send_msg (sprintf ("\ttype should be a %s [tab for completion in the top line]", type[0]), 0);
         self.my_prompt ();
+        
+        if ("device" == type[0])
+          tmp = qualifier ("pat", "/dev/sd");
+        else if ("mountpoint" == type[0])
+          tmp = qualifier ("pat", "/media/removable/");
+        else
+          tmp = qualifier ("pat", "");
 
-        tmp = qualifier ("pat", "");
-
-        if ("directory" == type[0])
+        if (any (["directory", "mountpoint"]  == type[0]))
           () = self.filenamecompletiontoprow (&tmp;only_dirs);
         else
           () = self.filenamecompletiontoprow (&tmp);
@@ -160,14 +165,19 @@ define main (self)
             self.parse_args ();
             }
           }
-        else if (any (["filename", "directory"] == type[ar[0]]))
+        else if (any (["filename", "directory", "device", "mountpoint"] == type[ar[0]]))
           {
           srv->send_msg (sprintf ("\ttype should be a %s [tab for completion in the top line]", type[ar[0]]), 0);
           self.my_prompt ();
 
-          tmp = qualifier ("pat", "");
+          if ("device" == type[ar[0]])
+            tmp = qualifier ("pat", "/dev/sd");
+          else if ("mountpoint" == type[ar[0]])
+            tmp = qualifier ("pat", "/media/removable/");
+          else
+            tmp = qualifier ("pat", "");
  
-          if ("directory" == type[ar[0]])
+          if (any (["directory", "mountpoint"]  == type[ar[0]]))
             () = self.filenamecompletiontoprow (&tmp;only_dirs);
           else
             () = self.filenamecompletiontoprow (&tmp);
@@ -237,14 +247,19 @@ define main (self)
             self.parse_args ();
             }
           }
-        else if (any (["filename", "directory"] == type[i]))
+        else if (any (["filename", "directory", "device", "mountpoint"] == type[i]))
           {
           srv->send_msg (sprintf ("\ttype should be a %s [tab for completion in the top line]", type[i]), 0);
           self.my_prompt ();
 
-          tmp = qualifier ("pat", "");
+          if ("device" == type[i])
+            tmp = qualifier ("pat", "/dev/sd");
+          else if ("mountpoint" == type[i])
+            tmp = qualifier ("pat", "/media/removable/");
+          else
+            tmp = qualifier ("pat", "");
 
-          if ("directory" == type[i])
+          if (any (["directory", "mountpoint"]  == type[i]))
             () = self.filenamecompletiontoprow (&tmp;only_dirs);
           else
             () = self.filenamecompletiontoprow (&tmp);

@@ -1,3 +1,9 @@
+static define refresh ()
+{
+  sock->send_str (SRV_SOCKET, _function_name ());
+  () = sock->get_bit (SRV_SOCKET);
+}
+
 static define char_at ()
 {
   sock->send_str (SRV_SOCKET, _function_name ());

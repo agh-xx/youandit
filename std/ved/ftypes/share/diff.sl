@@ -4,13 +4,13 @@ define diff (lines, fname, retval)
     status,
     p = proc->init (1, 1, 1);
 
-  p.stdin.in = strjoin (lines, "\n");
+  p.stdin.in = lines;
 
   status = p.execv ([which ("diff"), "-u", fname, "-"], NULL);
   if (NULL == status)
     {
     @retval = NULL;
-    return "couldn't diff invoke process";
+    return "couldn't invoke diff process";
     }
 
   ifnot (2 > status.exit_status)
@@ -44,7 +44,7 @@ define patch (in, dir, retval)
   if (NULL == status)
     {
     @retval = NULL;
-    return "couldn't patch invoke process";
+    return "couldn't invoke patch process";
     }
  
   ifnot (2 > status.exit_status)

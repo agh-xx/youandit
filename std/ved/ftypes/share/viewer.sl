@@ -10,14 +10,14 @@ private define adjust_col (linlen, plinlen)
   if (linlen == 0 || 0 == cf_.ptr[1] - cf_._indent)
     {
     cf_.ptr[1] = cf_._indent;
-    cf_._findex = 0;
-    cf_._index = 0;
+    cf_._findex = cf_._indent;
+    cf_._index = cf_._indent;
     }
   else if (linlen > cf_._maxlen && cf_.ptr[1] + 1 == cf_._maxlen ||
     (cf_.ptr[1] - cf_._indent == plinlen - 1 && linlen > cf_._maxlen))
       {
       cf_.ptr[1] = cf_._maxlen - 1;
-      cf_._findex = 0;
+      cf_._findex = cf_._indent;
       cf_._index = cf_._maxlen - cf_._indent - 1;
       }
   else if ((0 != plinlen && cf_.ptr[1] - cf_._indent == plinlen - 1 && (
@@ -26,7 +26,7 @@ private define adjust_col (linlen, plinlen)
       {
       cf_.ptr[1] = linlen - 1 + cf_._indent;
       cf_._index = linlen - 1;
-      cf_._findex = 0;
+      cf_._findex = cf_._indent;
       }
 }
 
@@ -127,8 +127,8 @@ private define gotoline ()
 
     cf_.ptr[0] = cf_.rows[0];
     cf_.ptr[1] = cf_._indent;
-    cf_._findex = 0;
-    cf_._index = 0;
+    cf_._findex = cf_._indent;
+    cf_._index = cf_._indent;
 
     srv->gotorc_draw (cf_.ptr[0], cf_.ptr[1]);
     }
@@ -148,8 +148,8 @@ private define eof ()
   cf_._i = cf_._len - cf_._avlins;
 
   cf_.ptr[1] = cf_._indent;
-  cf_._findex = 0;
-  cf_._index = 0;
+  cf_._findex = cf_._indent;
+  cf_._index = cf_._indent;
 
   if (length (cf_.lins) < cf_._avlins - 1)
     {
@@ -177,8 +177,8 @@ private define bof ()
  
   cf_.ptr[0] = cf_.rows[0];
   cf_.ptr[1] = cf_._indent;
-  cf_._findex = 0;
-  cf_._index = 0;
+  cf_._findex = cf_._indent;
+  cf_._index = cf_._indent;
  
   s_.draw ();
 }
@@ -216,62 +216,83 @@ private define page_up ()
   s_.draw ();
 }
 
-private define left ()
+define p_left ()
 {
   ifnot (cf_.ptr[1] - cf_._indent)
     ifnot (is_wrapped_line)
-      return;
+      return -1;
 
   cf_._index--;
 
-  if (is_wrapped_line)
+  if (is_wrapped_line && 0 == cf_.ptr[1] - cf_._indent)
     {
-    ifnot (cf_.ptr[1] - cf_._indent)
-      {
-      cf_._findex--;
+    cf_._findex--;
  
-      ifnot (cf_._findex)
-        is_wrapped_line = 0;
-
-      variable line;
-      if (is_wrapped_line)
-        line = substr (v_lin ('.'), cf_._findex + 1, cf_._maxlen);
-      else
-        line = v_lin ('.');
-
-      s_.write_nstr (line, 0, cf_.ptr[0]);
-      }
-    else
-      cf_.ptr[1]--;
+    ifnot (cf_._findex)
+      is_wrapped_line = 0;
+      
+    return 1;
     }
-  else
-    cf_.ptr[1]--;
+
+  cf_.ptr[1]--;
+  
+  return 0;
+}
+
+private define left ()
+{
+  variable retval = p_left ();
+  
+  if (-1 == retval)
+    return;
+
+  if (retval)
+    {
+    variable line;
+    if (is_wrapped_line)
+      line = substr (v_lin ('.'), cf_._findex + 1, cf_._maxlen);
+    else
+      line = v_lin ('.');
+
+    s_.write_nstr (line, 0, cf_.ptr[0]);
+    }
 
   draw_tail ();
 }
 
-private define right ()
+define p_right (linlen)
 {
-  variable linlen = v_linlen (cf_.ptr[0]);
-  if (cf_._index == linlen - 1)
-    return;
+  if (cf_._index - cf_._indent == linlen - 1)
+    return -1;
 
   if (cf_.ptr[1] < cf_._maxlen - 1)
     {
     cf_.ptr[1]++;
     cf_._index++;
-    draw_tail ();
-    return;
+    return 0;
     }
  
   cf_._index++;
   cf_._findex++;
+  
+  return 1;
+}
 
-  variable line = substr (v_lin ('.'), cf_._findex + 1, cf_._maxlen);
+private define right ()
+{
+  variable
+    line = v_lin ('.'),
+    retval = p_right (v_linlen ('.'));
 
-  s_.write_nstr (line, 0, cf_.ptr[0]);
+  if (-1 == retval)
+    return;
 
-  is_wrapped_line = 1;
+  if (retval)
+    {
+    line = substr (line, cf_._findex + 1, cf_._maxlen);
+    s_.write_nstr (line, 0, cf_.ptr[0]);
+    is_wrapped_line = 1;
+    }
 
   draw_tail ();
 }
@@ -288,13 +309,13 @@ private define eos ()
   else if (0 == linlen)
     {
     cf_.ptr[1] = cf_._indent;
-    cf_._index = 0;
-    cf_._findex = 0;
+    cf_._index = cf_._indent;
+    cf_._findex = cf_._indent;
     }
   else
     {
     cf_.ptr[1] = linlen + cf_._indent - 1;
-    cf_._findex = 0;
+    cf_._findex = cf_._indent;
     cf_._index = linlen - 1;
     }
 
@@ -355,19 +376,90 @@ private define bolnblnk ()
     cf_.ptr[1]++;
     }
 
-  cf_._findex = 0;
+  cf_._findex = cf_._indent;
   cf_._index = cf_.ptr[1] - cf_._indent;
 
   draw_tail ();
 }
 
+private define word_change_case (what)
+{
+  variable
+    ii,
+    end,
+    start,
+    word,
+    func_cond = what == "toupper" ? &islower : &isupper,
+    func = what == "toupper" ? &toupper : &tolower,
+    col = cf_._index,
+    i = v_lnr ('.'),
+    line = v_lin ('.');
+  
+  word = find_word (line, col, &start, &end);
+
+  variable ar = decode (word);
+  _for ii (0, length (ar) - 1)
+    if ((@func_cond) (ar[ii]))
+      word += char ((@func) (ar[ii]));
+    else
+      word += char (ar[ii]);
+
+  line = sprintf ("%s%s%s", substr (line, 1, start), word, substr (line, end + 2, -1));
+  cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
+  cf_.lines[i] = line;
+  cf_.ptr[1] = start;
+  cf_._index = start;
+
+  set_modified ();
+ 
+  cf_.st_.st_size = calcsize (cf_.lines);
+
+  s_.write_nstr (line, 0, cf_.ptr[0]);
+
+  draw_tail ();
+}
+
+private define _g_ ()
+{
+  variable
+    chr = get_char ();
+
+  if ('g' == chr)
+    {
+    bof ();
+    return;
+    }
+
+  if ('U' == chr)
+    {
+    word_change_case ("toupper");
+    return;
+    }
+
+  if ('u' == chr)
+    {
+    word_change_case ("tolower");
+    return;
+    }
+}
+
+private define Yank ()
+{
+  variable
+    line = v_lin ('.');
+
+  REG["\""] = line + "\n";
+  seltoX (line + "\n");
+}
+
+pagerf[string ('Y')] = &Yank;
 pagerf[string (keys->DOWN)] = &down;
 pagerf[string ('j')] = &down;
 pagerf[string ('k')] = &up;
 pagerf[string (keys->UP)] = &up;
 pagerf[string ('G')]= &eof;
 pagerf[string (keys->HOME)] = &bof;
-pagerf[string ('g')]= &bof;
+pagerf[string ('g')]= &_g_;
 pagerf[string (keys->NPAGE)] = &page_down;
 pagerf[string (keys->CTRL_f)] = &page_down;
 pagerf[string (keys->CTRL_b)] = &page_up;

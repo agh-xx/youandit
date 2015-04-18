@@ -1,10 +1,17 @@
+define seltoX ();
+
 ineed ("vedfuncs");
 ineed ("diff");
-ineed ("viewer");
 ineed ("undo");
+ineed ("viewer");
 ineed ("search");
 ineed ("rline");
+ineed ("visual_mode");
 ineed ("ed");
+
+ifnot (NULL == DISPLAY)
+  ifnot (NULL == which ("xclip"))
+    ineed ("seltoX");
 
 pagerc = array_map (Integer_Type, &integer, assoc_get_keys (pagerf));
 
@@ -36,6 +43,7 @@ define ved (s)
       st_gid = getgid (),
       st_size = 0
       };
+
   cf_.rows = get_rows ();
   cf_._indent = 0;
   cf_.lines = s_.getlines ();
@@ -53,14 +61,15 @@ define ved (s)
   cf_._avlins = length (cf_.rows) - 2;
   cf_.ptr[0] = cf_.rows[0];
   cf_.ptr[1] = cf_._indent;
-  cf_._findex = 0;
-  cf_._index = 0;
+  cf_._findex = cf_._indent;
+  cf_._index = cf_._indent;
 
   cf_._i = 0;
- 
+
   s.draw ();
 
   variable func = get_func ();
+
   if (func)
     {
     count = get_count ();

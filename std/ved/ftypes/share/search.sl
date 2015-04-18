@@ -23,6 +23,7 @@ private define search_backward (str)
     pos,
     cols,
     match,
+    line,
     wrapped = 0,
     clrs = Integer_Type[0],
     rows = Integer_Type[4];
@@ -42,14 +43,16 @@ private define search_backward (str)
   i = lnr;
 
   while (i > -1 || (i > lnr && wrapped))
-    if (pcre_exec (pat, cf_.lines[i]))
+    {
+    line = substr (cf_.lines[i], cf_._indent + 1, -1);
+    if (pcre_exec (pat, line))
       {
       match = pcre_nth_match (pat, 0);
       ar = [
         sprintf ("row %d|", i + 1),
-        substrbytes (cf_.lines[i], 1, match[0]),
-        substrbytes (cf_.lines[i], match[0] + 1, match[1] - match[0]),
-        substrbytes (cf_.lines[i], match[1] + 1, -1)];
+        substrbytes (line, 1, match[0]),
+        substrbytes (line, match[0] + 1, match[1] - match[0]),
+        substrbytes (line, match[1] + 1, -1)];
       cols = strlen (ar[[:-2]]);
       cols = [0, array_map (Integer_Type, &int, cumsum (cols))];
       clrs = [0, 0, PROMPTCLR, 0];
@@ -75,6 +78,7 @@ private define search_backward (str)
           }
       else
         i--;
+    }
  
   found = 0;
   send_msg_dr ("Nothing found", 0, PROMPTROW, col);
@@ -89,6 +93,7 @@ private define search_forward (str)
     pos,
     cols,
     match,
+    line,
     wrapped = 0,
     clrs = Integer_Type[0],
     rows = Integer_Type[4];
@@ -108,14 +113,16 @@ private define search_forward (str)
   i = lnr;
  
   while (i <= cf_._len || (i < lnr && wrapped))
-    if (pcre_exec (pat, cf_.lines[i]))
+    {
+    line = substr (cf_.lines[i], cf_._indent + 1, -1);
+    if (pcre_exec (pat, line))
       {
       match = pcre_nth_match (pat, 0);
       ar = [
         sprintf ("row %d|", i + 1),
-        substrbytes (cf_.lines[i], 1, match[0]),
-        substrbytes (cf_.lines[i], match[0] + 1, match[1] - match[0]),
-        substrbytes (cf_.lines[i], match[1] + 1, -1)];
+        substrbytes (line, 1, match[0]),
+        substrbytes (line, match[0] + 1, match[1] - match[0]),
+        substrbytes (line, match[1] + 1, -1)];
       cols = strlen (ar[[:-2]]);
       cols = [0, array_map (Integer_Type, &int, cumsum (cols))];
       clrs = [0, 0, PROMPTCLR, 0];
@@ -141,9 +148,10 @@ private define search_forward (str)
           }
       else
         i++;
+    }
  
   found = 0;
-  send_msg_dr ("Nothing found", 1, PROMPTROW, col);
+  send_msg_dr ("Nothing found", 0, PROMPTROW, col);
 }
 
 define search ()
@@ -219,8 +227,9 @@ define search ()
  
     if (any (chr == keys->rmap.changelang))
       {
-      (@pagerf[string (chr)]);
-      send_msg_dr (" ", 0, PROMPTROW, col);
+      GETCH_LANG = GETCH_LANG == GET_CHAR ? GET_EL_CHAR : GET_CHAR;
+      topline (" (ved)  -- PAGER --");
+      srv->gotorc_draw (PROMPTROW, col);
       continue;
       }
 
@@ -335,20 +344,32 @@ private define search_word ()
     else
       lnr--;
 
-  col = cf_.ptr[1];
+  col = cf_._index;
   lcol = col;
 
-  if (isblank (line[lcol]))
+  if (isblank (substr (line, lcol + 1, 1)))
     return;
  
-  find_Word (line, lcol, &start, &end);
- 
-  pat = substr (line, start + 1, end - start + 1);
+  pat = find_word (line, lcol, &start, &end);
+
+  if (col - cf_._indent)
+    pat = "\\W+" + pat;
+  else
+    pat = "^" + pat;
+
+  if (cf_._index < v_linlen ('.'))
+    pat += "\\W";
 
   (@typesearch) (pat;row = MSGROW, context);
 
   forever
     {
+    ifnot (found)
+      {
+      exit_rout ();
+      return;
+      }
+
     chr = get_char ();
  
     ifnot (any ([keys->CTRL_n, 033, '\r'] == chr))
@@ -375,7 +396,7 @@ private define search_word ()
         }
 
       exit_rout ();
-      break;
+      return;
       }
  
     if (chr == keys->CTRL_n)

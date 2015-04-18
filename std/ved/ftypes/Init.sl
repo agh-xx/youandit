@@ -4,6 +4,7 @@ public variable
   rlf_,
   count = 0,
   IMG,
+  REG = Assoc_Type[String_Type],
   UNDO = String_Type[0],
   UNDOSET = {},
   undolevel = 0,

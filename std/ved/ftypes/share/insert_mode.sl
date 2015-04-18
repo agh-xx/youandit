@@ -349,16 +349,18 @@ private define down (s, line)
   cf_.lins[cf_.ptr[0] - cf_.rows[0]] = @line;
   cf_.lines[s.lnr] = @line;
 
-  if (is_wrapped_line)
-    {
-    s_.write_nstr (@line, 0, cf_.ptr[0]);
-    is_wrapped_line = 0;
-    cf_._findex = cf_._indent;
-    cf_.ptr[1] = cf_._maxlen;
-    cf_._index = cf_._maxlen;
-    }
+  cf_._findex = cf_._indent;
 
   s.lnr++;
+
+  if (is_wrapped_line)
+    {
+    s_.write_nstr (substr (@line, cf_._indent + 1, -1), 0, cf_.ptr[0]);
+    is_wrapped_line = 0;
+    cf_.ptr[1] = cf_._maxlen;
+    }
+
+  cf_._index = cf_.ptr[1];
 
   @line = cf_.lines[s.lnr];
 
@@ -366,8 +368,8 @@ private define down (s, line)
  
   if (cf_._index > len)
     {
-    cf_.ptr[1] = len - cf_._indent;
-    cf_._index = len - cf_._indent;
+    cf_.ptr[1] = len;
+    cf_._index = len;
     }
  
   if (cf_.ptr[0] < cf_.vlins[-1])
@@ -396,16 +398,19 @@ private define up (s, line)
   cf_.lins[cf_.ptr[0] - cf_.rows[0]] = @line;
   cf_.lines[s.lnr] = @line;
 
+  s.lnr--;
+
+  cf_._findex = cf_._indent;
+
   if (is_wrapped_line)
     {
-    s_.write_nstr (@line, 0, cf_.ptr[0]);
+    %s_.write_nstr (@line, 0, cf_.ptr[0]);
+    s_.write_nstr (substr (@line, cf_._indent + 1, -1), 0, cf_.ptr[0]);
     is_wrapped_line = 0;
-    cf_._findex = cf_._indent;
     cf_.ptr[1] = cf_._maxlen;
-    cf_._index = cf_._maxlen;
     }
  
-  s.lnr--;
+  cf_._index = cf_.ptr[1];
  
   @line = cf_.lines[s.lnr];
  
@@ -413,8 +418,8 @@ private define up (s, line)
 
   if (cf_._index > len)
     {
-    cf_.ptr[1] = len - cf_._indent;
-    cf_._index = len - cf_._indent;
+    cf_.ptr[1] = len;
+    cf_._index = len;
     }
  
   if (cf_.ptr[0] > cf_.vlins[0])
@@ -440,18 +445,19 @@ private define cr (s, line)
     next_l,
     lline;
 
-  if (strlen (@line) == cf_.ptr[1])
+  if (strlen (@line) == cf_._index)
     {
     cf_.lines[s.lnr] = @line;
 
     cf_._chr = 'o';
  
     (@pagerf[string ('o')]) (;modified);
+    return;
     }
   else
     {
-    lline = 0 == cf_.ptr[1] - cf_._indent ? " " : substr (@line, 1, cf_.ptr[1]);
-    @line = substr (@line, cf_.ptr[1] + 1, -1);
+    lline = 0 == cf_._index - cf_._indent ? " " : substr (@line, 1, cf_._index);
+    @line = substr (@line, cf_._index + 1, -1);
 
     prev_l = lline;
 
@@ -476,7 +482,13 @@ private define cr (s, line)
     cf_._len++;
  
     s_.draw ();
- 
+    
+    @line = repeat (" ", cf_._indent) + @line; 
+    s_.write_nstr (@line, 0, cf_.ptr[0]);
+    draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
+    cf_._index = cf_._indent;
+    cf_._findex = cf_._indent;
+
     insert (line, s.lnr + 1, prev_l, next_l;modified);
     }
 }
@@ -485,6 +497,8 @@ insfuncs.cr = &cr;
 
 private define esc (s, line)
 {
+  GETCH_LANG = GET_CHAR;
+
   if (0 < cf_.ptr[1] - cf_._indent)
     cf_.ptr[1]--;
 
@@ -492,11 +506,11 @@ private define esc (s, line)
  
   if (s.modified)
     {
-    set_modified ();
- 
     cf_.lins[cf_.ptr[0] - cf_.rows[0]] = @line;
     cf_.lines[s.lnr] = @line;
 
+    set_modified ();
+ 
     cf_.st_.st_size = calcsize (cf_.lines);
     }
  
@@ -514,12 +528,19 @@ private define getline (self, line)
     {
     self.chr = get_char ();
 
+    if (any (keys->rmap.changelang == self.chr))
+      {
+      GETCH_LANG = GETCH_LANG == GET_CHAR ? GET_EL_CHAR : GET_CHAR;
+      topline_dr (" (ved)  -- INSERT --");
+      continue;
+      }
+
     if (033 == self.chr)
       {
       self.esc (line;;__qualifiers ());
       return;
       }
-
+    
     if ('\r' == self.chr)
       {
       self.cr (line;;__qualifiers ());

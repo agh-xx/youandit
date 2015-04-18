@@ -4,6 +4,7 @@ define main ()
     lnr,
     file,
     index,
+    func = &ved,
     count = NULL,
     args = __pop_list (_NARGS - 1);
 
@@ -20,6 +21,14 @@ define main ()
     args = args[wherenot (_isnull (args))];
     }
 
+  index = proc->is_arg ("--sudo", args);
+  ifnot (NULL == index)
+    {
+    func = &vedsudo;
+    args[index] = NULL;
+    args = args[wherenot (_isnull (args))];
+    }
+
   ifnot (length (args))
     file = CW.buffers[CW.cur.frame].fname;
   else
@@ -29,9 +38,9 @@ define main ()
     file = SCRATCHBUF;
  
   ifnot (NULL == count)
-    ved (file;func = 'G', count = count);
+    (@func) (file;func = 'G', count = count);
   else
-    ved (file);
+    (@func) (file);
 
   if (file == SCRATCHBUF || file != CW.buffers[CW.cur.frame].fname)
     CW.drawframe (CW.cur.frame);

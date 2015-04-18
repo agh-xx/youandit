@@ -2,7 +2,7 @@ define set_modified ()
 {
   variable
     retval,
-    d = diff (cf_.lines, cf_._fname, &retval);
+    d = diff (strjoin (cf_.lines, "\n") + "\n", cf_._fname, &retval);
 
   if (NULL == retval)
     {
@@ -38,8 +38,26 @@ private define undo ()
 
   variable
     retval,
-    d = patch (UNDO[undolevel - 1], path_dirname (cf_._fname), &retval);
+    in,
+    d;
+  
+  if (0 == undolevel)
+    {
+    cf_.lines = s_.getlines ();
+    cf_._len = length (cf_.lines) - 1;
+    cf_._i = cf_._ii;
+    s_.draw (); 
+    return;
+    }
+
+  in = UNDO[undolevel - 1];
+
+  d = patch (in, path_dirname (cf_._fname), &retval);
  
+  variable gp = fopen ("/tmp/undo", "a+");
+
+  ()  = fprintf (gp, "retval %d UNDO level %d length %d\n---\n", retval, undolevel, length (UNDO));
+  () = fprintf (gp, "%S\n", d);
   if (NULL == retval)
     {
     send_msg_dr (d, 1, cf_.ptr[0], cf_.ptr[1]);
@@ -60,8 +78,7 @@ private define undo ()
   cf_.ptr[0] = UNDOSET[undolevel - 1][1];
   cf_.ptr[1] = UNDOSET[undolevel - 1][2];
 
-  if (1 < undolevel)
-    undolevel--;
+  undolevel--;
  
   cf_._flags = cf_._flags | MODIFIED;
 
@@ -75,8 +92,15 @@ private define redo ()
 
   variable
     retval,
-    d = patch (UNDO[undolevel - 1], path_dirname (cf_._fname), &retval);
+    in = UNDO[undolevel],
+    d;
+
+  d = patch (in, path_dirname (cf_._fname), &retval);
  
+  variable gp = fopen ("/tmp/redo", "a+");
+
+  ()  = fprintf (gp, "REDO level %d length %d\n---\n", undolevel, length (UNDO));
+  () = fprintf (gp, "%s\n", d);
   if (NULL == retval)
     {
     send_msg_dr (d, 1, cf_.ptr[0], cf_.ptr[1]);
@@ -93,9 +117,9 @@ private define redo ()
   cf_.lines = strchop (d, '\n', 0);
   cf_._len = length (cf_.lines) - 1;
 
-  cf_._i = UNDOSET[undolevel - 1][0];
-  cf_.ptr[0] = UNDOSET[undolevel - 1][1];
-  cf_.ptr[1] = UNDOSET[undolevel - 1][2];
+  cf_._i = UNDOSET[undolevel][0];
+  cf_.ptr[0] = UNDOSET[undolevel][1];
+  cf_.ptr[1] = UNDOSET[undolevel][2];
 
   undolevel++;
 

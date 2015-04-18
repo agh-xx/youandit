@@ -1,6 +1,7 @@
 private variable
   fnames = Assoc_Type[Frame_Type],
   frame = 1,
+  exists = 0x01,
   prev_fn = NULL,
   defrows = {[1:LINES - 9], [LINES - 8:LINES - 3]};
 
@@ -44,7 +45,7 @@ private define myquit ()
 private define add (s, rows)
 {
   if (assoc_key_exists (fnames, s.fname))
-    return;
+    return exists;
 
   fnames[s.fname] = @Frame_Type;
 
@@ -70,7 +71,7 @@ private define add (s, rows)
   c._i = c._len >= s.lnr - 1 ? s.lnr - 1 : 0;
   c.ptr[0] = qualifier ("row", 1);
   c.ptr[1] = qualifier ("col", s.col - 1);
-  c._findex = 0;
+  c._findex = c._indent;
   c._index = c.ptr[1];
 
   c.st_ = stat_file (c._fname);
@@ -83,6 +84,8 @@ private define add (s, rows)
       st_gid = getgid (),
       st_size = 0
       };
+
+  return 0;
 }
 
 private define togglecur ()
@@ -137,9 +140,19 @@ private define drawfile ()
 
   togglecur ();
  
-  add (l, defrows[0]);
+  variable retval = add (l, defrows[0]);
+
   set_cf (l.fname);
- 
+  
+  if (exists == retval)
+    {
+    cf_._i = cf_._len >= l.lnr - 1 ? l.lnr - 1 : 0;
+    cf_.ptr[0] = 1;
+    cf_.ptr[1] = l.col - 1;
+    cf_._findex = cf_._indent;
+    cf_._index = cf_.ptr[1];
+    }
+
   s_.draw ();
 }
 
@@ -173,7 +186,7 @@ define ved ()
     col = 0,
     };
 
-  add (s, defrows[1];row = defrows[1][0], col = 0);
+  () = add (s, defrows[1];row = defrows[1][0], col = 0);
 
   set_cf (s.fname);
   prev_fn = s.fname;

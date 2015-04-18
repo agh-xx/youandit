@@ -86,7 +86,7 @@ define info ()
     exit (1);
     }
 
-  () = ar_to_fp (["Info for %s", path_basename (__argv[0]), ar], "%s\n", stdout);
+  () = ar_to_fp ([sprintf ("Info for %s", path_basename (__argv[0])), ar], "%s\n", stdout);
 
   exit (0);
 }
