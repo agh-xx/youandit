@@ -91,9 +91,9 @@ define main (self, argv)
 
       if ("man" == argv[0])
         {
-        if (1 == retval)
+        if (1 == retval || "--buildcache" == argv[1])
           {
-          sleep (1);
+          sleep (0.5);
           CW.drawwind ();
           root.topline ();
           throw GotoPrompt;

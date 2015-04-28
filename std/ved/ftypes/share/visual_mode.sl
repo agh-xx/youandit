@@ -10,11 +10,19 @@ private variable vis = struct
     at_exit,
     };
 
+private define v_unhl_line (s, index)
+{
+  srv->set_color_in_region (0, s.vlins[index], 0, 1, cf_._maxlen);
+}
+
 private define v_hl_ch (s)
 {
   variable i;
   _for i (0, length (s.vlins) - 1)
+    {
+    v_unhl_line (s, i);
     srv->set_color_in_region (s.clr, s.vlins[i], s.col[i], 1, strlen (s.sel[i]));
+    }
 
   srv->refresh ();
 }
@@ -28,11 +36,6 @@ private define v_hl_line (s)
         cf_._maxlen > s.linlen[i] ? s.linlen[i] : cf_._maxlen);
 
   srv->refresh ();
-}
-
-private define v_unhl_line (s, index)
-{
-  srv->set_color_in_region (0, s.vlins[index], 0, 1, cf_._maxlen);
 }
 
 private define v_l_up (s)
@@ -130,6 +133,7 @@ private define v_linewise_mode (s)
 
 vis.l_mode = &v_linewise_mode;
 
+variable l = 0;
 private define v_c_left (s, cur)
 {
   variable retval = p_left (s.linlen[-1]);
@@ -143,16 +147,70 @@ private define v_c_left (s, cur)
     {
     variable lline;
     if (is_wrapped_line)
+      {
       lline = substr (s.lines[cur], cf_._findex + 1, cf_._maxlen);
+      s.wrappedmot--;
+      }
     else
       lline = s.lines[cur];
 
     s_.write_nstr (lline, 0, cf_.ptr[0]);
     }
-  
-  s.col[cur] = cf_.ptr[1];
 
-  s.sel[cur] += substr (s.lines[cur], s.index[cur] + 1, 1);
+
+  if (cf_.ptr[1] < s.startcol[cur]) 
+    s.col[cur] = cf_.ptr[1];
+  else
+    s.col[cur] = s.startcol[cur];
+
+% if (cf_.ptr[1])
+%   if (cf_.ptr[1] < s.startcol[cur]) 
+%     if (is_wrapped_line)
+%       s.col[cur] = s.startcol[cur] - s.wrappedmot;
+%     else
+%       s.col[cur] = cf_.ptr[1];
+%   else
+%     if (is_wrapped_line)
+%       s.col[cur] = s.startcol[cur] - s.wrappedmot;
+%     else
+%      s.col[cur] = s.startcol[cur];
+% else
+%   if (is_wrapped_line)
+%     s.col[cur] = (l++, l - strlen (s.sel[cur]) + 1);
+%   else
+%     s.col[cur] = cf_.ptr[1];
+
+  %s.col[cur] = cf_.ptr[1] < s.startcol[cur] ? cf_.ptr[1] : s.startcol[cur];
+ % s.col[cur] = cf_.ptr[1] < s.startcol[cur]
+ %   ? is_wrapped_line
+ %     ? 0 == cf_.ptr[1]
+ %       ? s.startcol[cur] - s.wrappedmot
+ %       : s.startcol[cur]
+ %     : cf_.ptr[1]
+ %   : is_wrapped_line
+ %     ? s.startcol[cur] - s.wrappedmot
+ %     : s.startcol[cur];
+  s.col[cur] = cf_.ptr[1] < s.startcol[cur]
+    ? is_wrapped_line
+      ? s.startcol[cur] - s.wrappedmot
+      : cf_.ptr[1]
+    : is_wrapped_line
+      ? s.startcol[cur] - s.wrappedmot
+      : s.startcol[cur];
+  s.col[cur] = cf_.ptr[1] < s.startcol[cur]
+    ? is_wrapped_line
+      ? s.startcol[cur] - strlen (s.sel[cur]) + 1
+      : cf_.ptr[1]
+    : is_wrapped_line
+      ? s.startcol[cur] - s.wrappedmot
+      : s.startcol[cur];
+
+  if (s.index[cur] >= s.startindex[cur]) 
+    s.sel[cur] = substr (s.sel[cur], 1, strlen (s.sel[cur]) - 1);
+  else
+    s.sel[cur] = substr (s.lines[cur], s.index[cur] + 1, 1) + s.sel[cur];
+
+  debug (sprintf ("wm %d s.c %d in %d stind %d |%s|", s.wrappedmot, s.col[cur], s.index[cur], s.startindex[cur], s.sel[cur]), NULL);
 
   v_hl_ch (s);
 }
@@ -170,15 +228,24 @@ private define v_c_right (s, cur)
 
   if (retval)
     {
-    variable lline = substr (s.line[-1], cf_._findex + 1, cf_._maxlen);
+    variable lline = substr (s.lines[cur], cf_._findex + 1, cf_._maxlen);
     s_.write_nstr (lline, 0, cf_.ptr[0]);
     is_wrapped_line = 1;
+    s.wrappedmot++;
     }
 
-  s.col[cur] = cf_.ptr[1];
+  s.col[cur] = cf_.ptr[1] < s.startcol[cur]
+    ? cf_.ptr[1]
+    : is_wrapped_line
+      ? s.startcol[cur] - s.wrappedmot
+      : s.startcol[cur];
   
-  s.sel[cur] += substr (s.lines[cur], s.index[cur] + 1, 1);
+  if (s.index[cur] <= s.startindex[cur]) 
+    s.sel[cur] = substr (s.sel[cur], 2, -1);
+  else
+    s.sel[cur] += substr (s.lines[cur], s.index[cur] + 1, 1);
 
+  debug (sprintf ("wm %d s.c %d in %d stind %d |%s|", s.wrappedmot, s.col[cur], s.index[cur], s.startindex[cur], s.sel[cur]), NULL);
   v_hl_ch (s);
 }
 
@@ -190,8 +257,9 @@ private define v_char_mode (s)
     chr,
     cur = 0;
   
+  s.startcol = [s.col[0]];
+  s.startindex = [s.index];
   s.index = [s.index];
-  s.startcol = [s.startcol];
 
   s.sel = [substr (s.lines[cur], s.index[cur] + 1, 1)];
 
@@ -216,10 +284,14 @@ private define v_char_mode (s)
       {
       REG["\""] = strjoin (s.sel, "\n");
       seltoX (strjoin (s.sel, "\n"));
-      s.index = s.index[cur];
+      s.index = s.startindex[cur];
+      s.col = s.startcol[cur];
       return;
       }
     }
+
+  s.index = s.startindex[cur];
+  s.col = [s.startcol[cur]];
 }
 
 vis.c_mode = &v_char_mode;
@@ -245,6 +317,7 @@ private define v_init ()
     {
     startrow,
     startcol,
+    wrappedmot = 0,
     startindex,
     findex = cf_._findex,
     index = cf_._index,

@@ -151,7 +151,7 @@ if (92 > COLUMNS)
 
 if (NULL == root.addwind (mytypename, sprintf ("%s_Type", strup (mytypename));
     typedir = sprintf ("%s/I_Ns/types/", STDNS), msgarray = "Distribution Managment Buffer",
-    dont_draw))
+    dont_draw, datadir = sprintf ("%s/%s_Type", DATADIR, strup (mytypename))))
   root->exit_me (1, NULL);
 
 define ineed ()

@@ -87,10 +87,17 @@ private define open_fd (fd, fp)
   () = dup2_fd (fd.write, _fileno (fp));
 }
 
-private define _pipe (fd, fp)
+private define _openforread (fd, fp)
 {
   fd.keep = dup_fd (fileno (fp));
  
+  ifnot (NULL == fd.file)
+    {
+    fd.read = open (fd.file, O_RDONLY);
+    () = dup2_fd (fd.read, _fileno (fp));
+    return;
+    }
+
   (fd.read, fd.write) = pipe ();
 
   () = write (fd.write, fd.in);
@@ -127,7 +134,10 @@ private define atexit (s)
     }
  
   ifnot (NULL == s.stdin)
-    close_fd (s.stdin, stdin);
+    if (NULL == s.stdin.file)
+      close_fd (s.stdin, stdin);
+    else
+      () = dup2_fd (s.stdin.keep, 0);
 }
 
 private define connect_to_socket (s, sockaddr)
@@ -156,7 +166,7 @@ private define connect_to_socket (s, sockaddr)
 private define dopid (s)
 {
   ifnot (NULL == s.stdin)
-    _pipe (s.stdin, stdin);
+    _openforread (s.stdin, stdin);
 
   ifnot (NULL == s.stdout)
     _open (s.stdout, stdout);

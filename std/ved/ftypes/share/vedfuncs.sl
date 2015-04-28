@@ -99,6 +99,28 @@ define v_lnr (r)
   return cf_.lnrs[r];
 }
 
+define tail ()
+{
+  variable
+    lnr = v_lnr ('.') + 1,
+    line = v_lin ('.');
+ 
+  return sprintf ("[%s] (row %d) (col %d) (linenr %d/%d %.0f%%) (strlen %d) chr (%d), undo (%d/%d)",
+    path_basename (cf_._fname), cf_.ptr[0], cf_.ptr[1] - cf_._indent + 1, lnr,
+    cf_._len + 1, (100.0 / cf_._len) * lnr, v_linlen ('.'),
+    qualifier ("chr", decode (substr (line, cf_._index + 1, 1))[0]),
+    undolevel, length (UNDO));
+}
+
+define draw_tail ()
+{
+  if (is_wrapped_line)
+    srv->set_color_in_region (1, cf_.ptr[0], COLUMNS - 2, 1, 2);
+
+  srv->write_nstr_dr (tail (;;__qualifiers ()), COLUMNS, INFOCLRFG,
+    [cf_.rows[-1], 0, cf_.ptr[0], cf_.ptr[1]]);
+}
+
 define find_word (line, col, start, end)
 {
   variable wchars = [['0':'9'], ['a':'z'], ['A':'Z'], [913:929:1],
@@ -142,28 +164,6 @@ define find_Word (line, col, start, end)
   @end = col - 1;
   
   return substr (line, @start + 1, @end - @start + 1);
-}
-
-define tail ()
-{
-  variable
-    lnr = v_lnr ('.') + 1,
-    line = v_lin ('.');
- 
-  return sprintf ("[%s] (row %d) (col %d) (linenr %d/%d %.0f%%) (strlen %d) chr (%d), undo (%d/%d)",
-    path_basename (cf_._fname), cf_.ptr[0], cf_.ptr[1] - cf_._indent + 1, lnr,
-    cf_._len + 1, (100.0 / cf_._len) * lnr, v_linlen ('.'),
-    qualifier ("chr", decode (substr (line, cf_._index + 1, 1))[0]),
-    undolevel, length (UNDO));
-}
-
-define draw_tail ()
-{
-  if (is_wrapped_line)
-    srv->set_color_in_region (1, cf_.ptr[0], COLUMNS - 2, 1, 2);
-
-  srv->write_nstr_dr (tail (;;__qualifiers ()), COLUMNS, INFOCLRFG,
-    [cf_.rows[-1], 0, cf_.ptr[0], cf_.ptr[1]]);
 }
 
 define reread ()

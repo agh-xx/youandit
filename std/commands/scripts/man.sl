@@ -6,6 +6,7 @@ ineed ("strtoint");
 
 private variable
   MANDIR = "/usr/share/man/",
+  LOCALMANDIR = "/usr/local/share/man/",
   MYMANDIR = sprintf ("%s/man", TEMPDIR),
   DATA_DIR = sprintf ("%s/man", DATADIR);
 
@@ -13,24 +14,17 @@ define getpage (page)
 {
   variable
     i,
-    fp,
+    p,
     ar,
     st,
     pid,
     match,
-    matchfd,
+    matchfn,
     status,
-    in_fd = dup_fd (fileno (stdin)),
-    out_fd = dup_fd (fileno (stdout)),
-    err_fd = dup_fd (fileno (stderr)),
     outfn = sprintf ("%s/Man_Page_Out.txt", MYMANDIR),
     fname = sprintf ("%s/Man_Page_Fname.txt", MYMANDIR),
     errfn = sprintf ("%s/Man_Page_Fname_ERRORS.txt", MYMANDIR),
     colfn = sprintf ("%s/Man_Page_Fname_col.txt", MYMANDIR),
-    outfd = open (outfn, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU),
-    fnfd,
-    colfd,
-    errfd = open (errfn, O_RDWR|O_CREAT|O_TRUNC, S_IRWXU),
     gzip = which ("gzip"),
     groff = which ("groff"),
     col = which ("col"),
@@ -39,65 +33,34 @@ define getpage (page)
  
   if (".gz" == path_extname (page))
     {
-    fnfd = open (fname, O_RDWR|O_CREAT|O_TRUNC, S_IRWXU);
-    () = dup2_fd (fnfd, 1);
- 
-    pid = fork ();
-
-    if ((0 == pid) && -1 == execv (gzip, [gzip, "-dc", page]))
-      {
-      () = _close (_fileno (fnfd));
-      () = dup2_fd (out_fd, 1);
-      return ["Failed To Fork gzip"], 1;
-      }
- 
-    status = waitpid (pid, 0);
-
-    () = _close (_fileno (fnfd));
- 
-    () = dup2_fd (outfd, 1);
-    () = dup2_fd (errfd, 2);
-
-    pid = fork ();
-
-    if ((0 == pid) && -1 == execv (groff, [groff, "-Tutf8", "-m", "man", fname]))
-      {
-      () = _close (_fileno (outfd));
-      () = _close (_fileno (errfd));
-      () = dup2_fd (out_fd, 1);
-      () = dup2_fd (err_fd, 2);
-      return ["Failed To Fork groff"], 1;
-      }
+    p = proc->init (0, 1, 0);
+    p.stdout.file = fname;
+    
+    status = p.execv ([gzip, "-dc", page], NULL);
+    
+    p = proc->init (0, 1, 1);
+    p.stdout.file = outfn; 
+    p.stderr.file = errfn;
+    
+    status = p.execv ([groff, "-Tutf8", "-m", "man", fname], NULL);
     }
   else
     {
     fname = page;
-    () = dup2_fd (outfd, 1);
-    () = dup2_fd (errfd, 2);
-
-    pid = fork ();
-
-    if ((0 == pid) && -1 == execv (groff, [groff, "-Tutf8", "-m", "man", page]))
-      {
-      () = _close (_fileno (outfd));
-      () = _close (_fileno (errfd));
-      () = dup2_fd (out_fd, 1);
-      () = dup2_fd (err_fd, 2);
-      return ["Failed To Fork groff"], 1;
-      }
+    p = proc->init (0, 1, 1);
+    p.stdout.file = outfn; 
+    p.stderr.file = errfn;
+    
+    status = p.execv ([groff, "-Tutf8", "-m", "man", fname], NULL);
     }
 
-  status = waitpid (pid, 0);
- 
-  () = _close (_fileno (errfd));
-
-  errfd = fileno (STDERRFP);
-  () = dup2_fd (errfd, 2);
-
   ar = readfile (errfn);
+  
+  errfn = STDERR;
+
   if (length (ar))
     {
-    for (i=0; i < length (ar); i++)
+    for (i = 0; i < length (ar); i++)
       {
       match = string_matches (ar[i], "`.*'", 1)[0];
       if (NULL == match)
@@ -123,48 +86,22 @@ define getpage (page)
 
       if (".gz" == path_extname (page))
         {
-        matchfd = open (sprintf ("%s/%s", MYMANDIR, match),
-          O_RDWR|O_CREAT|O_TRUNC, S_IRWXU);
-
-        () = dup2_fd (matchfd, 1);
-
-        pid = fork ();
-
-        if ((0 == pid) && -1 == execv (gzip, [gzip, "-dc", page]))
-          {
-          () = _close (_fileno (matchfd));
-          () = _close (_fileno (errfd));
-          () = dup2_fd (out_fd, 1);
-          () = dup2_fd (err_fd, 2);
-          return ["Failed To Fork gzip"], 1;
-          }
-
-        status = waitpid (pid, 0);
-
-        _close (_fileno (matchfd));
+        matchfn = sprintf ("%s/%s", MYMANDIR, match);
+        p = proc->init (0, 1, 1);
+        p.stdout.file = matchfn;
+        p.stderr.file = errfn;
+        
+        status = p.execv ([gzip, "-dc", page], NULL);
         }
       else
         copyfile (page, sprintf ("%s/%s", MYMANDIR, match));
       }
- 
-    outfd = open (outfn, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU);
- 
-    () = dup2_fd (outfd, 1);
- 
-    pid = fork ();
 
-    if ((0 == pid) && -1 == execv (groff, [groff, "-Tutf8", "-m", "man", "-I", MYMANDIR,
-         fname]))
-      {
-      () = _close (_fileno (outfd));
-      () = _close (_fileno (errfd));
-      () = dup2_fd (out_fd, 1);
-      () = dup2_fd (err_fd, 2);
-      return ["Failed To Fork groff"], 1;
-      }
-
-    status = waitpid (pid, 0);
-
+    p = proc->init (0, 1, 1);
+    p.stdout.file = outfn;
+    p.stderr.file = errfn;
+   
+    status = p.execv ([groff, "-Tutf8", "-m", "man", "-I", MYMANDIR, fname], NULL);
     _for i (0, length (manpages) - 1)
       {
       page = manpages[i];
@@ -172,32 +109,13 @@ define getpage (page)
       () = remove (sprintf ("%s/%s", MYMANDIR, match));
       }
     }
-
-  colfd = open (colfn, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU);
-
-  outfd = open (outfn, O_RDONLY);
-  () = dup2_fd (outfd, 0);
-  () = dup2_fd (colfd, 1);
- 
-  pid = fork ();
-
-  if ((0 == pid) && -1 == execv (col, [col, "-b"]))
-    {
-    () = _close (_fileno (colfd));
-    () = _close (_fileno (outfd));
-    () = dup2_fd (in_fd, 0);
-    () = dup2_fd (out_fd, 1);
-    () = dup2_fd (err_fd, 2);
-    return ["Failed To Fork col"], 1;
-    }
-
-  status = waitpid (pid, 0);
- 
-  () = _close (_fileno (colfd));
-  () = _close (_fileno (outfd));
-  () = dup2_fd (in_fd, 0);
-  () = dup2_fd (out_fd, 1);
-  () = dup2_fd (err_fd, 2);
+  
+  p = proc->init (1, 1, 1);
+  p.stderr.file = errfn;
+  p.stdout.file = colfn;
+  p.stdin.file = outfn;
+  
+  status = p.execv ([col, "-b"], NULL);
 
   return readfile (colfn), status.exit_status;
 }
@@ -258,13 +176,22 @@ define main ()
     {
     variable
       fs,
-      list = {};
+      lu = strlen (MANDIR),
+      ll = strlen (LOCALMANDIR),
+      ulist = {},
+      llist = {};
 
-    fs = fswalk_new (NULL, &file_callback;fargs = {list});
+    fs = fswalk_new (NULL, &file_callback;fargs = {llist});
+    fs.walk (LOCALMANDIR);
+    llist = list_to_array (llist, String_Type);
+    llist = llist[where ("man" == array_map (String_Type,  &substr, llist, ll + 1, 3))];
 
+    fs = fswalk_new (NULL, &file_callback;fargs = {ulist});
     fs.walk (MANDIR);
- 
-    list = list_to_array (list, String_Type);
+    ulist = list_to_array (ulist, String_Type);
+    ulist = ulist[where ("man" == array_map (String_Type,  &substr, ulist, lu + 1, 3))];
+    
+    variable list = [llist, ulist];
 
     _for i (0, length (list) - 1)
       {
@@ -281,7 +208,6 @@ define main ()
       }
 
     writefile (list, cachefile);
-    (@print_out) ("Cache file was written");
     return 0;
     }
 

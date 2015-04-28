@@ -84,6 +84,7 @@ try
   () = evalfile (sprintf ("%s/I_Ns/lib/need", STDNS), "i");
   () = evalfile (sprintf ("%s/I_Ns/init/typedefs", STDNS));
   () = evalfile (sprintf ("%s/I_Ns/init/sysproc", STDNS));
+  () = evalfile (sprintf ("%s/proc/Init", STDNS), "proc");
   () = evalfile ("cmdopt");
 
   if (DEBUG)

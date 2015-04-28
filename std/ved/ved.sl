@@ -201,9 +201,10 @@ private define _ved_ ()
   if (NULL == p)
     return;
   
-  if (ISSUDO)
-    argv = [SUDO_EXEC, "-S", "-E", "-C", "140", argv];
-    %argv = [SUDO_EXEC, "-S", "-E", "-C", sprintf ("%d", _fileno (SRV_SOCKET) + 1), argv];
+%  if (ISSUDO)
+%    argv = [SUDO_EXEC, "-S", "-E", argv];
+%    %argv = [SUDO_EXEC, "-S", "-E", "-C", "140", argv];
+%    %argv = [SUDO_EXEC, "-S", "-E", "-C", sprintf ("%d", _fileno (SRV_SOCKET) + 1), argv];
 
   funcs[string (JUST_DRAW)] = &just_draw;
   funcs[string (SEND_CHAR)] = &send_chr;
@@ -262,7 +263,9 @@ define ved ()
 define vedsudo ()
 {
   ISSUDO = 1;
+  
   variable args = __pop_list (_NARGS);
   _ved_ (__push_list (args);;__qualifiers ());
+
   ISSUDO = 0;
 }
