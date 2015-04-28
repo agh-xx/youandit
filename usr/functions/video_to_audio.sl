@@ -233,35 +233,29 @@ define main ()
       }
     }
 
-  variable p = @i->init_proc (NULL != issudo, 1, 1, argv);
+  variable p = proc->init (NULL != issudo, 1, 1);
  
   ifnot (NULL == issudo)
     p.stdin.in = passwd;
 
   p.stdout.file = SCRATCHBUF;
-  p.stdout.wr_flags = ">|";
-
   p.stderr.file = SCRATCHBUF;
-  p.stderr.wr_flags = ">|";
- 
+  p.stderr.wr_flags = ">>";
+
   srv->send_msg_and_refresh ("press q to to stop converting", 1);
 
-  if (-1 == i->sysproc (p))
-    {
-    srv->send_msg_and_refresh (" ", 0);
-    throw GotoPrompt;
-    }
+  variable status = p.execv (argv, NULL); 
 
   srv->send_msg_and_refresh (" ", 0);
 
   file = SCRATCHBUF;
 
   ifnot (gotopager)
-    (@CW.gotopager) (CW, file;drawonly);
+    ved (file;drawonly);
   else
-    (@CW.gotopager) (CW, file);
+    ved (file);
 
-  ifnot (p.status.exit_status)
+  ifnot (status.exit_status)
     if (removesource)
       if (-1 == remove (input))
         srv->send_msg (sprintf ("%s: failed to remove, %s", path_basename (input),

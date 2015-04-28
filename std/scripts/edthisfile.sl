@@ -1,13 +1,12 @@
 define main ()
 {
   variable
+    i,
+    pid,
+    command,
+    linenr = 0,
     fname = NULL,
     editor = NULL,
-    linenr = 0,
-    command,
-    i,
-    status,
-    pid,
     c = cmdopt_new (&_usage);
 
   c.add ("editor", &editor;type="string");
@@ -35,17 +34,19 @@ define main ()
   else
     command = [editor, fname];
  
-  variable p = @init_proc (0, 0, 1, command);
+  variable p = proc->init (0, 0, 1);
+  
+  variable status = p.execv (command, NULL);
 
-  if (-1 == sysproc (p))
+  if (NULL == status)
     {
     (@print_err) (sprintf ("Couldn't fork %s", editor));
     return 1;
     }
  
-  if (p.status.exit_status)
+  if (status.exit_status)
     if (length (p.stderr.out))
       array_map (Void_Type, print_err, p.stderr.out);
 
-  return p.status.exit_status;
+  return status.exit_status;
 }

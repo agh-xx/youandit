@@ -40,12 +40,19 @@ define main (self, fname)
  
     retval = 0;
     ar = self.listdirectory (&retval, file, pat, strlen (pat));
+
+    if (-1 == retval || 0 == length (ar))
+      {
+      CW.drawwind (;dont_reread);
+      root.topline ();
+      throw Return, " ", 0;
+      }
  
-    if (qualifier_exists ("only_dirs"))
+    if (qualifier_exists ("only_dirs") && length (ar))
       ar = ar[where (array_map (Char_Type, &isdirectory,
         array_map (String_Type, &path_concat, file, ar)))];
 
-    if (-1 == retval || 0 == length (ar))
+    ifnot (length (ar))
       {
       CW.drawwind (;dont_reread);
       root.topline ();

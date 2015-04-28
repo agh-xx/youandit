@@ -14,20 +14,21 @@ define main (self, fname, gotopager)
     sprintf ("PERSNS=%s", PERSNS),
     sprintf ("BINDIR=%s", BINDIR),
     sprintf ("SOURCEDIR=%s", SOURCEDIR)],
-    p = @i->init_proc (0, 1, 1, argv);
+    p = proc->init (0, 1, 1);
 
-  p.env = env;
   p.stdout.file = fname;
   p.stdout.wr_flags = ">>";
 
   p.stderr.file = fname;
   p.stderr.wr_flags = ">>";
+  
+  variable status = p.execve (argv, env, NULL);
 
-  if (-1 == i->sysproc (p))
+  if (NULL == status)
     {
-    p.status.exit_status = 1;
+    status.exit_status = 1;
     writefile ("failed to create process", fname;mode = "a");
     }
 
-  @gotopager = p.status.exit_status;
+  @gotopager = status.exit_status;
 }

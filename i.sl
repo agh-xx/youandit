@@ -63,8 +63,6 @@ try
 
   () = evalfile (sprintf ("%s/I_Ns/init/typedefs", STDNS));
   () = evalfile (sprintf ("%s/I_Ns/init/exceptions", STDNS));
-  () = evalfile (sprintf ("%s/I_Ns/init/sysproc", STDNS), "i");
-  % above will change to bellow
   () = evalfile (sprintf ("%s/proc/Init", STDNS), "proc");
   () = evalfile (sprintf ("%s/I_Ns/init/colors_var", STDNS));
   () = evalfile (sprintf ("%s/conf/etc/env", STDNS));
