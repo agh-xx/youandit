@@ -105,10 +105,12 @@ private define v_linewise_mode (s)
 {
   variable
     chr;
+  
+  s.linlen = [strlen (s.lines[0])];
 
   v_hl_line (s);
 
-  while (chr = get_char (), any (['y', keys->DOWN, keys->UP] == chr))
+  while (chr = get_char (), any (['y', 'd', keys->DOWN, keys->UP] == chr))
     {
     if (chr == keys->DOWN)
       {
@@ -126,14 +128,41 @@ private define v_linewise_mode (s)
       {
       REG["\""] = strjoin (s.lines, "\n") + "\n";
       seltoX (strjoin (s.lines, "\n") + "\n");
-      return;
+      return 1;
+      }
+
+    if ('d' == chr)
+      {
+      REG["\""] = strjoin (s.lines, "\n") + "\n";
+      seltoX (strjoin (s.lines, "\n") + "\n");
+      cf_.lines[s.lnrs] = NULL;
+      cf_.lines = cf_.lines[wherenot (_isnull (cf_.lines))];
+      cf_._len -= length (s.lnrs);
+
+      cf_._i = s.lnrs[0] ? s.lnrs[0] - 1 : 0;
+      cf_.ptr[0] = cf_.rows[0];
+      cf_.ptr[1] = cf_._indent;
+      cf_._index = cf_._indent;
+      cf_._findex = cf_._indent;
+      
+      if (-1 == cf_._len)
+        { 
+        variable indent = repeat (" ", cf_._indent);
+        cf_.lines = [sprintf ("%s\000", indent)];
+        cf_._len = 0;
+        }
+      
+      set_modified ();
+      s_.draw ();
+      return 0;
       }
     }
+
+  return 1;
 }
 
 vis.l_mode = &v_linewise_mode;
 
-variable l = 0;
 private define v_c_left (s, cur)
 {
   variable retval = p_left (s.linlen[-1]);
@@ -148,7 +177,7 @@ private define v_c_left (s, cur)
     variable lline;
     if (is_wrapped_line)
       {
-      lline = substr (s.lines[cur], cf_._findex + 1, cf_._maxlen);
+      lline = getlinestr (s.lines[cur], cf_._findex + 1 - cf_._indent);
       s.wrappedmot--;
       }
     else
@@ -210,8 +239,6 @@ private define v_c_left (s, cur)
   else
     s.sel[cur] = substr (s.lines[cur], s.index[cur] + 1, 1) + s.sel[cur];
 
-  debug (sprintf ("wm %d s.c %d in %d stind %d |%s|", s.wrappedmot, s.col[cur], s.index[cur], s.startindex[cur], s.sel[cur]), NULL);
-
   v_hl_ch (s);
 }
 
@@ -228,7 +255,7 @@ private define v_c_right (s, cur)
 
   if (retval)
     {
-    variable lline = substr (s.lines[cur], cf_._findex + 1, cf_._maxlen);
+    variable lline = getlinestr (s.lines[cur], cf_._findex + 1 - cf_._indent);
     s_.write_nstr (lline, 0, cf_.ptr[0]);
     is_wrapped_line = 1;
     s.wrappedmot++;
@@ -245,7 +272,6 @@ private define v_c_right (s, cur)
   else
     s.sel[cur] += substr (s.lines[cur], s.index[cur] + 1, 1);
 
-  debug (sprintf ("wm %d s.c %d in %d stind %d |%s|", s.wrappedmot, s.col[cur], s.index[cur], s.startindex[cur], s.sel[cur]), NULL);
   v_hl_ch (s);
 }
 
@@ -296,15 +322,18 @@ private define v_char_mode (s)
 
 vis.c_mode = &v_char_mode;
 
-private define v_atexit (s)
+private define v_atexit (s, draw)
 {
   topline ("-- pager --");
-
-  cf_._i = cf_._ii;
-  cf_.ptr[1] = s.col[0];
-  cf_._index = s.index;
   
-  s_.draw ();
+  if (draw)
+    {
+    cf_._i = cf_._ii;
+    cf_.ptr[1] = s.col[0];
+    cf_._index = s.index;
+    
+    s_.draw ();
+    }
 }
 
 vis.at_exit = &v_atexit;
@@ -333,15 +362,17 @@ private define v_init ()
 
 private define vis_mode ()
 {
-  variable s = v_init ();
+  variable
+    draw = 1,
+    s = v_init ();
   s.startrow = s.lnrs[0];
 
   if (cf_._chr == 'v')
     s.c_mode ();
   else
-    s.l_mode ();
+    draw = s.l_mode ();
 
-  s.at_exit ();
+  s.at_exit (draw);
 }
 
 pagerf[string ('v')] = &vis_mode;

@@ -1,3 +1,24 @@
+define send_msg_dr (str, clr, row, col)
+{
+  variable
+    lcol = NULL == col ? strlen (str) + 1 : col,
+    lrow = NULL == row ? MSGROW : row;
+
+  srv->write_nstr_dr (str, COLUMNS, clr, [MSGROW, 0, lrow, lcol]);
+}
+
+define send_msg (str, clr)
+{
+  srv->write_nstr (str, clr, MSGROW, 0, COLUMNS);
+}
+
+define debug (str, get)
+{
+send_msg_dr (str, 1, cf_.ptr[0], cf_.ptr[1]);
+ifnot (NULL == get)
+  () = get_char ();
+}
+
 define clear (frow, lrow)
 {
   variable
@@ -11,6 +32,53 @@ define clear (frow, lrow)
   ar[*] = " ";
   cols[*] = 0;
   clrs[*] = 0;
+
+  srv->write_ar_nstr_dr (ar, clrs, rows, cols, pos, COLUMNS);
+}
+
+define restore (cmp_lnrs, pos)
+{
+  variable
+    i,
+    ar = String_Type[0],
+    rows = Integer_Type[0],
+    clrs = Integer_Type[0],
+    cols = Integer_Type[0];
+
+  if (length (cmp_lnrs) == length (IMG))
+    _for i (0, length (IMG) - 1)
+      {
+      ar = [ar, IMG[i][0]];
+      clrs = [clrs, IMG[i][1]];
+      rows = [rows, IMG[i][2]];
+      cols = [cols, IMG[i][3]];
+      }
+  else if (length (cmp_lnrs) > length (IMG))
+      {
+      _for i (0, length (IMG) - 1)
+        {
+        ar = [ar, IMG[i][0]];
+        clrs = [clrs, IMG[i][1]];
+        rows = [rows, IMG[i][2]];
+        cols = [cols, IMG[i][3]];
+        }
+
+      _for i (i + 1, length (cmp_lnrs) - 1)
+        {
+        ar = [ar, repeat (" ", COLUMNS)];
+        clrs = [clrs, 0];
+        rows = [rows, rows[-1] + 1];
+        cols = [cols, 0];
+        }
+      }
+  else
+    _for i (length (IMG) - length (cmp_lnrs), length (IMG) - 1)
+      {
+      ar = [ar, IMG[i][0]];
+      clrs = [clrs, IMG[i][1]];
+      rows = [rows, IMG[i][2]];
+      cols = [cols, IMG[i][3]];
+      }
 
   srv->write_ar_nstr_dr (ar, clrs, rows, cols, pos, COLUMNS);
 }
@@ -33,28 +101,14 @@ define topline (str)
   
   str += sprintf (" LANG (%s) ", GETCH_LANG == GET_CHAR ? "eng" : "el");
 
-  s_.write_nstr (str + repeat (" ", COLUMNS - strlen (str) - strlen (t)) + t,
-    16, 0);
+  s_.write_str_at (str + repeat (" ", COLUMNS - strlen (str) - strlen (t)) + t,
+    16, 0, 0);
 }
 
 define write_prompt (str, col)
 {
   srv->write_nstr_dr (str, COLUMNS, PROMPTCLR,
     [PROMPTROW, 0, qualifier ("row", PROMPTROW), col]);
-}
-
-define send_msg_dr (str, clr, row, col)
-{
-  variable
-    lcol = NULL == col ? strlen (str) + 1 : col,
-    lrow = NULL == row ? MSGROW : row;
-
-  srv->write_nstr_dr (str, COLUMNS, clr, [MSGROW, 0, lrow, lcol]);
-}
-
-define send_msg (str, clr)
-{
-  srv->write_nstr (str, clr, MSGROW, 0, COLUMNS);
 }
 
 define decode (str)
@@ -99,13 +153,27 @@ define v_lnr (r)
   return cf_.lnrs[r];
 }
 
+%define tail ()
+%{
+%  variable
+%    lnr = v_lnr ('.') + 1,
+%    line = v_lin ('.');
+% 
+%  return sprintf (
+%    "[find %d) (ind %d) ptr1 %d len (%d), linlen %d, maxlen %d chr %d",
+%    cf_._findex, cf_._index,  cf_.ptr[1], v_linlen ('.'), cf_._linlen, cf_._maxlen,
+%    qualifier ("chr", decode (substr (line, cf_._index + 1, 1))[0]),
+%    );
+%}
+
 define tail ()
 {
   variable
     lnr = v_lnr ('.') + 1,
     line = v_lin ('.');
  
-  return sprintf ("[%s] (row %d) (col %d) (linenr %d/%d %.0f%%) (strlen %d) chr (%d), undo (%d/%d)",
+  return sprintf (
+    "[%s] (row %d) (col %d) (linenr %d/%d %.0f%%) (strlen %d) chr (%d), undo (%d/%d)",
     path_basename (cf_._fname), cf_.ptr[0], cf_.ptr[1] - cf_._indent + 1, lnr,
     cf_._len + 1, (100.0 / cf_._len) * lnr, v_linlen ('.'),
     qualifier ("chr", decode (substr (line, cf_._index + 1, 1))[0]),
@@ -119,6 +187,11 @@ define draw_tail ()
 
   srv->write_nstr_dr (tail (;;__qualifiers ()), COLUMNS, INFOCLRFG,
     [cf_.rows[-1], 0, cf_.ptr[0], cf_.ptr[1]]);
+}
+
+define getlinestr (line, ind)
+{
+  return substr (line, ind + cf_._indent, cf_._linlen);
 }
 
 define find_word (line, col, start, end)

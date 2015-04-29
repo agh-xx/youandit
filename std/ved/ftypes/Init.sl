@@ -25,6 +25,7 @@ typedef struct
   _flags,
   _maxlen,
   _indent,
+  _linlen,
   _avlins,
   _findex,
   _index,

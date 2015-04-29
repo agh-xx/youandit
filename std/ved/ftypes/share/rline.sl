@@ -7,7 +7,6 @@ rlf_ = struct
   prompt,
   hlitem,
   formar,
-  restore,
   getline,
   printout,
   fnamecmp,
@@ -421,54 +420,6 @@ private define write_routine (s)
 
 rlf_.prompt = &write_routine;
 
-private define restore (s, pos)
-{
-  variable
-    i,
-    ar = String_Type[0],
-    rows = Integer_Type[0],
-    clrs = Integer_Type[0],
-    cols = Integer_Type[0];
-
-  if (length (rl_.cmp_lnrs) == length (IMG))
-    _for i (0, length (IMG) - 1)
-      {
-      ar = [ar, IMG[i][0]];
-      clrs = [clrs, IMG[i][1]];
-      rows = [rows, IMG[i][2]];
-      cols = [cols, IMG[i][3]];
-      }
-  else if (length (rl_.cmp_lnrs) > length (IMG))
-      {
-      _for i (0, length (IMG) - 1)
-        {
-        ar = [ar, IMG[i][0]];
-        clrs = [clrs, IMG[i][1]];
-        rows = [rows, IMG[i][2]];
-        cols = [cols, IMG[i][3]];
-        }
-      _for i (i + 1, length (rl_.cmp_lnrs) - 1)
-        {
-        ar = [ar, repeat (" ", COLUMNS)];
-        clrs = [clrs, 0];
-        rows = [rows, rows[-1] + 1];
-        cols = [cols, 0];
-        }
-      }
-  else
-    _for i (length (IMG) - length (rl_.cmp_lnrs), length (IMG) - 1)
-      {
-      ar = [ar, IMG[i][0]];
-      clrs = [clrs, IMG[i][1]];
-      rows = [rows, IMG[i][2]];
-      cols = [cols, IMG[i][3]];
-      }
-
-  srv->write_ar_nstr_dr (ar, clrs, rows, cols, pos, COLUMNS);
-}
-
-rlf_.restore = &restore;
-
 private define clear (s, pos)
 {
   variable
@@ -484,7 +435,6 @@ private define clear (s, pos)
     srv->write_ar_dr (ar, clrs, rl_.lnrs, cols, pos);
   else
     srv->write_ar (ar, clrs, rl_.lnrs, cols);
-
 }
 
 rlf_.clear = &clear;
@@ -499,7 +449,7 @@ private define exec_line (s)
   if (any (rl_.argv[0] == rl_.com))
     (@clinef[rl_.argv[0]]) (__push_list (list));
 
-  rlf_.restore (cf_.ptr);
+  restore (rl_.cmp_lnrs, cf_.ptr);
 }
 
 rlf_.execline = &exec_line;
@@ -520,7 +470,7 @@ private define readline (s)
       {
       rlf_.clear (cf_.ptr;dont_redraw);
       topline (" (ved)  -- PAGER --");
-      rlf_.restore (cf_.ptr);
+      restore (rl_.cmp_lnrs, cf_.ptr);
       break;
       }
 
@@ -687,7 +637,7 @@ private define fname_completion (s, start)
 
     if (-1 == retval || 0 == length (ar))
       {
-      rlf_.restore ([rl_._row, rl_._col]);
+      restore (rl_.cmp_lnrs, [rl_._row, rl_._col]);
       return 0;
       }
 
@@ -714,7 +664,7 @@ private define fname_completion (s, start)
  
     if (033 == chr)
       {
-      rlf_.restore ([rl_._row, rl_._col]);
+      restore (rl_.cmp_lnrs, [rl_._row, rl_._col]);
       rl_._col = strlen (strjoin (rl_.argv[[:rl_._ind]], " ")) + 1;
       rlf_.parse_args ();
 
@@ -738,7 +688,7 @@ private define fname_completion (s, start)
 
         if (isdir)
           {
-          rlf_.restore ([rl_._row, rl_._col]);
+          restore (rl_.cmp_lnrs, [rl_._row, rl_._col]);
           rlf_.prompt ();
           continue;
           }
@@ -749,7 +699,7 @@ private define fname_completion (s, start)
       {
       rlf_.delete_at ();
       rlf_.parse_args ();
-      rlf_.restore ([rl_._row, rl_._col]);
+      restore (rl_.cmp_lnrs, [rl_._row, rl_._col]);
       return 0;
       }
 
@@ -769,13 +719,13 @@ private define fname_completion (s, start)
         }
       else
         {
-        rlf_.restore ([rl_._row, rl_._col]);
+        restore (rl_.cmp_lnrs, [rl_._row, rl_._col]);
         return 0;
         }
 
     if ('\r' == chr || 0 == chr || 0 == (' ' < chr <= '~'))
       {
-      rlf_.restore ('\r' == chr ? cf_.ptr : [rl_._row, rl_._col]);
+      restore (rl_.cmp_lnrs, '\r' == chr ? cf_.ptr : [rl_._row, rl_._col]);
       return '\r' == chr;
       }
 
@@ -786,7 +736,7 @@ private define fname_completion (s, start)
 
     rlf_.parse_args ();
     rlf_.prompt ();
-    rlf_.restore ([rl_._row, rl_._col]);
+    restore (rl_.cmp_lnrs, [rl_._row, rl_._col]);
     }
 }
 
@@ -868,7 +818,7 @@ private define hlitem (s, ar, base, acol, item)
  
   ifnot (len || any (['\t', [keys->UP:keys->RIGHT], keys->PPAGE, keys->NPAGE] == chr))
     {
-    rlf_.restore ([rl_._row, rl_._col]);
+    restore (rl_.cmp_lnrs, [rl_._row, rl_._col]);
     return chr;
     }
  
@@ -903,7 +853,7 @@ private define hlitem (s, ar, base, acol, item)
       icol = 0;
  
       if (length (bar) < lines)
-        rlf_.restore ([rl_._row, rl_._col]);
+        restore (rl_.cmp_lnrs, [rl_._row, rl_._col]);
 
       bar = rlf_.printout (bar, bcol, &len;lines = lines,
         row = PROMPTROW - (strlen (rl_._lin) / COLUMNS) + i,
@@ -1039,7 +989,7 @@ private define hlitem (s, ar, base, acol, item)
           (page) * ((lines - 1) * items);
 
         if (length (car) < lines)
-          rlf_.restore ([rl_._row, rl_._col]);
+          restore (rl_.cmp_lnrs, [rl_._row, rl_._col]);
         }
       else
         {

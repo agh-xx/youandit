@@ -39,6 +39,7 @@ define draw (s)
     cf_.ptr[0] = i - 1;
 
   ar = array_map (String_Type, &substr, cf_.lins, 1, cf_._maxlen);
+
   if (length (ar) < length (cf_.rows) - 1)
     {
     variable t = String_Type[length (cf_.rows) - length (ar) - 1];

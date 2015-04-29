@@ -31,7 +31,7 @@ define ved (s)
 {
   cf_ = @Frame_Type;
  
-  cf_._maxlen = COLUMNS;
+  cf_._maxlen = COLUMNS - 4;
   cf_._fname = get_file ();
   cf_.st_ = stat_file (cf_._fname);
   if (NULL == cf_.st_)
@@ -45,7 +45,8 @@ define ved (s)
       };
 
   cf_.rows = get_rows ();
-  cf_._indent = 0;
+  cf_._indent = 4;
+  cf_._linlen = cf_._maxlen - cf_._indent;
   cf_.lines = s_.getlines ();
   cf_._flags = 0;
  

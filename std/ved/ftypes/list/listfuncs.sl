@@ -62,6 +62,7 @@ private define add (s, rows)
   c.clrs[*] = 0;
   c._avlins = len - 1;
   c._maxlen = COLUMNS;
+  c._linlen = c._maxlen - c._indent;
   c._flags = 0;
   c.lines = readfile (s.fname);
   if (NULL == c.lines)

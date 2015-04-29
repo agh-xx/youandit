@@ -153,7 +153,7 @@ private define del_word (what)
  
   cf_.st_.st_size = calcsize (cf_.lines);
 
-  s_.write_nstr (line, 0, cf_.ptr[0]);
+  s_.write_nstr (getlinestr (line, 1), 0, cf_.ptr[0]);
 
   draw_tail ();
 }
@@ -174,7 +174,7 @@ private define chang_chr ()
     cf_.lines[i] = line;
     cf_.st_.st_size += strbytelen (line);
     set_modified ();
-    s_.write_nstr (line, 0, cf_.ptr[0]);
+    s_.write_nstr (getlinestr (line, 1), 0, cf_.ptr[0]);
     draw_tail ();
     }
 }
@@ -222,7 +222,7 @@ private define del_chr ()
  
   set_modified ();
  
-  s_.write_nstr (line, 0, cf_.ptr[0]);
+  s_.write_nstr (getlinestr (line, 1), 0, cf_.ptr[0]);
  
   draw_tail ();
 }
@@ -287,7 +287,7 @@ private define del_to_end ()
 
     cf_.st_.st_size = calcsize (cf_.lines);
 
-    s_.write_nstr (line, 0, cf_.ptr[0]);
+    s_.write_nstr (getlinestr (line, 1), 0, cf_.ptr[0]);
 
     draw_tail ();
 
@@ -310,7 +310,7 @@ private define del_to_end ()
 
   set_modified ();
 
-  s_.write_nstr (line, 0, cf_.ptr[0]);
+  s_.write_nstr (getlinestr (line, 1), 0, cf_.ptr[0]);
 
   draw_tail ();
 }
@@ -353,7 +353,7 @@ private define edit_line ()
   else
     lline = line;
 
-  s_.write_nstr_dr (line, 0, cf_.ptr[0], 0, [cf_.ptr[0], cf_.ptr[1]]);
+  s_.write_nstr_dr (substr (line, 1, cf_._maxlen), 0, cf_.ptr[0], 0, [cf_.ptr[0], cf_.ptr[1]]);
 
   if ('C' == cf_._chr)
     insert (&line, lnr, prev_l, next_l;;struct {@__qualifiers (), modified});
@@ -496,7 +496,7 @@ private define toggle_case ()
   cf_.st_.st_size += strbytelen (line);
   set_modified ();
   
-  s_.write_nstr (line, 0, cf_.ptr[0]);
+  s_.write_nstr (getlinestr (line, 1), 0, cf_.ptr[0]);
 
   if (cf_._index - cf_._indent == v_linlen (cf_.ptr[0]) - 1)
     draw_tail ();

@@ -44,7 +44,7 @@ private define search_backward (str)
 
   while (i > -1 || (i > lnr && wrapped))
     {
-    line = substr (cf_.lines[i], cf_._indent + 1, -1);
+    line = getlinestr (cf_.lines[i], 1);
     if (pcre_exec (pat, line))
       {
       match = pcre_nth_match (pat, 0);
@@ -114,7 +114,7 @@ private define search_forward (str)
  
   while (i <= cf_._len || (i < lnr && wrapped))
     {
-    line = substr (cf_.lines[i], cf_._indent + 1, -1);
+    line = getlinestr (cf_.lines[i], 1);
     if (pcre_exec (pat, line))
       {
       match = pcre_nth_match (pat, 0);
@@ -154,7 +154,7 @@ private define search_forward (str)
   send_msg_dr ("Nothing found", 0, PROMPTROW, col);
 }
 
-define search ()
+private define search ()
 {
   variable
     origlnr,
@@ -228,7 +228,7 @@ define search ()
     if (any (chr == keys->rmap.changelang))
       {
       GETCH_LANG = GETCH_LANG == GET_CHAR ? GET_EL_CHAR : GET_CHAR;
-      topline (" (ved)  -- PAGER --");
+      topline (" -- PAGER --");
       srv->gotorc_draw (PROMPTROW, col);
       continue;
       }
@@ -249,7 +249,10 @@ define search ()
 
         cf_._i = lnr;
         cf_.ptr[0] = cf_.rows[0];
-        cf_.ptr[1] = 0;
+        cf_.ptr[1] = cf_._indent;
+        cf_._index = cf_._indent;
+        cf_._findex = cf_._indent;
+
         s_.draw ();
         }
 
@@ -391,7 +394,8 @@ private define search_word ()
 
         cf_._i = lnr;
         cf_.ptr[0] = cf_.rows[0];
-        cf_.ptr[1] = 0;
+        cf_._index = cf_._indent;
+        cf_._findex = cf_._indent;
         s_.draw ();
         }
 

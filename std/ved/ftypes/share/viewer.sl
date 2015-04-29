@@ -1,10 +1,3 @@
-define debug (str, get)
-{
-send_msg_dr (str, 1, cf_.ptr[0], cf_.ptr[1]);
-ifnot (NULL == get)
-  () = get_char ();
-}
-
 private define adjust_col (linlen, plinlen)
 {
   if (linlen == 0 || 0 == cf_.ptr[1] - cf_._indent)
@@ -13,19 +6,19 @@ private define adjust_col (linlen, plinlen)
     cf_._findex = cf_._indent;
     cf_._index = cf_._indent;
     }
-  else if (linlen > cf_._maxlen && cf_.ptr[1] + 1 == cf_._maxlen ||
-    (cf_.ptr[1] - cf_._indent == plinlen - 1 && linlen > cf_._maxlen))
+  else if (linlen > cf_._linlen && cf_.ptr[1] + 1 == cf_._maxlen ||
+    (cf_.ptr[1] - cf_._indent == plinlen - 1 && linlen > cf_._linlen))
       {
       cf_.ptr[1] = cf_._maxlen - 1;
       cf_._findex = cf_._indent;
-      cf_._index = cf_._maxlen - cf_._indent - 1;
+      cf_._index = cf_._linlen - 1 + cf_._indent;
       }
   else if ((0 != plinlen && cf_.ptr[1] - cf_._indent == plinlen - 1 && (
-      linlen < cf_.ptr[1] || linlen < cf_._maxlen))
+      linlen < cf_.ptr[1] || linlen < cf_._linlen))
      || (cf_.ptr[1] - cf_._indent && cf_.ptr[1] - cf_._indent >= linlen))
       {
       cf_.ptr[1] = linlen - 1 + cf_._indent;
-      cf_._index = linlen - 1;
+      cf_._index = linlen - 1 + cf_._indent;
       cf_._findex = cf_._indent;
       }
 }
@@ -42,7 +35,7 @@ private define down ()
 
   if (is_wrapped_line)
     {
-    s_.write_nstr (v_lin ('.'), 0, cf_.ptr[0]);
+    s_.write_nstr (getlinestr (v_lin ('.'), 1), 0, cf_.ptr[0]);
     is_wrapped_line = 0;
     }
 
@@ -86,7 +79,7 @@ private define up ()
 
   if (is_wrapped_line)
     {
-    s_.write_nstr (v_lin ('.'), 0, cf_.ptr[0]);
+    s_.write_nstr (getlinestr (v_lin ('.'), 1), 0, cf_.ptr[0]);
     is_wrapped_line = 0;
     }
 
@@ -183,6 +176,92 @@ private define bof ()
   s_.draw ();
 }
 
+define p_left ()
+{
+  ifnot (cf_.ptr[1] - cf_._indent)
+    ifnot (is_wrapped_line)
+      return -1;
+
+  cf_._index--;
+
+  if (is_wrapped_line && 0 == cf_.ptr[1] - cf_._indent)
+    {
+    cf_._findex--;
+ 
+    ifnot (cf_._findex)
+      is_wrapped_line = 0;
+      
+    return 1;
+    }
+
+  cf_.ptr[1]--;
+  
+  return 0;
+}
+
+variable i = 0;
+private define left ()
+{
+  variable retval = p_left ();
+  
+  if (-1 == retval)
+    return;
+
+i++;
+debug (string (i)+ " ret: " + string (retval),NULL);
+  if (retval)
+    {
+    variable line;
+    if (is_wrapped_line)
+      line = getlinestr (v_lin ('.'), cf_._findex + 1);
+    else
+      line = getlinestr (v_lin ('.'), 1);
+
+    s_.write_nstr (line, 0, cf_.ptr[0]);
+    }
+
+  draw_tail ();
+}
+
+define p_right (linlen)
+{
+  if (cf_._index - cf_._indent == linlen - 1)
+    return -1;
+
+  if (cf_.ptr[1] < cf_._maxlen - 1)
+    {
+    cf_.ptr[1]++;
+    cf_._index++;
+    return 0;
+    }
+ 
+  cf_._index++;
+  cf_._findex++;
+  
+  return 1;
+}
+
+private define right ()
+{
+  variable
+    line = v_lin ('.'),
+    retval = p_right (v_linlen ('.'));
+
+i++;
+debug (string (i)+ " ret: " + string (retval),NULL);
+  if (-1 == retval)
+    return;
+
+  if (retval)
+    {
+    line = getlinestr (line, cf_._findex + 1 - cf_._indent);
+    s_.write_nstr (line, 0, cf_.ptr[0]);
+    is_wrapped_line = 1;
+    }
+
+  draw_tail ();
+}
+
 private define page_down ()
 {
   if (cf_._i + cf_._avlins > cf_._len)
@@ -216,95 +295,14 @@ private define page_up ()
   s_.draw ();
 }
 
-define p_left ()
-{
-  ifnot (cf_.ptr[1] - cf_._indent)
-    ifnot (is_wrapped_line)
-      return -1;
-
-  cf_._index--;
-
-  if (is_wrapped_line && 0 == cf_.ptr[1] - cf_._indent)
-    {
-    cf_._findex--;
- 
-    ifnot (cf_._findex)
-      is_wrapped_line = 0;
-      
-    return 1;
-    }
-
-  cf_.ptr[1]--;
-  
-  return 0;
-}
-
-private define left ()
-{
-  variable retval = p_left ();
-  
-  if (-1 == retval)
-    return;
-
-  if (retval)
-    {
-    variable line;
-    if (is_wrapped_line)
-      line = substr (v_lin ('.'), cf_._findex + 1, cf_._maxlen);
-    else
-      line = v_lin ('.');
-
-    s_.write_nstr (line, 0, cf_.ptr[0]);
-    }
-
-  draw_tail ();
-}
-
-define p_right (linlen)
-{
-  if (cf_._index - cf_._indent == linlen - 1)
-    return -1;
-
-  if (cf_.ptr[1] < cf_._maxlen - 1)
-    {
-    cf_.ptr[1]++;
-    cf_._index++;
-    return 0;
-    }
- 
-  cf_._index++;
-  cf_._findex++;
-  
-  return 1;
-}
-
-private define right ()
-{
-  variable
-    line = v_lin ('.'),
-    retval = p_right (v_linlen ('.'));
-
-  if (-1 == retval)
-    return;
-
-  if (retval)
-    {
-    line = substr (line, cf_._findex + 1, cf_._maxlen);
-    s_.write_nstr (line, 0, cf_.ptr[0]);
-    is_wrapped_line = 1;
-    }
-
-  draw_tail ();
-}
-
 private define eos ()
 {
   variable linlen = v_linlen ('.');
 
-  if (linlen > cf_._maxlen)
+  if (linlen > cf_._linlen)
     {
     cf_.ptr[1] = cf_._maxlen - 1;
-    cf_._index = cf_._findex + cf_._maxlen - 1;
+    cf_._index = cf_._findex + cf_._linlen - 1 + cf_._indent;
     }
   else if (0 == linlen)
     {
@@ -316,7 +314,7 @@ private define eos ()
     {
     cf_.ptr[1] = linlen + cf_._indent - 1;
     cf_._findex = cf_._indent;
-    cf_._index = linlen - 1;
+    cf_._index = linlen - 1 + cf_._indent;
     }
 
   draw_tail ();
@@ -328,15 +326,16 @@ private define eol ()
  
   cf_._index = linlen - 1;
 
-  if (linlen < cf_._maxlen)
+  if (linlen < cf_._linlen)
     cf_.ptr[1] = linlen + cf_._indent - 1;
   else
     {
     cf_.ptr[1] = cf_._maxlen - 1;
+    cf_._index += cf_._indent;
 
-    cf_._findex = linlen - cf_._maxlen;
+    cf_._findex = linlen - cf_._linlen;
 
-    variable line = substr (v_lin ('.'), cf_._findex + 1, cf_._maxlen);
+    variable line = getlinestr (v_lin ('.'), cf_._findex + 1);
  
     s_.write_nstr (line, 0, cf_.ptr[0]);
 
@@ -354,7 +353,7 @@ private define bol ()
 
   if (is_wrapped_line)
     {
-    variable line = v_lin ('.');
+    variable line = getlinestr (v_lin ('.'), 1);
     s_.write_nstr (line, 0, cf_.ptr[0]);
     is_wrapped_line = 0;
     }
