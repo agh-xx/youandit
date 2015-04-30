@@ -1,5 +1,6 @@
 typedef struct
   {
+  _fname,
   _addr,
   _fd,
   _ftype,
@@ -7,17 +8,18 @@ typedef struct
   p_,
   } Ved_Type;
 
-private variable B = Assoc_Type[Ved_Type];
+private variable BUFFERS = Assoc_Type[Ved_Type];
 private variable funcs = Assoc_Type[Ref_Type];
 private variable cb;
+
 private variable
   CONNECTED = 0x1,
   IDLED = 0x2,
   JUST_DRAW = 0x064,
   GOTO_EXIT = 0x0C8,
   OPENFILE = 0xd3,
-  BUFFER = 0xde,
-  BUFFERS = 0xe9,
+  SEND_BUFFER = 0xde,
+  SEND_BUFFERS = 0xe9,
   SEND_COLS = 0x0190,
   SEND_CHAR = 0x01F4,
   SEND_EL_CHAR = 0x012C,
@@ -37,100 +39,104 @@ private variable
   FUNC,
   FTYPE,
   COUNT,
-  DRAWONLY,
-  VED_SOCKET;
+  DRAWONLY;
 
-private define buf_exit (fn)
+private define buf_exit (key)
 {
-  ifnot (assoc_key_exists (B, fn))
+  ifnot (assoc_key_exists (BUFFERS, key))
     return;
 
-  variable status = waitpid (B[fn].p_.pid, 0);
-  B[fn].p_.atexit ();
+  variable status = waitpid (cb.p_.pid, 0);
+  cb.p_.atexit ();
 
-  assoc_delete_key (B, fn);
+  () = close (cb._fd);
+
+  cb = NULL;
+
+  assoc_delete_key (BUFFERS, key);
 }
 
-private define send_lines ()
+private define send_lines (sock)
 {
-  sock->send_int (VED_SOCKET, LINES);
+  sock->send_int (sock, LINES);
 }
 
-private define send_func ()
+private define send_func (sock)
 {
-  sock->send_int (VED_SOCKET, NULL == FUNC ? 0 : FUNC);
+  sock->send_int (sock, NULL == FUNC ? 0 : FUNC);
+
   ifnot (NULL == FUNC)
     {
-    () = sock->get_int (VED_SOCKET);
-    sock->send_int (VED_SOCKET, NULL == COUNT ? 0 : 1);
+    () = sock->get_int (sock);
+    sock->send_int (sock, NULL == COUNT ? 0 : 1);
 
     ifnot (NULL == COUNT)
       {
-      () = sock->get_int (VED_SOCKET);
-      sock->send_int (VED_SOCKET, COUNT);
+      () = sock->get_int (sock);
+      sock->send_int (sock, COUNT);
       }
     }
 }
 
-private define just_draw ()
+private define just_draw (sock)
 {
-  sock->send_int (VED_SOCKET, DRAWONLY);
+  sock->send_int (sock, DRAWONLY);
 }
 
-private define send_rows ()
+private define send_rows (sock)
 {
   variable
     frame = CW.cur.frame,
     rows = [CW.dim[frame].rowfirst:CW.dim[frame].rowlast + 1];
 
-  sock->send_int_ar (rows);
+  sock->send_int_ar (sock, rows);
 }
 
-private define send_file ()
+private define send_file (sock)
 {
-  sock->send_str (VED_SOCKET, FILE);
+  sock->send_str (sock, FILE);
 }
 
-private define send_el_chr ()
+private define send_el_chr (sock)
 {
   getchar_lang = &input->el_getch;
-  sock->send_int (VED_SOCKET, (@getch));
+  sock->send_int (sock, (@getch));
   getchar_lang = &input->en_getch;
 }
 
-private define send_chr ()
+private define send_chr (sock)
 {
-  sock->send_int (VED_SOCKET, (@getch));
+  sock->send_int (sock, (@getch));
 }
 
-private define send_cols ()
+private define send_cols (sock)
 {
-  sock->send_int (VED_SOCKET, COLUMNS);
+  sock->send_int (sock, COLUMNS);
 }
 
-private define send_msgrow ()
+private define send_msgrow (sock)
 {
-  sock->send_int (VED_SOCKET, MSGROW);
+  sock->send_int (sock, MSGROW);
 }
 
-private define send_ftype ()
+private define send_ftype (sock)
 {
-  sock->send_str (VED_SOCKET, FTYPE);
+  sock->send_str (sock, FTYPE);
 }
 
-private define send_infoclrfg ()
+private define send_infoclrfg (sock)
 {
-  sock->send_int (VED_SOCKET, COLOR.activeframe);
+  sock->send_int (sock, COLOR.activeframe);
 }
 
-private define send_infoclrbg ()
+private define send_infoclrbg (sock)
 {
-  sock->send_int (VED_SOCKET, COLOR.info);
+  sock->send_int (sock, COLOR.info);
 }
 
-private define send_promptcolor ()
+private define send_promptcolor (sock)
 {
-  sock->send_int (VED_SOCKET, COLOR.prompt);
+  sock->send_int (sock, COLOR.prompt);
 }
 
 private define broken_sudoproc_broken ()
@@ -247,9 +253,9 @@ private define parse_args ()
 
 private define connect_to_child (p, sockaddr)
 {
-  VED_SOCKET = p.connect (sockaddr);
+  cb._fd = p.connect (sockaddr);
 
-  if (NULL == VED_SOCKET)
+  if (NULL == cb._fd)
     {
     p.atexit ();
     () = kill (p.pid, SIGKILL);
@@ -262,7 +268,7 @@ private define connect_to_child (p, sockaddr)
 
   forever
     {
-    retval = sock->get_int (VED_SOCKET);
+    retval = sock->get_int (cb._fd);
  
     ifnot (Integer_Type == typeof (retval))
       break;
@@ -273,18 +279,27 @@ private define connect_to_child (p, sockaddr)
       break;
       }
  
-    (@funcs[string (retval)]) (VED_SOCKET);
+    (@funcs[string (retval)]) (cb._fd);
     }
 }
 
-private define init_buf (p, sockaddr)
+private define create_key (fn, sockaddr)
 {
-  B[FILE] = @Ved_Type;
-  B[FILE]._addr = sockaddr;
-  B[FILE]._ftype = FTYPE;
-  B[FILE]._state = 0;
-  B[FILE].p_ = p;
-  cb = B[FILE];
+  return fn + "::" + sockaddr;
+}
+
+private define init_buf (fn, p, sockaddr)
+{
+  variable k = create_key (fn, sockaddr);
+
+  BUFFERS[k] = @Ved_Type;
+  BUFFERS[k]._fname = fn;
+  BUFFERS[k]._addr = sockaddr;
+  BUFFERS[k]._ftype = FTYPE;
+  BUFFERS[k]._state = 0;
+  BUFFERS[k].p_ = p;
+  cb = BUFFERS[k];
+  return k;
 }
 
 private define init_sockaddr (fn)
@@ -308,11 +323,11 @@ private define _ved_ ()
   if (NULL == p)
     return;
   
-  init_buf (p, sockaddr);
+  variable key = init_buf (FILE, p, sockaddr);
 
   connect_to_child (p, sockaddr);
 
-  buf_exit (FILE);
+  buf_exit (key);
 }
 
 define ved ()
