@@ -141,11 +141,11 @@ catch AnyError:
   root->exit_me (1, NULL);
   }
 
-if (24 > AVAILABLE_LINES)
-  root->exit_me (1, "I DONT REALLY WANT TO CONTINUE WITH LESS THAN 24 LINES");
+if (18 > AVAILABLE_LINES)
+  root->exit_me (1, "I DONT REALLY WANT TO CONTINUE WITH LESS THAN 18 LINES");
 
-if (92 > COLUMNS)
-  root->exit_me (1, "I DONT REALLY WANT TO CONTINUE WITH LESS THAN 92 COLUMNS");
+if (82 > COLUMNS)
+  root->exit_me (1, "I DONT REALLY WANT TO CONTINUE WITH LESS THAN 84 COLUMNS");
 
 if (NULL == root.addwind (mytypename, sprintf ("%s_Type", strup (mytypename));
     typedir = sprintf ("%s/I_Ns/types/", STDNS), msgarray = "Distribution Managment Buffer",

@@ -2,20 +2,20 @@ sigprocmask (SIG_BLOCK, [SIGINT]);
 
 public variable
   GETCH_LANG,
+  MODIFIED = 0x01,
+  ONDISKMODIFIED = 0x02,
+  RDONLY = 0x04,
   GET_CHAR = 0x01F4,
   GET_EL_CHAR = 0x012C,
   DISPLAY = getenv ("DISPLAY"),
   LINES,
   COLUMNS,
+  DRAWONLY,
   MSGROW,
   PROMPTROW,
   PROMPTCLR,
   INFOCLRBG,
   INFOCLRFG,
-  DRAWONLY,
-  MODIFIED = 0x01,
-  ONDISKMODIFIED = 0x02,
-  RDONLY = 0x04,
   SRV_SOCKADDR = getenv ("SRV_SOCKADDR"),
   SRV_SOCKET = @FD_Type (atoi (getenv ("SRV_FILENO")));
 
@@ -26,6 +26,9 @@ private variable
   MYPATH = path_dirname (__FILE__),
   JUST_DRAW = 0x064,
   GOTO_EXIT = 0x0C8,
+  OPENFILE = 0xd3,
+  BUFFER = 0xde,
+  BUFFERS = 0xe9,
   GET_COLS = 0x0190,
   GET_FILE = 0x0258,
   GET_ROWS = 0x02BC,
@@ -36,9 +39,9 @@ private variable
   GET_MSGROW = 0x044C,
   GET_FUNC = 0x04b0,
   GET_LINES = 0x0514,
-  PG_SOCKADDR = getenv ("PG_SOCKADDR"),
+  VED_SOCKADDR = getenv ("VED_SOCKADDR"),
   STDNS = getenv ("STDNS"),
-  PG_SOCKET;
+  VED_SOCKET;
 
 GETCH_LANG = GET_CHAR;
 
@@ -51,9 +54,9 @@ import ("fork");
 import ("pcre");
 
 $1 = socket (PF_UNIX, SOCK_STREAM, 0);
-bind ($1, PG_SOCKADDR);
+bind ($1, VED_SOCKADDR);
 listen ($1, 1);
-PG_SOCKET = accept (__tmp ($1));
+VED_SOCKET = accept (__tmp ($1));
  
 try
   {
@@ -81,13 +84,13 @@ catch AnyError:
         Error:       %d\n",
         _push_struct_field_values (__get_exception_info)), '\n', 0));
  
-  write (PG_SOCKET, string (GOTO_EXIT));
+  write (VED_SOCKET, string (GOTO_EXIT));
   exit (1);
   }
 
 define send_int (i)
 {
-  sock->send_int (PG_SOCKET, i);
+  sock->send_int (VED_SOCKET, i);
 }
 
 define ineed (lib)
@@ -105,12 +108,12 @@ define ineed (lib)
 
 define get_int ()
 {
-  return sock->get_int (PG_SOCKET);
+  return sock->get_int (VED_SOCKET);
 }
 
 define get_int_ar ()
 {
-  return sock->get_int_ar (PG_SOCKET);
+  return sock->get_int_ar (VED_SOCKET);
 }
 
 define get_char ()
@@ -121,7 +124,7 @@ define get_char ()
 
 define get_str ()
 {
-  return sock->get_str (PG_SOCKET);
+  return sock->get_str (VED_SOCKET);
 }
 
 define get_cols ()

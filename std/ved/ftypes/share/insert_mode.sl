@@ -527,7 +527,8 @@ private define esc (s, line)
   if (0 < cf_.ptr[1] - cf_._indent)
     cf_.ptr[1]--;
 
-  cf_._index--;
+  if (0 < cf_._index - cf_._indent)
+    cf_._index--;
  
   if (s.modified)
     {
@@ -539,7 +540,7 @@ private define esc (s, line)
     cf_.st_.st_size = calcsize (cf_.lines);
     }
  
-  topline (" (ved)  -- PAGER --");
+  topline (" -- PAGER --");
   draw_tail ();
 }
 

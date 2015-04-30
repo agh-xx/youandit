@@ -96,6 +96,8 @@ private define del_line ()
       cf_.lines[0] = " ";
       cf_.st_.st_size = 0;
       cf_.ptr[1] = cf_._indent;
+      cf_._index = cf_._indent;
+      cf_._findex = cf_._indent;
       set_modified ();
       return 0;
       }
@@ -110,6 +112,7 @@ private define del_line ()
  
   cf_.ptr[1] = cf_._indent;
   cf_._index = cf_._indent;
+  cf_._findex = cf_._indent;
 
   if (cf_.ptr[0] == cf_.vlins[-1] && 1 < length (cf_.vlins))
     cf_.ptr[0]--;
