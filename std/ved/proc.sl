@@ -1,7 +1,19 @@
 sigprocmask (SIG_BLOCK, [SIGINT]);
 
+typedef struct
+  {
+  _fd,
+  _state,
+  cf_,
+  vedloop,
+  draw,
+  } Ved_Type;
+
 public variable
   GETCH_LANG,
+  BUFFERS = Assoc_Type[Ved_Type],
+  CONNECTED = 0x1,
+  IDLED = 0x2,
   MODIFIED = 0x01,
   ONDISKMODIFIED = 0x02,
   RDONLY = 0x04,
@@ -16,6 +28,7 @@ public variable
   PROMPTCLR,
   INFOCLRBG,
   INFOCLRFG,
+  VED_SOCKET,
   SRV_SOCKADDR = getenv ("SRV_SOCKADDR"),
   SRV_SOCKET = @FD_Type (atoi (getenv ("SRV_FILENO")));
 
@@ -27,8 +40,8 @@ private variable
   JUST_DRAW = 0x064,
   GOTO_EXIT = 0x0C8,
   OPENFILE = 0xd3,
-  GET_BUFFER = 0xde,
-  GET_BUFFERS = 0xe9,
+  GET_BUFKEY = 0xde,
+  GET_BUFKEYS = 0xe9,
   GET_COLS = 0x0190,
   GET_FILE = 0x0258,
   GET_ROWS = 0x02BC,
@@ -40,8 +53,7 @@ private variable
   GET_FUNC = 0x04b0,
   GET_LINES = 0x0514,
   VED_SOCKADDR = getenv ("VED_SOCKADDR"),
-  STDNS = getenv ("STDNS"),
-  VED_SOCKET;
+  STDNS = getenv ("STDNS");
 
 GETCH_LANG = GET_CHAR;
 
@@ -67,7 +79,7 @@ try
   () = evalfile (sprintf ("%s/I_Ns/lib/std", STDNS));
   () = evalfile (sprintf ("%s/proc/Init", STDNS), "proc");
   () = evalfile (sprintf ("%s/I_Ns/lib/need", STDNS), "i");
-  () = evalfile (sprintf ("%s/ftypes/Init", MYPATH), "ft");
+  () = evalfile (sprintf ("%s/ftypes/Init", MYPATH));
   }
 catch AnyError:
   {
@@ -193,6 +205,12 @@ define get_func ()
   return get_int ();
 }
 
+define get_bufkey ()
+{
+  send_int (GET_BUFKEY);
+  return get_str ();
+}
+
 define get_count ()
 {
   send_int (0);
@@ -203,7 +221,11 @@ define get_count ()
   return get_int ();
 }
 
-%CHANGE that calls to one
+define add_buffer (fn)
+{
+}
+
+%CHANGE those calls to one
 LINES = get_lines ();
 COLUMNS = get_cols ();
 MSGROW = get_msgrow ();
@@ -224,7 +246,7 @@ define exit_me (exit_code)
 set_slang_load_path (sprintf ("%s/ftypes/%s%c%s", MYPATH, $1,
   path_get_delimiter (), get_slang_load_path ()));
 
-public variable s_ = ft->init (__tmp ($1));
+variable s_ = init_ftype (__tmp ($1));
 
 s_.ved ();
 

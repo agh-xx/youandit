@@ -35,7 +35,7 @@ private define down ()
 
   if (is_wrapped_line)
     {
-    s_.write_nstr (getlinestr (v_lin ('.'), 1), 0, cf_.ptr[0]);
+    waddline (getlinestr (v_lin ('.'), 1), 0, cf_.ptr[0]);
     is_wrapped_line = 0;
     }
 
@@ -79,7 +79,7 @@ private define up ()
 
   if (is_wrapped_line)
     {
-    s_.write_nstr (getlinestr (v_lin ('.'), 1), 0, cf_.ptr[0]);
+    waddline (getlinestr (v_lin ('.'), 1), 0, cf_.ptr[0]);
     is_wrapped_line = 0;
     }
 
@@ -90,7 +90,7 @@ private define up ()
     cf_.ptr[0]--;
  
     linlen = v_linlen ('.');
-      adjust_col (linlen, plinlen);
+    adjust_col (linlen, plinlen);
  
     draw_tail ();
  
@@ -207,8 +207,6 @@ private define left ()
   if (-1 == retval)
     return;
 
-i++;
-debug (string (i)+ " ret: " + string (retval),NULL);
   if (retval)
     {
     variable line;
@@ -217,7 +215,7 @@ debug (string (i)+ " ret: " + string (retval),NULL);
     else
       line = getlinestr (v_lin ('.'), 1);
 
-    s_.write_nstr (line, 0, cf_.ptr[0]);
+    waddline (line, 0, cf_.ptr[0]);
     }
 
   draw_tail ();
@@ -247,15 +245,13 @@ private define right ()
     line = v_lin ('.'),
     retval = p_right (v_linlen ('.'));
 
-i++;
-debug (string (i)+ " ret: " + string (retval),NULL);
   if (-1 == retval)
     return;
 
   if (retval)
     {
     line = getlinestr (line, cf_._findex + 1 - cf_._indent);
-    s_.write_nstr (line, 0, cf_.ptr[0]);
+    waddline (line, 0, cf_.ptr[0]);
     is_wrapped_line = 1;
     }
 
@@ -337,7 +333,7 @@ private define eol ()
 
     variable line = getlinestr (v_lin ('.'), cf_._findex + 1);
  
-    s_.write_nstr (line, 0, cf_.ptr[0]);
+    waddline (line, 0, cf_.ptr[0]);
 
     is_wrapped_line = 1;
     }
@@ -354,7 +350,7 @@ private define bol ()
   if (is_wrapped_line)
     {
     variable line = getlinestr (v_lin ('.'), 1);
-    s_.write_nstr (line, 0, cf_.ptr[0]);
+    waddline (line, 0, cf_.ptr[0]);
     is_wrapped_line = 0;
     }
 
@@ -413,7 +409,7 @@ private define word_change_case (what)
  
   cf_.st_.st_size = calcsize (cf_.lines);
 
-  s_.write_nstr (line, 0, cf_.ptr[0]);
+  waddline (line, 0, cf_.ptr[0]);
 
   draw_tail ();
 }
@@ -451,6 +447,39 @@ private define Yank ()
   seltoX (line + "\n");
 }
 
+private define reread ()
+{
+  cf_.lines = getlines (cf_);
+
+  cf_._len = length (cf_.lines) - 1;
+ 
+  ifnot (cf_._len)
+    {
+    cf_._ii = 0;
+    cf_.ptr[0] = cf_.rows[0];
+    }
+  else if (cf_._ii < cf_._len)
+    {
+    cf_._i = cf_._ii;
+    while (cf_.ptr[0] - cf_.rows[0] + cf_._ii > cf_._len)
+      cf_.ptr[0]--;
+    }
+  else
+    {
+    while (cf_._ii > cf_._len)
+      cf_._ii--;
+
+    cf_.ptr[0] = cf_.rows[0];
+    }
+
+  cf_.ptr[1] = 0;
+ 
+  cf_._i = cf_._ii;
+
+  s_.draw ();
+}
+
+pagerf[string (keys->CTRL_l)] = &reread;
 pagerf[string ('Y')] = &Yank;
 pagerf[string (keys->DOWN)] = &down;
 pagerf[string ('j')] = &down;

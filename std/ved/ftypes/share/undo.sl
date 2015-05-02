@@ -25,15 +25,15 @@ define set_modified ()
 
   cf_._flags = cf_._flags | MODIFIED;
  
-  UNDO = [UNDO, d];
-  list_append (UNDOSET, [qualifier ("_i", cf_._ii), cf_.ptr[0], cf_.ptr[1]]);
+  cf_.undo = [cf_.undo, d];
+  list_append (cf_.undoset, [qualifier ("_i", cf_._ii), cf_.ptr[0], cf_.ptr[1]]);
 
-  undolevel++;
+  cf_._undolevel++;
 }
 
 private define undo ()
 {
-  ifnot (length (UNDO))
+  ifnot (length (cf_.undo))
     return;
 
   variable
@@ -41,23 +41,19 @@ private define undo ()
     in,
     d;
   
-  if (0 == undolevel)
+  if (0 == cf_._undolevel)
     {
-    cf_.lines = s_.getlines ();
+    cf_.lines = getlines (cf_);
     cf_._len = length (cf_.lines) - 1;
     cf_._i = cf_._ii;
     s_.draw (); 
     return;
     }
 
-  in = UNDO[undolevel - 1];
+  in = cf_.undo[cf_._undolevel - 1];
 
   d = patch (in, path_dirname (cf_._fname), &retval);
  
-  variable gp = fopen ("/tmp/undo", "a+");
-
-  ()  = fprintf (gp, "retval %d UNDO level %d length %d\n---\n", retval, undolevel, length (UNDO));
-  () = fprintf (gp, "%S\n", d);
   if (NULL == retval)
     {
     send_msg_dr (d, 1, cf_.ptr[0], cf_.ptr[1]);
@@ -74,11 +70,11 @@ private define undo ()
   cf_.lines = strchop (d, '\n', 0);
   cf_._len = length (cf_.lines) - 1;
  
-  cf_._i = UNDOSET[undolevel - 1][0];
-  cf_.ptr[0] = UNDOSET[undolevel - 1][1];
-  cf_.ptr[1] = UNDOSET[undolevel - 1][2];
+  cf_._i = cf_.undoset[cf_._undolevel - 1][0];
+  cf_.ptr[0] = cf_.undoset[cf_._undolevel - 1][1];
+  cf_.ptr[1] = cf_.undoset[cf_._undolevel - 1][2];
 
-  undolevel--;
+  cf_._undolevel--;
  
   cf_._flags = cf_._flags | MODIFIED;
 
@@ -87,20 +83,16 @@ private define undo ()
 
 private define redo ()
 {
-  if (undolevel == length (UNDO))
+  if (cf_._undolevel == length (cf_.undo))
     return;
 
   variable
     retval,
-    in = UNDO[undolevel],
+    in = cf_.undo[cf_._undolevel],
     d;
 
   d = patch (in, path_dirname (cf_._fname), &retval);
  
-  variable gp = fopen ("/tmp/redo", "a+");
-
-  ()  = fprintf (gp, "REDO level %d length %d\n---\n", undolevel, length (UNDO));
-  () = fprintf (gp, "%s\n", d);
   if (NULL == retval)
     {
     send_msg_dr (d, 1, cf_.ptr[0], cf_.ptr[1]);
@@ -117,11 +109,11 @@ private define redo ()
   cf_.lines = strchop (d, '\n', 0);
   cf_._len = length (cf_.lines) - 1;
 
-  cf_._i = UNDOSET[undolevel][0];
-  cf_.ptr[0] = UNDOSET[undolevel][1];
-  cf_.ptr[1] = UNDOSET[undolevel][2];
+  cf_._i = cf_.undoset[cf_._undolevel][0];
+  cf_.ptr[0] = cf_.undoset[cf_._undolevel][1];
+  cf_.ptr[1] = cf_.undoset[cf_._undolevel][2];
 
-  undolevel++;
+  cf_._undolevel++;
 
   cf_._flags = cf_._flags | MODIFIED;
 

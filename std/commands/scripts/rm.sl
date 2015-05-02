@@ -63,7 +63,7 @@ define main ()
   c.add ("ignore", &assign_string_pattern, &opts.pattern, &opts.ignore;type = "string");
   c.add ("match", &assign_string_pattern, &opts.pattern, &opts.match;type = "string");
   c.add ("recursive", &recursive);
-  c.add ("interactive", &interactive;type="string", optional="always");
+  c.add ("interactive", &interactive;type="string", optional = "always");
   c.add ("help", &_usage);
   c.add ("info", &info);
 
@@ -169,14 +169,19 @@ define main ()
   ifnot (length (filelist))
     return 0;
 
-  ifnot (NULL == interactive)
+  if (NULL != interactive || (recursive != NULL && 1 < length (filelist)))
     {
-    if (NULL == wherefirst (inter_opts == interactive))
+    ifnot (NULL == interactive)
       {
-      (@print_err) (sprintf
-        ("%s: wrong interactive option. Valid are (always,once,never)", interactive));
-      return 1;
+      if (NULL == wherefirst (inter_opts == interactive))
+        {
+        (@print_err) (sprintf
+          ("%s: wrong interactive option. Valid are (always,once,never)", interactive));
+        return 1;
+        }
       }
+    else interactive = "once";
+      
 
     if (interactive == "once")
       {
@@ -199,7 +204,7 @@ define main ()
 
         {
         case 'q':
-          (@print_out) ("Aborting ...";print_in_msg_line);
+          (@print_out) ("Aborting ...");
           return 0;
         }
 
@@ -223,7 +228,7 @@ define main ()
 
             {
             case 'q':
-              (@print_out) ("Aborting ...";print_in_msg_line);
+              (@print_out) ("Aborting ...");
               return 0;
             }
 
@@ -233,7 +238,7 @@ define main ()
       interactive = NULL;
     }
 
-  _for i (0,length(filelist) - 1)
+  _for i (0, length(filelist) - 1)
     {
     st = lstat_file (filelist[i]);
 
@@ -247,7 +252,7 @@ define main ()
 
     if ("exit" == interactive)
       {
-      (@print_out) ("Quiting ...";print_in_msg_line);
+      (@print_out) ("Quiting ...");
       return exit_code;
       }
     }

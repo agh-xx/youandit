@@ -5,12 +5,15 @@ typedef struct
   _fd,
   _ftype,
   _state,
+  _exists,
+  _me,
   p_,
   } Ved_Type;
 
 private variable BUFFERS = Assoc_Type[Ved_Type];
 private variable funcs = Assoc_Type[Ref_Type];
 private variable cb;
+private  variable ftypes = ["txt", "list"];
 
 private variable
   CONNECTED = 0x1,
@@ -18,8 +21,8 @@ private variable
   JUST_DRAW = 0x064,
   GOTO_EXIT = 0x0C8,
   OPENFILE = 0xd3,
-  SEND_BUFFER = 0xde,
-  SEND_BUFFERS = 0xe9,
+  SEND_BUFKEY = 0xde,
+  SEND_BUFKEYS = 0xe9,
   SEND_COLS = 0x0190,
   SEND_CHAR = 0x01F4,
   SEND_EL_CHAR = 0x012C,
@@ -54,6 +57,11 @@ private define buf_exit (key)
   cb = NULL;
 
   assoc_delete_key (BUFFERS, key);
+}
+
+private define send_bufkey (sock)
+{
+  sock->send_str (sock, cb._me);
 }
 
 private define send_lines (sock)
@@ -221,34 +229,47 @@ private define is_file_readable (fn, issudo)
   return 0;
 }
 
+private define check_file (fn, issudo)
+{
+  ifnot (access (fn, F_OK))
+    {
+    if (-1 == is_file (fn))
+      return -1;
+ 
+    if (-1 == is_file_readable (fn, issudo))
+      return -1;
+
+    return 1;
+    }
+
+  return 0;
+}
+
+private define get_ftype (fn)
+{
+  variable ftype = substr (path_extname (fn), 2, -1);
+  ifnot (any (ftype == ftypes))
+    ftype = "txt";
+  return ftype;
+}
+
 private define parse_args ()
 {
-  variable
-    ftypes = ["txt", "list"];
-
   ifnot (_NARGS)
     FILE = CW.buffers[CW.cur.frame].fname;
   else
     FILE = ();
+  
+  variable exists = check_file (FILE, ISSUDO);
 
-  ifnot (access (FILE, F_OK))
-    {
-    if (-1 == is_file (FILE))
-      return -1;
- 
-    if (-1 == is_file_readable (FILE, ISSUDO))
-      return -1;
-    }
+  if (-1 == exists)
+    return -1;
 
   COUNT = qualifier ("count");
   FUNC = qualifier ("func");
   DRAWONLY = qualifier_exists ("drawonly");
-  FTYPE = qualifier ("ftype", substr (path_extname (FILE), 2, -1));
 
-  ifnot (any (FTYPE == ftypes))
-    FTYPE = "txt";
-
-  return 0;
+  return exists;
 }
 
 private define connect_to_child (p, sockaddr)
@@ -288,15 +309,17 @@ private define create_key (fn, sockaddr)
   return fn + "::" + sockaddr;
 }
 
-private define init_buf (fn, p, sockaddr)
+private define init_buf (fn, p, sockaddr, exists, ftype)
 {
   variable k = create_key (fn, sockaddr);
 
   BUFFERS[k] = @Ved_Type;
   BUFFERS[k]._fname = fn;
   BUFFERS[k]._addr = sockaddr;
-  BUFFERS[k]._ftype = FTYPE;
+  BUFFERS[k]._ftype = ftype;
   BUFFERS[k]._state = 0;
+  BUFFERS[k]._exists = exists;
+  BUFFERS[k]._me = k;
   BUFFERS[k].p_ = p;
   cb = BUFFERS[k];
   return k;
@@ -311,8 +334,8 @@ private define init_sockaddr (fn)
 private define _ved_ ()
 {
   variable args = __pop_list (_NARGS);
-
-  if (-1 == parse_args (__push_list (args);;__qualifiers ()))
+  variable exists = parse_args (__push_list (args);;__qualifiers ());
+  if (-1 == exists)
     return;
 
   variable
@@ -322,8 +345,15 @@ private define _ved_ ()
 
   if (NULL == p)
     return;
-  
-  variable key = init_buf (FILE, p, sockaddr);
+   
+  FTYPE = qualifier ("ftype");
+  if (NULL == FTYPE)
+    FTYPE = get_ftype (FILE);
+  else
+    ifnot (any (FTYPE == ftypes))
+      FTYPE = "txt";
+
+  variable key = init_buf (FILE, p, sockaddr, exists, FTYPE);
 
   connect_to_child (p, sockaddr);
 
@@ -351,6 +381,7 @@ define vedsudo ()
   ISSUDO = 0;
 }
 
+funcs[string (SEND_BUFKEY)] = &send_bufkey;
 funcs[string (JUST_DRAW)] = &just_draw;
 funcs[string (SEND_CHAR)] = &send_chr;
 funcs[string (SEND_EL_CHAR)] = &send_el_chr;

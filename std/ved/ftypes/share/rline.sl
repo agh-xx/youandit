@@ -75,10 +75,12 @@ private define write_file ()
         }
       }
     }
-
-  ifnot (0 == s_.writefile (file))
+  
+  variable retval = writetofile (file, cf_.lines, cf_._indent);
+ 
+  ifnot (0 == retval)
     {
-    send_msg_dr (sprintf ("%s, press any key to continue", errno_string (errno)), 1,
+    send_msg_dr (sprintf ("%s, press any key to continue", errno_string (retval)), 1,
       NULL, NULL);
     () = get_char ();
     send_msg_dr (" ", 0, cf_.ptr[0], cf_.ptr[1]);
@@ -95,11 +97,30 @@ private define write_quit ()
   s_.quit (1, __push_list (args));
 }
 
+private define edit_other ()
+{
+  ifnot (_NARGS)
+    return;
+
+  variable key = get_bufkey ();
+  BUFFERS[key] = @Ved_Type;
+  BUFFERS[key]._fd = VED_SOCKET;
+  BUFFERS[key]._state = IDLED;
+  BUFFERS[key].cf_ = @cf_;
+  BUFFERS[key].draw = s_.draw;
+  BUFFERS[key].vedloop = vedloop;
+  variable args = __pop_list (_NARGS);
+  variable fn = args[0];
+  add_buffer (fn); 
+  debug (key, 1);
+}
+
 clinef["w"] = &write_file;
 clinef["w!"] = &write_file;
 clinef["q"] = &quit;
 clinef["q!"] = &quit;
 clinef["wq"] = &write_quit;
+clinef["e"] = &edit_other;
 
 clinec = assoc_get_keys (clinef);
 
@@ -410,7 +431,7 @@ rlf_.w_comp_rout = &write_completion_routine;
 
 private define write_rline (line, clr, dim, pos)
 {
-  s_.write_nstr_dr (line, clr, dim[0], dim[1], pos);
+  waddlineat_dr (line, clr, dim[0], dim[1], pos, COLUMNS);
 }
 
 private define write_routine (s)
@@ -427,14 +448,14 @@ private define clear (s, pos)
     clrs = Integer_Type[length (ar)],
     cols = Integer_Type[length (ar)];
 
-  ar[*] = repeat (" ", COLUMNS);
+  ar[*] =" ";
   clrs[*] = 0;
   cols[*] = 0;
  
   ifnot (qualifier_exists ("dont_redraw"))
-    srv->write_ar_dr (ar, clrs, rl_.lnrs, cols, pos);
+    waddlinear_dr (ar, clrs, rl_.lnrs, cols, pos, COLUMNS);
   else
-    srv->write_ar (ar, clrs, rl_.lnrs, cols);
+    waddlinear (ar, clrs, rl_.lnrs, cols, COLUMNS);
 }
 
 rlf_.clear = &clear;
@@ -458,7 +479,7 @@ private define readline (s)
 {
   rlf_.init ();
  
-  topline (" (ved)  -- COMMAND LINE --");
+  topline (" -- VED COMMAND LINE --");
  
   rlf_.prompt ();
 
@@ -469,14 +490,14 @@ private define readline (s)
     if (033 == rl_._chr)
       {
       rlf_.clear (cf_.ptr;dont_redraw);
-      topline (" (ved)  -- PAGER --");
+      topline (" -- PAGER --");
       restore (rl_.cmp_lnrs, cf_.ptr);
       break;
       }
 
     if ('\r' == rl_._chr)
       {
-      topline (" (ved)  -- PAGER --");
+      topline (" -- PAGER --");
       rlf_.execline ();
       return;
       }
@@ -1028,7 +1049,7 @@ rlf_.hlitem = &hlitem;
 
 private define getline (s, line, prev_l, next_l)
 {
-  topline_dr (" (ved)  -- INSERT --");
+  topline_dr (" -- INSERT --");
 
   variable
     lline,
@@ -1058,7 +1079,7 @@ private define getline (s, line, prev_l, next_l)
         cf_.st_.st_size = calcsize (cf_.lines);
         }
 
-      topline (" (ved)  -- PAGER --");
+      topline (" -- PAGER --");
       draw_tail ();
 
       return;
@@ -1167,7 +1188,7 @@ private define getline (s, line, prev_l, next_l)
           + substr (@line, gl_._col + 1, - 1);
         gl_._col++;
         cf_.ptr[1]++;
-        srv->write_nstr_dr (@line, COLUMNS, 0, [cf_.ptr[0], 0, cf_.ptr[0], cf_.ptr[1]]);
+        waddlineat_dr (@line, 0, cf_.ptr[0], 0, [cf_.ptr[0], cf_.ptr[1]], cf_._maxlen);
         modified = 1;
         }
 
@@ -1182,7 +1203,7 @@ private define getline (s, line, prev_l, next_l)
           substr (@line, gl_._col + 1, - 1);
         gl_._col++;
         cf_.ptr[1]++;
-        srv->write_nstr_dr (@line, COLUMNS, 0, [cf_.ptr[0], 0, cf_.ptr[0], cf_.ptr[1]]);
+        waddlineat_dr (@line, 0, cf_.ptr[0], 0, [cf_.ptr[0], cf_.ptr[1]], cf_._maxlen);
         modified = 1;
         }
 
@@ -1228,7 +1249,7 @@ private define getline (s, line, prev_l, next_l)
         gl_._col--;
         }
 
-      srv->write_nstr_dr (@line, COLUMNS, 0, [cf_.ptr[0], 0, cf_.ptr[0], cf_.ptr[1]]);
+      waddlineat_dr (@line, 0, cf_.ptr[0], 0, [cf_.ptr[0], cf_.ptr[1]], cf_._maxlen);
       modified = 1;
       continue;
       }
@@ -1237,7 +1258,7 @@ private define getline (s, line, prev_l, next_l)
       {
       @line = substr (@line, 1, gl_._col) + substr (@line, gl_._col + 2, - 1);
 
-      srv->write_nstr_dr (@line, COLUMNS, 0, [cf_.ptr[0], 0, cf_.ptr[0], cf_.ptr[1]]);
+      waddlineat_dr (@line, 0, cf_.ptr[0], 0, [cf_.ptr[0], cf_.ptr[1]], cf_._maxlen);
       modified = 1;
       continue;
       }
@@ -1249,14 +1270,13 @@ private define getline (s, line, prev_l, next_l)
       if (strlen (@line) < cf_._maxlen)
         {
         cf_.ptr[1]++;
-        s_.write_nstr (@line, 0, cf_.ptr[0]);
+        waddline (@line, 0, cf_.ptr[0]);
         draw_tail (;line = @line, col = cf_.ptr[1] + 1);
-%        srv->write_nstr_dr (@line, COLUMNS, 0, [cf_.ptr[0], 0, cf_.ptr[0], cf_.ptr[1]]);
         }
       else
         {
         lline = substr (@line, strlen (@line) - cf_._maxlen + 1, -1);
-        s_.write_nstr (lline, 0, cf_.ptr[0]);
+        waddline (lline, 0, cf_.ptr[0]);
         draw_tail (;lline = @line, col = gl_._col);
         }
 

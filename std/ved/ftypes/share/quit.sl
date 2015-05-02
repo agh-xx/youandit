@@ -45,11 +45,13 @@ static define quit ()
       return;
       }
     }
-
+  
   if (flags & MODIFIED)
-    ifnot (0 == s_.writefile (file))
+    {
+    variable retval = writetofile (file, cf_.lines, cf_._indent);
+    ifnot (0 == retval)
       {
-      send_msg_dr (sprintf ("%s, press q to quit without saving", errno_string (errno)),
+      send_msg_dr (sprintf ("%s, press q to quit without saving", errno_string (retval)),
         1, NULL, NULL);
       if ('q' == get_char ())
         doquit ();
@@ -57,6 +59,7 @@ static define quit ()
       srv->gotorc_draw (cf_.ptr[0], cf_.ptr[1]);
       return;
       }
+    }
 
   doquit ();
 }

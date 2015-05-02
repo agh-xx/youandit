@@ -8,6 +8,6 @@ define seltoX (sel)
 
   p.stdin.in = sel;
 
-  () = p.execv ([which ("xclip")], NULL);
+  () = p.execve ([which ("xclip")], ["DISPLAY=" + DISPLAY], NULL);
 }
 

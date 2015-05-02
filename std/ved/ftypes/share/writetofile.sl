@@ -1,10 +1,10 @@
-private define write_line (fp, line)
+private define write_line (fp, line, indent)
 {
-  line = substr (line, cf_._indent + 1, -1);
+  line = substr (line, indent + 1, -1);
   return fwrite (line, fp);
 }
 
-static define writetofile (s, file)
+define writetofile (file, lines, indent)
 {
   variable
     i,
@@ -13,11 +13,12 @@ static define writetofile (s, file)
   if (NULL == fp)
     return errno;
 
-  _for i (0, length (cf_.lines) - 1)
-    if (-1 == write_line (fp, cf_.lines[i] + "\n"))
+  _for i (0, length (lines) - 1)
+    if (-1 == write_line (fp, lines[i] + "\n", indent))
       return errno;
 
-  () = fclose (fp);
+  if (-1 == fclose (fp))
+    return errno;
  
   return 0;
 }

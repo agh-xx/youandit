@@ -36,7 +36,7 @@ private define ins_char (s, line)
   if (strlen (@line) < cf_._maxlen || cf_.ptr[1] < cf_._maxlen)
     {
     cf_.ptr[1]++;
-    s_.write_nstr (getlinestr (@line, 1), 0, cf_.ptr[0]);
+    waddline (getlinestr (@line, 1), 0, cf_.ptr[0]);
     draw_tail (;chr = s.chr);
     return;
     }
@@ -50,7 +50,7 @@ private define ins_char (s, line)
   if (cf_.ptr[1] < cf_._maxlen)
     cf_.ptr[1]++;
 
-  s_.write_nstr (lline, 0, cf_.ptr[0]);
+  waddline (lline, 0, cf_.ptr[0]);
   draw_tail (;chr = s.chr);
 }
 
@@ -103,7 +103,7 @@ private define del_prev (s, line)
 
     lline = getlinestr (@line, cf_._findex + 1 - cf_._indent);
 
-    s_.write_nstr (lline, 0, cf_.ptr[0]);
+    waddline (lline, 0, cf_.ptr[0]);
     draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
     s.modified = 1;
     return;
@@ -122,14 +122,14 @@ private define del_prev (s, line)
       cf_.ptr[1] = cf_._maxlen;
       cf_._findex = len - cf_._linlen;
       lline = substr (@line, cf_._findex + 1, -1);
-      s_.write_nstr (lline, 0, cf_.ptr[0]);
+      waddline (lline, 0, cf_.ptr[0]);
       draw_tail (;chr = decode (substr (@line, cf_._index, 1))[0]);
       return;
       }
 
     cf_._findex = cf_._indent;
     cf_.ptr[1] = len;
-    s_.write_nstr (@line, 0, cf_.ptr[0]);
+    waddline (@line, 0, cf_.ptr[0]);
     draw_tail (;chr = decode (substr (@line, cf_._index, 1))[0]);
     is_wrapped_line = 0;
     return;
@@ -138,11 +138,11 @@ private define del_prev (s, line)
   cf_.ptr[1]--;
 
   if (cf_._index == len)
-    s_.write_str_at (" ", 0, cf_.ptr[0], cf_.ptr[1]);
+    waddlineat (" ", 0, cf_.ptr[0], cf_.ptr[1], cf_._maxlen);
   else
     {
     lline = substr (@line, cf_._index + 1, -1);
-    s_.write_str_at (lline, 0, cf_.ptr[0], cf_.ptr[1]);
+    waddlineat (lline, 0, cf_.ptr[0], cf_.ptr[1], cf_._maxlen);
     }
 
   draw_tail (;chr = decode (substr (@line, cf_._index, 1))[0]);
@@ -167,7 +167,7 @@ private define del_next (s, line)
           cf_._i = cf_._ii;
           s_.draw ();
           s.modified = 1;
-          s_.write_nstr (getlinestr (@line, 1), 0, cf_.ptr[0]);
+          waddline (getlinestr (@line, 1), 0, cf_.ptr[0]);
           draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
           }
 
@@ -176,7 +176,7 @@ private define del_next (s, line)
       else
         {
         @line = " ";
-        s_.write_nstr (@line, 0, cf_.ptr[0]);
+        waddline (@line, 0, cf_.ptr[0]);
         draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
         s.modified = 1;
         return;
@@ -194,9 +194,9 @@ private define del_next (s, line)
       s_.draw ();
       s.modified = 1;
       if (is_wrapped_line)
-        s_.write_nstr (getlinestr (@line, cf_._findex + 1 - cf_._indent), 0, cf_.ptr[0]);
+        waddline (getlinestr (@line, cf_._findex + 1 - cf_._indent), 0, cf_.ptr[0]);
       else
-        s_.write_nstr (getlinestr (@line, 1), 0, cf_.ptr[0]);
+        waddline (getlinestr (@line, 1), 0, cf_.ptr[0]);
 
       draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
       }
@@ -207,9 +207,9 @@ private define del_next (s, line)
   @line = substr (@line, 1, cf_._index) + substr (@line, cf_._index + 2, - 1);
 
   if (is_wrapped_line)
-    s_.write_nstr (getlinestr (@line, cf_._findex + 1 - cf_._indent), 0, cf_.ptr[0]);
+    waddline (getlinestr (@line, cf_._findex + 1 - cf_._indent), 0, cf_.ptr[0]);
   else
-    s_.write_nstr (getlinestr (@line, 1), 0, cf_.ptr[0]);
+    waddline (getlinestr (@line, 1), 0, cf_.ptr[0]);
  
   draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
   s.modified = 1;
@@ -230,7 +230,7 @@ private define eol (s, line)
     cf_._findex = len - cf_._linlen;
     lline = getlinestr (@line, cf_._findex + 1 - cf_._indent);
  
-    s_.write_nstr (lline, 0, cf_.ptr[0]);
+    waddline (lline, 0, cf_.ptr[0]);
 
     cf_.ptr[1] = cf_._maxlen;
     is_wrapped_line = 1;
@@ -248,7 +248,7 @@ private define bol (s, line)
   cf_._findex = cf_._indent;
   cf_._index = cf_._indent;
   cf_.ptr[1] = cf_._indent;
-  s_.write_nstr (getlinestr (@line, 1), 0, cf_.ptr[0]);
+  waddline (getlinestr (@line, 1), 0, cf_.ptr[0]);
   draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
   is_wrapped_line = 0;
 }
@@ -271,7 +271,7 @@ private define completeline (s, line, comp_line)
     if (cf_.ptr[1] + 1 < cf_._maxlen)
       cf_.ptr[1]++;
 
-    s_.write_nstr (getlinestr (@line, 1), 0, cf_.ptr[0]);
+    waddline (getlinestr (@line, 1), 0, cf_.ptr[0]);
     draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
     s.modified = 1;
     }
@@ -302,7 +302,7 @@ private define right (s, line)
   if (cf_.ptr[1] + 1 > cf_._maxlen)
     {
     lline = getlinestr (@line, cf_._findex - cf_._indent);
-    s_.write_nstr (lline, 0, cf_.ptr[0]);
+    waddline (lline, 0, cf_.ptr[0]);
     }
 
   draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
@@ -324,7 +324,7 @@ private define left (s, line)
       cf_._index--;
       variable lline;
       lline = getlinestr (@line, cf_._index - cf_._indent);
-      s_.write_nstr (lline, 0, cf_.ptr[0]);
+      waddline (lline, 0, cf_.ptr[0]);
       draw_tail (;chr = decode (substr (@line, cf_._index, 1))[0]);
       if (cf_._index - 1 == cf_._indent)
         is_wrapped_line = 0;
@@ -353,7 +353,7 @@ private define down (s, line)
 
   if (is_wrapped_line)
     {
-    s_.write_nstr (getlinestr (@line, 1), 0, cf_.ptr[0]);
+    waddline (getlinestr (@line, 1), 0, cf_.ptr[0]);
     is_wrapped_line = 0;
     cf_.ptr[1] = cf_._maxlen;
     }
@@ -422,7 +422,7 @@ private define up (s, line)
 
   if (is_wrapped_line)
     {
-    s_.write_nstr (getlinestr (@line, cf_._indent + 1 - cf_._indent), 0, cf_.ptr[0]);
+    waddline (getlinestr (@line, cf_._indent + 1 - cf_._indent), 0, cf_.ptr[0]);
     is_wrapped_line = 0;
     cf_.ptr[1] = cf_._maxlen;
     }
@@ -509,7 +509,7 @@ private define cr (s, line)
     s_.draw ();
     
     @line = repeat (" ", cf_._indent) + @line; 
-    s_.write_nstr (@line, 0, cf_.ptr[0]);
+    waddline (@line, 0, cf_.ptr[0]);
     draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
     cf_._index = cf_._indent;
     cf_._findex = cf_._indent;
@@ -649,7 +649,7 @@ private define getline (self, line)
 
 define insert (line, lnr, prev_l, next_l)
 {
-  topline_dr (" (ved)  -- INSERT --");
+  topline_dr (" -- INSERT --");
 
   variable
     self = @Insert_Type;

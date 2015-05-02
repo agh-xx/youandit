@@ -5,43 +5,6 @@ private variable
   prev_fn = NULL,
   defrows = {[1:LINES - 9], [LINES - 8:LINES - 3]};
 
-private define myquit ()
-{
-  variable
-    fn,
-    chr,
-    fns = assoc_get_keys (fnames);
-
-  _for fn (0, length (fns) - 1)
-    {
-    cf_ = fnames[fns[fn]];
-    if (cf_._flags & RDONLY || 0 == cf_._flags & MODIFIED ||
-        (0 == qualifier_exists ("force") && "q!" == rl_.argv[0]))
-      continue;
-
-    send_msg_dr (sprintf ("%s: save changes? y[es]|n[o]", cf_._fname), 0, NULL, NULL);
-
-    chr = get_char ();
-    while (0 == any (chr == ['y', 'n']))
-      chr = get_char ();
- 
-    if ('n' == chr)
-      continue;
-
-    ifnot (0 == s_.writefile (cf_._fname))
-      {
-      send_msg_dr (sprintf ("%s, press q to quit without saving", errno_string (errno)),
-        1, NULL, NULL);
-
-      if ('q' == get_char ())
-        return;
-      }
-    }
- 
-  send_msg (" ", 0);
-  exit_me (0);
-}
-
 private define add (s, rows)
 {
   if (assoc_key_exists (fnames, s.fname))
@@ -74,6 +37,9 @@ private define add (s, rows)
   c.ptr[1] = qualifier ("col", s.col - 1);
   c._findex = c._indent;
   c._index = c.ptr[1];
+  c.undo = String_Type[0];
+  c._undolevel = 0;
+  c.undoset = {};
 
   c.st_ = stat_file (c._fname);
   if (NULL == c.st_)
@@ -161,6 +127,7 @@ private define chframe ()
 {
   if (1 == length (fnames))
     return;
+
   variable fn = prev_fn;
   togglecur ();
   set_cf (fn);
@@ -168,74 +135,92 @@ private define chframe ()
   srv->gotorc_draw (cf_.ptr[0], cf_.ptr[1]);
 }
 
-pagerf[string ('\r')] = &drawfile;
-pagerf[string (keys->CTRL_w)] = &chframe;
+private define myquit ()
+{
+  variable
+    fn,
+    chr,
+    fns = assoc_get_keys (fnames);
+
+  _for fn (0, length (fns) - 1)
+    {
+    cf_ = fnames[fns[fn]];
+    if (cf_._flags & RDONLY || 0 == cf_._flags & MODIFIED ||
+        (0 == qualifier_exists ("force") && "q!" == rl_.argv[0]))
+      continue;
+
+    send_msg_dr (sprintf ("%s: save changes? y[es]|n[o]", cf_._fname), 0, NULL, NULL);
+
+    chr = get_char ();
+    while (0 == any (chr == ['y', 'n']))
+      chr = get_char ();
+ 
+    if ('n' == chr)
+      continue;
+    
+    variable retval = writetofile (cf_._fname, cf_.lines, cf_._indent);
+    ifnot (0 == retval)
+      {
+      send_msg_dr (sprintf ("%s, press q to quit without saving", errno_string (retval)),
+        1, NULL, NULL);
+
+      if ('q' == get_char ())
+        return;
+      }
+    }
+ 
+  send_msg (" ", 0);
+  exit_me (0);
+}
+
+clinef["q"] = &myquit;
+clinef["q!"] = &myquit;
 
 pagerc = array_map (Integer_Type, &integer, assoc_get_keys (pagerf));
 
-define ved ()
+lpagerf[string ('\r')] = &drawfile;
+lpagerf[string (keys->CTRL_w)] = &chframe;
+
+lpagerc = array_map (Integer_Type, &integer, assoc_get_keys (lpagerf));
+
+define ved (s)
 {
-  s_.quit = &myquit;
+  s.quit = &myquit;
 
-  clinef["q"] = &myquit;
-  clinef["q!"] = &myquit;
-
-  variable s = struct
+  variable mys = struct
     {
     fname = get_file (),
     lnr = 1,
     col = 0,
     };
 
-  () = add (s, defrows[1];row = defrows[1][0], col = 0);
+  () = add (mys, defrows[1];row = defrows[1][0], col = 0);
 
-  set_cf (s.fname);
-  prev_fn = s.fname;
+  set_cf (mys.fname);
+  prev_fn = mys.fname;
 
   clear (1, LINES);
 
   srv->set_color_in_region (INFOCLRBG, cf_.rows[0] - 1, 0, 1, COLUMNS);
  
-  s_.draw ();
+  s.draw ();
 
   variable func = get_func ();
+
   if (func)
     {
     count = get_count ();
     if (any (pagerc == func))
       (@pagerf[string (func)]);
+
+    if (any (lpagerc == func))
+      (@lpagerf[string (func)]);
     }
 
   if (DRAWONLY)
     return;
 
-  topline_dr (" (ved)  -- PAGER --");
-
-  forever
-    {
-    count = -1;
-    cf_._chr = get_char ();
- 
-    if ('0' <= cf_._chr <= '9')
-      {
-      count = "";
- 
-      while ('0' <= cf_._chr <= '9')
-        {
-        count += char (cf_._chr);
-        cf_._chr = get_char ();
-        }
-
-      count = integer (count);
-      }
-
-    if (any (pagerc == cf_._chr))
-      (@pagerf[string (cf_._chr)]);
- 
-    if (':' == cf_._chr)
-      rlf_.read ();
-
-    if (cf_._chr == 'q')
-      (@clinef["q"]) (;force);
-    }
+  topline_dr (" -- PAGER --");
+  
+  (@vedloop) (s);
 }

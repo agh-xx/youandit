@@ -5,7 +5,7 @@ define draw (s)
     cf_.lins = [" "];
     cf_.lnrs = [0];
  
-    srv->write_ar_nstr_dr ([repeat (" ", COLUMNS), tail ()], [0, INFOCLRFG],
+    waddlinear_dr ([repeat (" ", COLUMNS), tail ()], [0, INFOCLRFG],
       [cf_.rows[0], cf_.rows[-1]], [0, 0], [cf_.rows[0], 0], COLUMNS);
 
     return;
@@ -52,5 +52,5 @@ define draw (s)
   _for i (0, length (ar) - 1)
     IMG[cf_.rows[i]] = {[ar[i]], [cf_.clrs[i]], [cf_.rows[i]], [cf_.cols[i]]};
 
-  srv->write_ar_nstr_dr (ar, cf_.clrs, cf_.rows, cf_.cols, [cf_.ptr[0], cf_.ptr[1]], COLUMNS);
+  waddlinear_dr (ar, cf_.clrs, cf_.rows, cf_.cols, [cf_.ptr[0], cf_.ptr[1]], COLUMNS);
 }

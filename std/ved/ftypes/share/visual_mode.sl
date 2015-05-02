@@ -1,14 +1,14 @@
 private variable vis = struct
-    {
-    clr = 18,
-    l_mode,
-    l_down,
-    l_up,
-    c_mode,
-    c_left,
-    c_right,
-    at_exit,
-    };
+  {
+  clr = 18,
+  l_mode,
+  l_down,
+  l_up,
+  c_mode,
+  c_left,
+  c_right,
+  at_exit,
+  };
 
 private define v_unhl_line (s, index)
 {
@@ -32,19 +32,35 @@ private define v_hl_line (s)
   variable i;
   _for i (0, length (s.vlins) - 1)
     ifnot (-1 == s.vlins[i])
-      srv->set_color_in_region (s.clr, s.vlins[i], 0, 1,
-        cf_._maxlen > s.linlen[i] ? s.linlen[i] : cf_._maxlen);
+      if (s.vlins[i] == cf_.rows[-1])
+        break;
+      else if (s.vlins[i] < cf_.rows[0])
+        continue;
+      else
+        srv->set_color_in_region (s.clr, s.vlins[i], 0, 1,
+          cf_._maxlen > s.linlen[i] ? s.linlen[i] : cf_._maxlen);
 
   srv->refresh ();
 }
 
 private define v_l_up (s)
 {
-  if (cf_.ptr[0] == cf_.vlins[0])
+  ifnot (v_lnr ('.'))
     return;
-  
-%  if (s.vlins[0] == cf_.rows[0])
-%    return; %for now
+
+  if (cf_.ptr[0] == cf_.vlins[0]) %for now FIXME
+    {
+    cf_._i--;
+    s_.draw ();
+
+    s.lines = [v_lin ('.'), s.lines];
+    s.lnrs = [s.lnrs[0] - 1, s.lnrs];
+    s.vlins++;
+    s.vlins = [cf_.ptr[0], s.vlins];
+    s.linlen = [strlen (s.lines[0]), s.linlen];
+    v_hl_line (s);
+    return;
+    }
   
   cf_.ptr[0]--;
 
@@ -71,12 +87,22 @@ vis.l_up = &v_l_up;
 
 private define v_l_down (s)
 {
-  if (s.lnrs[-1] == cf_._len)
-    if (cf_.ptr[0] == cf_.vlins[-1])
+  if (v_lnr ('.') == cf_._len)
       return;
 
-  if (cf_.ptr[0] == cf_.vlins[-1]) %for now
+  if (cf_.ptr[0] == cf_.vlins[-1]) %for now FIXME
+    {
+    cf_._i++;
+ 
+    s_.draw ();
+    s.lines = [s.lines, v_lin ('.')];
+    s.lnrs = [s.lnrs, s.lnrs[-1] + 1];
+    s.vlins--;
+    s.vlins = [s.vlins, cf_.ptr[0]];
+    s.linlen = [s.linlen, strlen (s.lines[-1])];
+    v_hl_line (s);
     return;
+    }
 
   cf_.ptr[0]++;
 
@@ -137,7 +163,7 @@ private define v_linewise_mode (s)
       seltoX (strjoin (s.lines, "\n") + "\n");
       cf_.lines[s.lnrs] = NULL;
       cf_.lines = cf_.lines[wherenot (_isnull (cf_.lines))];
-      cf_._len -= length (s.lnrs);
+      cf_._len = length (cf_.lines) - 1;
 
       cf_._i = s.lnrs[0] ? s.lnrs[0] - 1 : 0;
       cf_.ptr[0] = cf_.rows[0];
@@ -183,7 +209,7 @@ private define v_c_left (s, cur)
     else
       lline = s.lines[cur];
 
-    s_.write_nstr (lline, 0, cf_.ptr[0]);
+    waddline (lline, 0, cf_.ptr[0]);
     }
 
 
@@ -256,7 +282,7 @@ private define v_c_right (s, cur)
   if (retval)
     {
     variable lline = getlinestr (s.lines[cur], cf_._findex + 1 - cf_._indent);
-    s_.write_nstr (lline, 0, cf_.ptr[0]);
+    waddline (lline, 0, cf_.ptr[0]);
     is_wrapped_line = 1;
     s.wrappedmot++;
     }

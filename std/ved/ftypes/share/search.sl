@@ -10,7 +10,7 @@ private define exit_rout ()
 {
   srv->gotorc (cf_.ptr[0], cf_.ptr[1]);
   send_msg (" ", 0);
-  srv->write_ar_nstr ([" "], [0], [PROMPTROW], [0], COLUMNS);
+  waddlinear ([" "], [0], [PROMPTROW], [0], COLUMNS);
   draw_tail ();
 }
 
@@ -61,7 +61,7 @@ private define search_backward (str)
       if (qualifier_exists ("context"))
         pos[1] = match[1];
 
-      srv->write_ar_nstr_dr (ar, clrs, rows, cols, pos, COLUMNS);
+      waddlinear_dr (ar, clrs, rows, cols, pos, COLUMNS);
 
       lnr = i;
       found = 1;
@@ -130,8 +130,8 @@ private define search_forward (str)
       pos = [qualifier ("row", PROMPTROW),  col];
       if (qualifier_exists ("context"))
         pos[1] = match[1];
-
-      srv->write_ar_nstr_dr (ar, clrs, rows, cols, pos, COLUMNS);
+      
+      waddlinear_dr (ar, clrs, rows, cols, pos, COLUMNS);
 
       lnr = i;
       found = 1;

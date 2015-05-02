@@ -1,22 +1,29 @@
-define send_msg_dr (str, clr, row, col)
+define getlines (cf)
 {
-  variable
-    lcol = NULL == col ? strlen (str) + 1 : col,
-    lrow = NULL == row ? MSGROW : row;
+  variable indent = repeat (" ", cf._indent);
+  if (-1 == access (cf._fname, F_OK) || 0 == cf.st_.st_size)
+    {
+    cf.st_.st_size = 0;
+    return [sprintf ("%s\000", indent)];
+    }
 
-  srv->write_nstr_dr (str, COLUMNS, clr, [MSGROW, 0, lrow, lcol]);
-}
-
-define send_msg (str, clr)
-{
-  srv->write_nstr (str, clr, MSGROW, 0, COLUMNS);
+  return array_map (String_Type, &sprintf, "%s%s", indent, readfile (cf_._fname));
 }
 
 define debug (str, get)
 {
-send_msg_dr (str, 1, cf_.ptr[0], cf_.ptr[1]);
-ifnot (NULL == get)
-  () = get_char ();
+  send_msg_dr (str, 1, cf_.ptr[0], cf_.ptr[1]);
+  ifnot (NULL == get)
+    () = get_char ();
+}
+
+define set_img ()
+{
+  variable i;
+  IMG = List_Type[PROMPTROW];
+  _for i (1, length (IMG) - 1)
+    IMG[i] = {" ", 0, i, 0};
+  IMG[0] = {strftime ("%c"), 3, 0, 0};
 }
 
 define clear (frow, lrow)
@@ -32,8 +39,8 @@ define clear (frow, lrow)
   ar[*] = " ";
   cols[*] = 0;
   clrs[*] = 0;
-
-  srv->write_ar_nstr_dr (ar, clrs, rows, cols, pos, COLUMNS);
+  
+  waddlinear_dr (ar, clrs, rows, cols, pos, COLUMNS);
 }
 
 define restore (cmp_lnrs, pos)
@@ -79,8 +86,8 @@ define restore (cmp_lnrs, pos)
       rows = [rows, IMG[i][2]];
       cols = [cols, IMG[i][3]];
       }
-
-  srv->write_ar_nstr_dr (ar, clrs, rows, cols, pos, COLUMNS);
+  
+  waddlinear_dr (ar, clrs, rows, cols, pos, COLUMNS);
 }
 
 define topline_dr (str)
@@ -90,8 +97,8 @@ define topline_dr (str)
 
   str += sprintf (" LANG (%s) ", GETCH_LANG == GET_CHAR ? "eng" : "el");
 
-  s_.write_nstr_dr (str + repeat (" ", COLUMNS - strlen (str) - strlen (t)) + t,
-    16, 0, 0, [cf_.ptr[0], cf_.ptr[1]]);
+  waddlineat_dr (str + repeat (" ", COLUMNS - strlen (str) - strlen (t)) + t,
+    16, 0, 0, [cf_.ptr[0], cf_.ptr[1]], COLUMNS);
 }
 
 define topline (str)
@@ -101,14 +108,13 @@ define topline (str)
   
   str += sprintf (" LANG (%s) ", GETCH_LANG == GET_CHAR ? "eng" : "el");
 
-  s_.write_str_at (str + repeat (" ", COLUMNS - strlen (str) - strlen (t)) + t,
-    16, 0, 0);
+  waddlineat (str + repeat (" ", COLUMNS - strlen (str) - strlen (t)) + t,
+    16, 0, 0, COLUMNS);
 }
 
 define write_prompt (str, col)
 {
-  srv->write_nstr_dr (str, COLUMNS, PROMPTCLR,
-    [PROMPTROW, 0, qualifier ("row", PROMPTROW), col]);
+  waddlineat_dr (str, PROMPTCLR, PROMPTROW, 0, [qualifier ("row", PROMPTROW), col], COLUMNS);
 }
 
 define decode (str)
@@ -177,16 +183,16 @@ define tail ()
     path_basename (cf_._fname), cf_.ptr[0], cf_.ptr[1] - cf_._indent + 1, lnr,
     cf_._len + 1, (100.0 / cf_._len) * lnr, v_linlen ('.'),
     qualifier ("chr", decode (substr (line, cf_._index + 1, 1))[0]),
-    undolevel, length (UNDO));
+    cf_._undolevel, length (cf_.undo));
 }
 
 define draw_tail ()
 {
   if (is_wrapped_line)
     srv->set_color_in_region (1, cf_.ptr[0], COLUMNS - 2, 1, 2);
-
-  srv->write_nstr_dr (tail (;;__qualifiers ()), COLUMNS, INFOCLRFG,
-    [cf_.rows[-1], 0, cf_.ptr[0], cf_.ptr[1]]);
+  
+  waddlineat_dr (tail (;;__qualifiers ()), INFOCLRFG, cf_.rows[-1], 0, [cf_.ptr[0], cf_.ptr[1]],
+    COLUMNS);
 }
 
 define getlinestr (line, ind)
@@ -239,36 +245,3 @@ define find_Word (line, col, start, end)
   return substr (line, @start + 1, @end - @start + 1);
 }
 
-define reread ()
-{
-  cf_.lines = s_.getlines ();
-
-  cf_._len = length (cf_.lines) - 1;
- 
-  ifnot (cf_._len)
-    {
-    cf_._ii = 0;
-    cf_.ptr[0] = cf_.rows[0];
-    }
-  else if (cf_._ii < cf_._len)
-    {
-    cf_._i = cf_._ii;
-    while (cf_.ptr[0] - cf_.rows[0] + cf_._ii > cf_._len)
-      cf_.ptr[0]--;
-    }
-  else
-    {
-    while (cf_._ii > cf_._len)
-      cf_._ii--;
-
-    cf_.ptr[0] = cf_.rows[0];
-    }
-
-  cf_.ptr[1] = 0;
- 
-  cf_._i = cf_._ii;
-
-  s_.draw ();
-}
-
-pagerf[string (keys->CTRL_l)] = &reread;

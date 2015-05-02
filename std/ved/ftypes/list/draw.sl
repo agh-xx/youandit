@@ -4,8 +4,8 @@ define draw ()
 {
   if (-1 == cf_._len)
     {
-    srv->write_ar_dr ([repeat (" ", COLUMNS), tail ()], [0, 0], [2, cf_.rows[-1], [0],
-      [cf_.ptr[0], cf_.ptr[1]]]);
+    waddlinear_dr  ([repeat (" ", COLUMNS), tail ()], [0, 0], [2, cf_.rows[-1], [0],
+      [cf_.ptr[0], cf_.ptr[1]]], COLUMNS);
     return;
     }
 
@@ -36,7 +36,6 @@ define draw ()
   if (cf_.ptr[0] >= i)
     cf_.ptr[0] = i - 1;
 
-
   ar = array_map (String_Type, &substr, cf_.lins, 1, cf_._maxlen);
 
   if (length (ar) < length (cf_.rows) - 1)
@@ -50,6 +49,6 @@ define draw ()
  
   _for i (0, length (ar) - 1)
     IMG[cf_.rows[i]] = {[ar[i]], [cf_.clrs[i]], [cf_.rows[i]], [cf_.cols[i]]};
-
-  srv->write_ar_nstr_dr (ar, cf_.clrs, cf_.rows, cf_.cols, [cf_.ptr[0], cf_.ptr[1]], COLUMNS);
+  
+  waddlinear_dr (ar, cf_.clrs, cf_.rows, cf_.cols, [cf_.ptr[0], cf_.ptr[1]], COLUMNS);
 }
