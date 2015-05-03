@@ -1,17 +1,13 @@
 sigprocmask (SIG_BLOCK, [SIGINT]);
 
-typedef struct
-  {
-  _fd,
-  _state,
-  cf_,
-  vedloop,
-  draw,
-  } Ved_Type;
-
 public variable
-  GETCH_LANG,
-  BUFFERS = Assoc_Type[Ved_Type],
+  VEDPROC = struct
+    {
+    _inited = 0,
+    _fd,
+    _state = 0,
+    },
+  FTYPES = Assoc_Type[Integer_Type],
   CONNECTED = 0x1,
   IDLED = 0x2,
   MODIFIED = 0x01,
@@ -19,6 +15,7 @@ public variable
   RDONLY = 0x04,
   GET_CHAR = 0x01F4,
   GET_EL_CHAR = 0x012C,
+  GETCH_LANG,
   DISPLAY = getenv ("DISPLAY"),
   LINES,
   COLUMNS,
@@ -57,6 +54,10 @@ private variable
 
 GETCH_LANG = GET_CHAR;
 
+FTYPES["txt"] = 0;
+FTYPES["sl"] = 0;
+FTYPES["list"] = 0;
+
 set_slang_load_path (sprintf ("%s/ftypes/share%c%s", MYPATH, path_get_delimiter (),
       getenv ("LOAD_PATH")));
 set_import_module_path (getenv ("IMPORT_PATH"));
@@ -69,7 +70,10 @@ $1 = socket (PF_UNIX, SOCK_STREAM, 0);
 bind ($1, VED_SOCKADDR);
 listen ($1, 1);
 VED_SOCKET = accept (__tmp ($1));
- 
+
+VEDPROC._fd = VED_SOCKET;
+VEDPROC._state = VEDPROC._state | CONNECTED;
+
 try
   {
   () = evalfile (sprintf ("%s/SockNs/sock_funcs", STDNS), "sock");
@@ -169,10 +173,13 @@ define get_file ()
   return get_str ();
 }
 
-define get_ftype ()
+define get_ftype (fn)
 {
-  send_int (GET_FTYPE);
-  return get_str ();
+  variable ftype = substr (path_extname (fn), 2, -1);
+  ifnot (any (assoc_get_keys (FTYPES) == ftype))
+    ftype = "txt";
+
+  return ftype;
 }
 
 define get_infoclrfg ()
@@ -235,7 +242,7 @@ INFOCLRFG = get_infoclrfg ();
 INFOCLRBG = get_infoclrbg ();
 PROMPTCLR = get_promptcolor ();
 
-$1 = get_ftype ();
+$1 = get_file ();
 
 define exit_me (exit_code)
 {
@@ -243,11 +250,10 @@ define exit_me (exit_code)
   exit (exit_code);
 }
 
-set_slang_load_path (sprintf ("%s/ftypes/%s%c%s", MYPATH, $1,
-  path_get_delimiter (), get_slang_load_path ()));
+private variable s_ = init_ftype (get_ftype ($1));
 
-variable s_ = init_ftype (__tmp ($1));
+VEDPROC._inited = 1;
 
-s_.ved ();
+s_.ved (__tmp ($1), get_rows ());
 
 exit_me (0);

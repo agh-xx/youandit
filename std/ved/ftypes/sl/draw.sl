@@ -1,9 +1,12 @@
-define draw ()
+define draw (s)
 {
   if (-1 == cf_._len)
     {
-    waddlinear_dr  ([repeat (" ", COLUMNS), tail ()], [0, 0], [2, cf_.rows[-1], [0],
-      [cf_.ptr[0], cf_.ptr[1]]], COLUMNS);
+    cf_.lins = [" "];
+    cf_.lnrs = [0];
+ 
+    waddlinear_dr ([repeat (" ", COLUMNS), tail ()], [0, INFOCLRFG],
+      [cf_.rows[0], cf_.rows[-1]], [0, 0], [cf_.rows[0], 0], COLUMNS);
 
     return;
     }
@@ -43,11 +46,11 @@ define draw ()
     t[*] = " ";
     ar = [ar, t];
     }
-
-  ar = [ar, tail (;;__qualifiers ())];
  
+  ar = [ar, tail (;;__qualifiers ())];
+
   _for i (0, length (ar) - 1)
     IMG[cf_.rows[i]] = {[ar[i]], [cf_.clrs[i]], [cf_.rows[i]], [cf_.cols[i]]};
-  
+
   waddlinear_dr (ar, cf_.clrs, cf_.rows, cf_.cols, [cf_.ptr[0], cf_.ptr[1]], COLUMNS);
 }

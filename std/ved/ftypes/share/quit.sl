@@ -4,7 +4,7 @@ private define doquit ()
   exit_me (0);
 }
 
-static define quit ()
+define quit ()
 {
   variable
     file,

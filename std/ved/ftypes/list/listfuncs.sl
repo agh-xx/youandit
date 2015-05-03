@@ -1,5 +1,5 @@
 private variable
-  fnames = Assoc_Type[Frame_Type],
+  fnames = Assoc_Type[Ftype_Type],
   frame = 1,
   exists = 0x01,
   prev_fn = NULL,
@@ -10,14 +10,32 @@ private define add (s, rows)
   if (assoc_key_exists (fnames, s.fname))
     return exists;
 
-  fnames[s.fname] = @Frame_Type;
+  variable ftype = get_ftype (s.fname);
 
-  variable
-    c = fnames[s.fname],
-    len = length (rows);
+  variable c;
+
+  ifnot ("list" == ftype)
+    {
+    fnames[s.fname] = init_ftype (ftype);
+    c = fnames[s.fname];
+    ineed (sprintf ("%s_settype", ftype));
+    variable func = __get_reference (sprintf ("%s_settype", ftype));
+    (@func) (c, s.fname, rows, NULL);
+    c._indent = qualifier ("indent", 0);
+    c._i = c._len >= s.lnr - 1 ? s.lnr - 1 : 0;
+    c.ptr[0] = qualifier ("row", 1);
+    c.ptr[1] = qualifier ("col", s.col - 1);
+    return 0;
+    }
+
+  fnames[s.fname] = @Ftype_Type;
+  c = fnames[s.fname];
+  
+  variable len = length (rows);
  
   c.rows = rows;
   c._indent = qualifier ("indent", 0);
+  c._shiftwidth = 4;
   c.ptr = Integer_Type[2];
   c.cols = Integer_Type[len];
   c.cols[*] = 0;
@@ -120,7 +138,7 @@ private define drawfile ()
     cf_._index = cf_.ptr[1];
     }
 
-  s_.draw ();
+  cf_.draw ();
 }
 
 private define chframe ()
@@ -183,13 +201,14 @@ lpagerf[string (keys->CTRL_w)] = &chframe;
 
 lpagerc = array_map (Integer_Type, &integer, assoc_get_keys (lpagerf));
 
-define ved (s)
+define ved (s, fname, rows)
 {
   s.quit = &myquit;
+  set_img ();
 
   variable mys = struct
     {
-    fname = get_file (),
+    fname = fname,
     lnr = 1,
     col = 0,
     };

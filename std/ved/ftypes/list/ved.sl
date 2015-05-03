@@ -39,4 +39,3 @@ private define _vedloop_ (s)
 }
 
 vedloop = &_vedloop_;
-

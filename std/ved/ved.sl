@@ -13,7 +13,7 @@ typedef struct
 private variable BUFFERS = Assoc_Type[Ved_Type];
 private variable funcs = Assoc_Type[Ref_Type];
 private variable cb;
-private  variable ftypes = ["txt", "list"];
+private  variable ftypes = ["txt", "list", "sl"];
 
 private variable
   CONNECTED = 0x1,

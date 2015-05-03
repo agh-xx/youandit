@@ -43,10 +43,10 @@ private define undo ()
   
   if (0 == cf_._undolevel)
     {
-    cf_.lines = getlines (cf_);
+    cf_.lines = getlines (cf_._fname, cf_._indent, cf_.st_);
     cf_._len = length (cf_.lines) - 1;
     cf_._i = cf_._ii;
-    s_.draw (); 
+    cf_.draw (); 
     return;
     }
 
@@ -78,7 +78,7 @@ private define undo ()
  
   cf_._flags = cf_._flags | MODIFIED;
 
-  s_.draw ();
+  cf_.draw ();
 }
 
 private define redo ()
@@ -117,7 +117,7 @@ private define redo ()
 
   cf_._flags = cf_._flags | MODIFIED;
 
-  s_.draw ();
+  cf_.draw ();
 }
 
 pagerf[string ('u')] = &undo;

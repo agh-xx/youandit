@@ -13,8 +13,8 @@ private define indent_in ()
   while (isblank (line[i_]))
     i_++;
 
-  if (i_ > s_._shiftwidth)
-    i_ = s_._shiftwidth;
+  if (i_ > cf_._shiftwidth)
+    i_ = cf_._shiftwidth;
 
   line = substr (line, i_ + 1, -1);
 
@@ -28,7 +28,7 @@ private define indent_in ()
 
   set_modified ();
 
-  cf_.st_.st_size += s_._shiftwidth;
+  cf_.st_.st_size += cf_._shiftwidth;
 
   waddline (line, 0, cf_.ptr[0]);
  
@@ -41,19 +41,19 @@ private define indent_out ()
     i = v_lnr ('.'),
     line = v_lin ('.');
 
-  line = sprintf ("%s%s", repeat (" ", s_._shiftwidth), line);
+  line = sprintf ("%s%s", repeat (" ", cf_._shiftwidth), line);
 
   cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
   cf_.lines[i] = line;
-  cf_.ptr[1] += s_._shiftwidth;
-  cf_._index += s_._shiftwidth;
+  cf_.ptr[1] += cf_._shiftwidth;
+  cf_._index += cf_._shiftwidth;
 
   if (cf_.ptr[1] >= cf_._maxlen)
     cf_.ptr[1] = cf_._maxlen - 1;
 
   set_modified ();
 
-  cf_.st_.st_size += s_._shiftwidth;
+  cf_.st_.st_size += cf_._shiftwidth;
 
   waddline (line, 0, cf_.ptr[0]);
 
@@ -78,7 +78,7 @@ private define join_line ()
  
   set_modified ();
 
-  s_.draw ();
+  cf_.draw ();
 }
 
 private define del_line ()
@@ -241,7 +241,7 @@ private define del ()
       if (1 == del_line ())
         return;
 
-      s_.draw ();
+      cf_.draw ();
       return;
       }
     
@@ -340,7 +340,7 @@ private define edit_line ()
  
   if ('C' == cf_._chr)
     line = substr (line, 1, cf_._index);
-  else if ('a' == cf_._chr)
+  else if ('a' == cf_._chr && len)
     {
     cf_._index++;
     cf_.ptr[1]++;
@@ -352,16 +352,16 @@ private define edit_line ()
     }
  
   if (cf_._index - cf_._indent > cf_._maxlen)
-    lline = substr (line, cf_._findex + 1, cf_._maxlen);
+    lline = getlinestr (line, cf_._findex + 1 - cf_._indent);
   else
     lline = line;
 
   waddlineat_dr (substr (line, 1, cf_._maxlen), 0, cf_.ptr[0], 0, [cf_.ptr[0], cf_.ptr[1]], COLUMNS);
 
   if ('C' == cf_._chr)
-    insert (&line, lnr, prev_l, next_l;;struct {@__qualifiers (), modified});
+    insert (&line, lnr, prev_l, next_l;modified);
   else
-    insert (&line, lnr, prev_l, next_l;;__qualifiers ());
+    insert (&line, lnr, prev_l, next_l);
 }
 
 private define newline ()
@@ -411,7 +411,7 @@ private define newline ()
   cf_._index = cf_._indent;
   cf_._findex = cf_._indent;
  
-  s_.draw ();
+  cf_.draw ();
  
   line = repeat (" ", cf_._indent);
   insert (&line, "next" == dir ? lnr + 1 : lnr, prev_l, next_l;;__qualifiers ());
@@ -446,7 +446,7 @@ private define Put ()
   
   set_modified ();
  
-  s_.draw ();
+  cf_.draw ();
 }
 
 private define put ()
@@ -474,7 +474,7 @@ private define put ()
   
   set_modified ();
  
-  s_.draw ();
+  cf_.draw ();
 }
 
 private define toggle_case ()

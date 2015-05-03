@@ -13,6 +13,7 @@ typedef struct
   _avlins,
   _findex,
   _index,
+  _shiftwidth,
   _undolevel,
   undo,
   undoset,
@@ -25,15 +26,10 @@ typedef struct
   vlins,
   lines,
   st_,
-  } Frame_Type;
-
-typedef struct
-  {
-  _type,
-  _shiftwidth,
+  quit,
   ved,
   draw,
-  quit,
+  mainloop,
   parsearray,
   } Ftype_Type;
 
@@ -50,6 +46,17 @@ typedef struct
   cmp_lnrs,
   } Rline_Type;
 
+typedef struct
+  {
+  chr,
+  lnr,
+  prev_l,
+  next_l,
+  modified,
+  } Insert_Type;
+
+variable BUFFERS = Assoc_Type[Ftype_Type];
+
 variable
   cf_,
   rl_,
@@ -65,32 +72,37 @@ variable
 
 private define quit (t)
 {
-  () = evalfile (sprintf ("%s/share/%s", path_dirname (__FILE__), _function_name ()), t);
+  () = evalfile (sprintf ("%s/share/%s", path_dirname (__FILE__), _function_name ()));
 
-  return __get_reference (sprintf ("%s->%s", t, _function_name ()));
+  return __get_reference (sprintf ("%s", _function_name ()));
 }
 
 private define ved (t)
 {
-  () = evalfile (sprintf ("%s/%s/%s", path_dirname (__FILE__), t, _function_name ()), t);
+  () = evalfile (sprintf ("%s/%s/%s", path_dirname (__FILE__), t, _function_name ()));
 
-  return __get_reference (sprintf ("%s->%s", t, _function_name ()));
+  return __get_reference (sprintf ("%s", _function_name ()));
 }
 
 private define draw (t)
 {
-  () = evalfile (sprintf ("%s/%s/%s", path_dirname (__FILE__), t, _function_name ()), t);
+  () = evalfile (sprintf ("%s/%s/%s", path_dirname (__FILE__), t, _function_name ()));
 
-  return __get_reference (sprintf ("%s->%s", t, _function_name ()));
+  return __get_reference (sprintf ("%s", _function_name ()));
 }
 
 define init_ftype (ftype)
 {
-  % TO DO the checks
   variable type = @Ftype_Type;
  
+  ifnot (FTYPES[ftype])
+    {
+    set_slang_load_path (sprintf ("%s/%s%c%s", path_dirname (__FILE__), ftype,
+      path_get_delimiter (), get_slang_load_path ()));
+    FTYPES[ftype] = 1;
+    }
+
   type._type = ftype;
-  type._shiftwidth = 4;
   type.ved = ved (ftype);
   type.draw = draw (ftype);
   type.quit = quit (ftype);

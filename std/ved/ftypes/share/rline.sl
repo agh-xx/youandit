@@ -24,7 +24,7 @@ private define quit ()
 {
   if (cf_._flags & RDONLY || 0 == cf_._flags & MODIFIED ||
       (0 == qualifier_exists ("force") && "q!" == rl_.argv[0]))
-    s_.quit (0);
+    cf_.quit (0);
  
   send_msg_dr ("file is modified, save changes? y[es]|n[o]", 0, NULL, NULL);
 
@@ -32,7 +32,7 @@ private define quit ()
   while (0 == any (chr == ['y', 'n']))
     chr = get_char ();
 
-  s_.quit (chr == 'y');
+  cf_.quit (chr == 'y');
 }
 
 private define write_file ()
@@ -94,7 +94,7 @@ private define write_file ()
 private define write_quit ()
 {
   variable args = __pop_list (_NARGS);
-  s_.quit (1, __push_list (args));
+  cf_.quit (1, __push_list (args));
 }
 
 private define edit_other ()
@@ -102,17 +102,17 @@ private define edit_other ()
   ifnot (_NARGS)
     return;
 
-  variable key = get_bufkey ();
-  BUFFERS[key] = @Ved_Type;
-  BUFFERS[key]._fd = VED_SOCKET;
-  BUFFERS[key]._state = IDLED;
-  BUFFERS[key].cf_ = @cf_;
-  BUFFERS[key].draw = s_.draw;
-  BUFFERS[key].vedloop = vedloop;
-  variable args = __pop_list (_NARGS);
-  variable fn = args[0];
-  add_buffer (fn); 
-  debug (key, 1);
+%  variable key = get_bufkey ();
+%  BUFFERS[key] = @Ved_Type;
+%  BUFFERS[key]._fd = VED_SOCKET;
+%  BUFFERS[key]._state = IDLED;
+%  BUFFERS[key].cf_ = @cf_;
+%  BUFFERS[key].draw = cf_.draw;
+%  BUFFERS[key].vedloop = vedloop;
+%  variable args = __pop_list (_NARGS);
+%  variable fn = args[0];
+%  add_buffer (fn); 
+%  debug (key, 1);
 }
 
 clinef["w"] = &write_file;
@@ -1125,7 +1125,7 @@ private define getline (s, line, prev_l, next_l)
 
         cf_._len++;
  
-        s_.draw ();
+        cf_.draw ();
  
         rlf_.getline (line, prev_l, next_l;dir = "next", i = i, modified = 1);
 

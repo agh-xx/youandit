@@ -253,7 +253,7 @@ private define search ()
         cf_._index = cf_._indent;
         cf_._findex = cf_._indent;
 
-        s_.draw ();
+        cf_.draw ();
         }
 
       exit_rout ();
@@ -396,7 +396,7 @@ private define search_word ()
         cf_.ptr[0] = cf_.rows[0];
         cf_._index = cf_._indent;
         cf_._findex = cf_._indent;
-        s_.draw ();
+        cf_.draw ();
         }
 
       exit_rout ();

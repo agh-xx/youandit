@@ -62,7 +62,7 @@ private define down ()
   ifnot (cf_.ptr[0] == cf_.vlins[-1])
     cf_.ptr[0]++;
 
-  s_.draw ();
+  cf_.draw ();
  
   linlen = v_linlen ('.');
  
@@ -102,7 +102,7 @@ private define up ()
 
   cf_._i--;
 
-  s_.draw ();
+  cf_.draw ();
  
   linlen = v_linlen ('.');
  
@@ -116,7 +116,7 @@ private define gotoline ()
   if (count <= cf_._len + 1)
     {
     cf_._i = count - (count ? 1 : 0);
-    s_.draw ();
+    cf_.draw ();
 
     cf_.ptr[0] = cf_.rows[0];
     cf_.ptr[1] = cf_._indent;
@@ -151,7 +151,7 @@ private define eof ()
     return;
     }
 
-  s_.draw ();
+  cf_.draw ();
 
   cf_.ptr[0] = cf_.vlins[-1];
 
@@ -173,7 +173,7 @@ private define bof ()
   cf_._findex = cf_._indent;
   cf_._index = cf_._indent;
  
-  s_.draw ();
+  cf_.draw ();
 }
 
 define p_left ()
@@ -270,7 +270,7 @@ private define page_down ()
   cf_._index = cf_._indent;
   cf_._findex = cf_._indent;
 
-  s_.draw ();
+  cf_.draw ();
 }
 
 private define page_up ()
@@ -288,7 +288,7 @@ private define page_up ()
   cf_._findex = cf_._indent;
   cf_._index = cf_._indent;
 
-  s_.draw ();
+  cf_.draw ();
 }
 
 private define eos ()
@@ -449,7 +449,7 @@ private define Yank ()
 
 private define reread ()
 {
-  cf_.lines = getlines (cf_);
+  cf_.lines = getlines (cf_._fname, cf_._indent, cf_.st_);
 
   cf_._len = length (cf_.lines) - 1;
  
@@ -476,7 +476,7 @@ private define reread ()
  
   cf_._i = cf_._ii;
 
-  s_.draw ();
+  cf_.draw ();
 }
 
 pagerf[string (keys->CTRL_l)] = &reread;

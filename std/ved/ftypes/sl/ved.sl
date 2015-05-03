@@ -1,5 +1,5 @@
 ineed ("initfunctions");
-ineed ("txt_settype");
+ineed ("sl_settype");
 
 set_img ();
 
@@ -38,7 +38,7 @@ vedloop = &_vedloop_;
 
 define ved (s, fname, rows)
 {
-  txt_settype (s, fname, rows, NULL);
+  sl_settype (s, fname, rows, NULL);
 
   cf_ = s;
  

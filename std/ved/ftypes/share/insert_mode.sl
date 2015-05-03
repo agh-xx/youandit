@@ -1,12 +1,3 @@
-typedef struct
-  {
-  chr,
-  lnr,
-  prev_l,
-  next_l,
-  modified,
-  } Insert_Type;
-
 variable insfuncs = struct
   {
   cr,
@@ -20,10 +11,46 @@ variable insfuncs = struct
   del_prev,
   del_next,
   ins_char,
+  ins_tab,
   completeline,
   };
 
 define insert ();
+
+private define ins_tab (s, line)
+{
+  @line = substr (@line, 1, cf_._index) + repeat (" ", cf_._shiftwidth)  + substr (@line, cf_._index + 1, - 1);
+
+  cf_._index += cf_._shiftwidth;
+
+  s.modified = 1;
+
+  if (strlen (@line) < cf_._maxlen && cf_.ptr[1] + cf_._shiftwidth < cf_._maxlen)
+    {
+    cf_.ptr[1] += cf_._shiftwidth;
+    waddline (getlinestr (@line, 1), 0, cf_.ptr[0]);
+    draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
+    return;
+    }
+
+  is_wrapped_line = 1;
+
+  variable i = 0;
+  if (cf_.ptr[1] < cf_._maxlen)
+    while (cf_.ptr[1]++, i++, (cf_.ptr[1] < cf_._maxlen && i < cf_._shiftwidth));
+  else
+    i = 0;
+  
+  cf_._findex += (cf_._shiftwidth - i);
+
+  variable
+    lline = getlinestr (@line, cf_._findex + 1 - cf_._indent);
+
+  waddline (lline, 0, cf_.ptr[0]);
+  draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
+}
+
+insfuncs.ins_tab = &ins_tab;
 
 private define ins_char (s, line)
 {
@@ -33,16 +60,18 @@ private define ins_char (s, line)
 
   s.modified = 1;
 
-  if (strlen (@line) < cf_._maxlen || cf_.ptr[1] < cf_._maxlen)
+  if (strlen (@line) < cf_._maxlen && cf_.ptr[1] < cf_._maxlen)
     {
     cf_.ptr[1]++;
     waddline (getlinestr (@line, 1), 0, cf_.ptr[0]);
-    draw_tail (;chr = s.chr);
+    draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
     return;
     }
-
+  
   is_wrapped_line = 1;
-  cf_._findex++;
+  
+  if (cf_.ptr[1] == cf_._maxlen)
+    cf_._findex++;
 
   variable
     lline = getlinestr (@line, cf_._findex + 1 - cf_._indent);
@@ -51,7 +80,7 @@ private define ins_char (s, line)
     cf_.ptr[1]++;
 
   waddline (lline, 0, cf_.ptr[0]);
-  draw_tail (;chr = s.chr);
+  draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
 }
 
 insfuncs.ins_char = &ins_char;
@@ -89,7 +118,7 @@ private define del_prev (s, line)
 
     cf_._i = cf_._ii;
 
-    s_.draw ();
+    cf_.draw ();
 
     len = strlen (@line);
     if (len > cf_._maxlen)
@@ -144,8 +173,8 @@ private define del_prev (s, line)
     lline = substr (@line, cf_._index + 1, -1);
     waddlineat (lline, 0, cf_.ptr[0], cf_.ptr[1], cf_._maxlen);
     }
-
-  draw_tail (;chr = decode (substr (@line, cf_._index, 1))[0]);
+  
+  draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
 
   s.modified = 1;
 }
@@ -165,7 +194,7 @@ private define del_next (s, line)
           cf_.lines = cf_.lines[wherenot (_isnull (cf_.lines))];
           cf_._len--;
           cf_._i = cf_._ii;
-          s_.draw ();
+          cf_.draw ();
           s.modified = 1;
           waddline (getlinestr (@line, 1), 0, cf_.ptr[0]);
           draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
@@ -191,7 +220,7 @@ private define del_next (s, line)
       cf_.lines = cf_.lines[wherenot (_isnull (cf_.lines))];
       cf_._len--;
       cf_._i = cf_._ii;
-      s_.draw ();
+      cf_.draw ();
       s.modified = 1;
       if (is_wrapped_line)
         waddline (getlinestr (@line, cf_._findex + 1 - cf_._indent), 0, cf_.ptr[0]);
@@ -395,7 +424,7 @@ private define down (s, line)
       ? decode (substr (@line, cf_._index, 1))[0]
       : decode (substr (@line, cf_._indent + 1, 1))[0]
     : ' ';
-  s_.draw (;chr = chr);
+  cf_.draw (;chr = chr);
 }
 
 insfuncs.down = &down;
@@ -458,7 +487,7 @@ private define up (s, line)
       : decode (substr (@line, cf_._indent + 1, 1))[0]
     : ' ';
 
-  s_.draw (;chr = chr);
+  cf_.draw (;chr = chr);
 }
 
 insfuncs.up = &up;
@@ -506,7 +535,7 @@ private define cr (s, line)
 
     cf_._len++;
  
-    s_.draw ();
+    cf_.draw ();
     
     @line = repeat (" ", cf_._indent) + @line; 
     waddline (@line, 0, cf_.ptr[0]);
@@ -638,6 +667,12 @@ private define getline (self, line)
       self.del_next (line);
       continue;
       }
+    
+    if ('\t' == self.chr)
+      {
+      self.ins_tab (line);
+      continue;
+      }
 
     if (' ' <= self.chr <= 126 || 902 <= self.chr <= 974)
       {
@@ -658,6 +693,7 @@ define insert (line, lnr, prev_l, next_l)
   self.modified = qualifier_exists ("modified");
   self.prev_l = prev_l;
   self.next_l = next_l;
- 
+  
+  draw_tail (); 
   getline (self, line;;__qualifiers ());
 }

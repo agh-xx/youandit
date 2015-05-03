@@ -51,7 +51,7 @@ private define v_l_up (s)
   if (cf_.ptr[0] == cf_.vlins[0]) %for now FIXME
     {
     cf_._i--;
-    s_.draw ();
+    cf_.draw ();
 
     s.lines = [v_lin ('.'), s.lines];
     s.lnrs = [s.lnrs[0] - 1, s.lnrs];
@@ -94,7 +94,7 @@ private define v_l_down (s)
     {
     cf_._i++;
  
-    s_.draw ();
+    cf_.draw ();
     s.lines = [s.lines, v_lin ('.')];
     s.lnrs = [s.lnrs, s.lnrs[-1] + 1];
     s.vlins--;
@@ -179,7 +179,7 @@ private define v_linewise_mode (s)
         }
       
       set_modified ();
-      s_.draw ();
+      cf_.draw ();
       return 0;
       }
     }
@@ -358,7 +358,7 @@ private define v_atexit (s, draw)
     cf_.ptr[1] = s.col[0];
     cf_._index = s.index;
     
-    s_.draw ();
+    cf_.draw ();
     }
 }
 

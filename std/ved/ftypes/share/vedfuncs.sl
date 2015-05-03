@@ -1,13 +1,13 @@
-define getlines (cf)
+define getlines (fname, indent, st)
 {
-  variable indent = repeat (" ", cf._indent);
-  if (-1 == access (cf._fname, F_OK) || 0 == cf.st_.st_size)
+  indent = repeat (" ", indent);
+  if (-1 == access (fname, F_OK) || 0 == st.st_size)
     {
-    cf.st_.st_size = 0;
+    st.st_size = 0;
     return [sprintf ("%s\000", indent)];
     }
 
-  return array_map (String_Type, &sprintf, "%s%s", indent, readfile (cf_._fname));
+  return array_map (String_Type, &sprintf, "%s%s", indent, readfile (fname));
 }
 
 define debug (str, get)
