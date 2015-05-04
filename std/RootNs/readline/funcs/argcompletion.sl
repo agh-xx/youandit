@@ -88,7 +88,7 @@ define main (self)
         {
         srv->send_msg (sprintf ("\ttype should be a %s [tab for completion in the top line]", type[0]), 0);
         self.my_prompt ();
-        
+ 
         if ("device" == type[0])
           tmp = qualifier ("pat", "/dev/sd");
         else if ("mountpoint" == type[0])

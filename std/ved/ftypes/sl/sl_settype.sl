@@ -1,5 +1,11 @@
+define sl_lexicalhl ();
+
+ineed ("sl_syntax");
+
 define sl_settype (s, fname, rows, lines)
 {
+  s.lexicalhl = &sl_lexicalhl;
+
   s._maxlen = COLUMNS;
   s._fname = fname;
   s.st_ = stat_file (s._fname);
@@ -38,4 +44,5 @@ define sl_settype (s, fname, rows, lines)
   s.undoset = {};
 
   s._i = 0;
+
 }

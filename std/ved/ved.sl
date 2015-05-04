@@ -259,7 +259,7 @@ private define parse_args ()
     FILE = CW.buffers[CW.cur.frame].fname;
   else
     FILE = ();
-  
+ 
   variable exists = check_file (FILE, ISSUDO);
 
   if (-1 == exists)
@@ -282,7 +282,7 @@ private define connect_to_child (p, sockaddr)
     () = kill (p.pid, SIGKILL);
     return;
     }
-  
+ 
   cb._state = cb._state | CONNECTED;
 
   variable retval;
@@ -345,7 +345,7 @@ private define _ved_ ()
 
   if (NULL == p)
     return;
-   
+ 
   FTYPE = qualifier ("ftype");
   if (NULL == FTYPE)
     FTYPE = get_ftype (FILE);
@@ -374,7 +374,7 @@ define ved ()
 define vedsudo ()
 {
   ISSUDO = 1;
-  
+ 
   variable args = __pop_list (_NARGS);
   _ved_ (__push_list (args);;__qualifiers ());
 

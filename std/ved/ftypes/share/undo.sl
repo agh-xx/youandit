@@ -40,13 +40,13 @@ private define undo ()
     retval,
     in,
     d;
-  
+ 
   if (0 == cf_._undolevel)
     {
     cf_.lines = getlines (cf_._fname, cf_._indent, cf_.st_);
     cf_._len = length (cf_.lines) - 1;
     cf_._i = cf_._ii;
-    cf_.draw (); 
+    cf_.draw ();
     return;
     }
 

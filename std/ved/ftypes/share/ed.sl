@@ -21,7 +21,7 @@ private define indent_in ()
   cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
   cf_.lines[i] = line;
   cf_.ptr[1] -= i_;
-  cf_._index -= i_; 
+  cf_._index -= i_;
 
   if (0 > cf_.ptr[1] - cf_._indent)
     cf_.ptr[1] = cf_._indent;
@@ -142,7 +142,7 @@ private define del_word (what)
     return;
  
   word = (@func) (line, col, &start, &end);
-  
+ 
   REG["\""] = word;
 
   line = sprintf ("%s%s", substr (line, 1, start), substr (line, end + 2, -1));
@@ -244,7 +244,7 @@ private define del ()
       cf_.draw ();
       return;
       }
-    
+ 
     if ('w' == chr)
       {
       del_word ('w');
@@ -256,7 +256,7 @@ private define del ()
       del_word ('W');
       return;
       }
-    
+ 
     }
 }
 
@@ -296,7 +296,7 @@ private define del_to_end ()
 
     return;
     }
-  
+ 
   variable reg = substr (line, col, -1);
   if (strlen (line))
     REG["\""] = reg;
@@ -356,7 +356,8 @@ private define edit_line ()
   else
     lline = line;
 
-  waddlineat_dr (substr (line, 1, cf_._maxlen), 0, cf_.ptr[0], 0, [cf_.ptr[0], cf_.ptr[1]], COLUMNS);
+  waddline (lline, 0, cf_.ptr[0]);
+  srv->refresh ();
 
   if ('C' == cf_._chr)
     insert (&line, lnr, prev_l, next_l;modified);
@@ -438,12 +439,12 @@ private define Put ()
     }
   else
     cf_.lines[lnr] = substr (cf_.lines[lnr], 1, cf_._index) + strjoin (lines) +
-      substr (cf_.lines[lnr], cf_._index + 1, -1); 
+      substr (cf_.lines[lnr], cf_._index + 1, -1);
 
   cf_._i = lnr == 0 ? 0 : cf_._ii;
  
   cf_.st_.st_size = calcsize (cf_.lines);
-  
+ 
   set_modified ();
  
   cf_.draw ();
@@ -466,12 +467,12 @@ private define put ()
     }
   else
     cf_.lines[lnr] = substr (cf_.lines[lnr], 1, cf_._index + 1) + strjoin (lines) +
-      substr (cf_.lines[lnr], cf_._index + 2, -1); 
+      substr (cf_.lines[lnr], cf_._index + 2, -1);
 
   cf_._i = lnr == 0 ? 0 : cf_._ii;
-  
+ 
   cf_.st_.st_size = calcsize (cf_.lines);
-  
+ 
   set_modified ();
  
   cf_.draw ();
@@ -491,14 +492,14 @@ private define toggle_case ()
   func = islower (chr) ? &toupper : &tolower;
 
   chr = char ((@func) (chr));
-   
+ 
   cf_.st_.st_size -= strbytelen (line);
   line = substr (line, 1, col) + chr + substr (line, col + 2, - 1);
   cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
   cf_.lines[i] = line;
   cf_.st_.st_size += strbytelen (line);
   set_modified ();
-  
+ 
   waddline (getlinestr (line, 1), 0, cf_.ptr[0]);
 
   if (cf_._index - cf_._indent == v_linlen (cf_.ptr[0]) - 1)

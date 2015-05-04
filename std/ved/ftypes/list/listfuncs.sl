@@ -5,7 +5,7 @@ private variable
   prev_fn = NULL,
   defrows = {[1:LINES - 9], [LINES - 8:LINES - 3]};
 
-private define add (s, rows)
+private define add (self, s, rows)
 {
   if (assoc_key_exists (fnames, s.fname))
     return exists;
@@ -28,9 +28,9 @@ private define add (s, rows)
     return 0;
     }
 
-  fnames[s.fname] = @Ftype_Type;
+  fnames[s.fname] = self;
   c = fnames[s.fname];
-  
+ 
   variable len = length (rows);
  
   c.rows = rows;
@@ -88,6 +88,7 @@ private define set_cf (fname)
   cf_.clrs[-1] = INFOCLRFG;
   IMG[cf_.rows[-1]][1] = INFOCLRFG;
   srv->set_color_in_region (INFOCLRFG, cf_.rows[-1], 0, 1, COLUMNS);
+  topline_dr (" -- PAGER --");
 }
 
 private define getitem ()
@@ -125,10 +126,10 @@ private define drawfile ()
 
   togglecur ();
  
-  variable retval = add (l, defrows[0]);
+  variable retval = add (NULL, l, defrows[0]);
 
   set_cf (l.fname);
-  
+ 
   if (exists == retval)
     {
     cf_._i = cf_._len >= l.lnr - 1 ? l.lnr - 1 : 0;
@@ -137,7 +138,7 @@ private define drawfile ()
     cf_._findex = cf_._indent;
     cf_._index = cf_.ptr[1];
     }
-
+ 
   cf_.draw ();
 }
 
@@ -175,7 +176,7 @@ private define myquit ()
  
     if ('n' == chr)
       continue;
-    
+ 
     variable retval = writetofile (cf_._fname, cf_.lines, cf_._indent);
     ifnot (0 == retval)
       {
@@ -194,8 +195,6 @@ private define myquit ()
 clinef["q"] = &myquit;
 clinef["q!"] = &myquit;
 
-pagerc = array_map (Integer_Type, &integer, assoc_get_keys (pagerf));
-
 lpagerf[string ('\r')] = &drawfile;
 lpagerf[string (keys->CTRL_w)] = &chframe;
 
@@ -213,7 +212,7 @@ define ved (s, fname, rows)
     col = 0,
     };
 
-  () = add (mys, defrows[1];row = defrows[1][0], col = 0);
+  () = add (s, mys, defrows[1];row = defrows[1][0], col = 0);
 
   set_cf (mys.fname);
   prev_fn = mys.fname;
@@ -240,6 +239,6 @@ define ved (s, fname, rows)
     return;
 
   topline_dr (" -- PAGER --");
-  
+ 
   (@vedloop) (s);
 }

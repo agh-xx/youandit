@@ -61,7 +61,7 @@ private define v_l_up (s)
     v_hl_line (s);
     return;
     }
-  
+ 
   cf_.ptr[0]--;
 
   if (s.lnrs[-1] > s.startrow)
@@ -131,7 +131,7 @@ private define v_linewise_mode (s)
 {
   variable
     chr;
-  
+ 
   s.linlen = [strlen (s.lines[0])];
 
   v_hl_line (s);
@@ -170,14 +170,14 @@ private define v_linewise_mode (s)
       cf_.ptr[1] = cf_._indent;
       cf_._index = cf_._indent;
       cf_._findex = cf_._indent;
-      
+ 
       if (-1 == cf_._len)
-        { 
+        {
         variable indent = repeat (" ", cf_._indent);
         cf_.lines = [sprintf ("%s\000", indent)];
         cf_._len = 0;
         }
-      
+ 
       set_modified ();
       cf_.draw ();
       return 0;
@@ -195,7 +195,7 @@ private define v_c_left (s, cur)
 
   if (-1 == retval)
     return;
-  
+ 
   s.index[cur]--;
 
   if (retval)
@@ -213,13 +213,13 @@ private define v_c_left (s, cur)
     }
 
 
-  if (cf_.ptr[1] < s.startcol[cur]) 
+  if (cf_.ptr[1] < s.startcol[cur])
     s.col[cur] = cf_.ptr[1];
   else
     s.col[cur] = s.startcol[cur];
 
 % if (cf_.ptr[1])
-%   if (cf_.ptr[1] < s.startcol[cur]) 
+%   if (cf_.ptr[1] < s.startcol[cur])
 %     if (is_wrapped_line)
 %       s.col[cur] = s.startcol[cur] - s.wrappedmot;
 %     else
@@ -260,7 +260,7 @@ private define v_c_left (s, cur)
       ? s.startcol[cur] - s.wrappedmot
       : s.startcol[cur];
 
-  if (s.index[cur] >= s.startindex[cur]) 
+  if (s.index[cur] >= s.startindex[cur])
     s.sel[cur] = substr (s.sel[cur], 1, strlen (s.sel[cur]) - 1);
   else
     s.sel[cur] = substr (s.lines[cur], s.index[cur] + 1, 1) + s.sel[cur];
@@ -276,8 +276,8 @@ private define v_c_right (s, cur)
 
   if (-1 == retval)
     return;
-  
-  s.index[cur]++; 
+ 
+  s.index[cur]++;
 
   if (retval)
     {
@@ -292,8 +292,8 @@ private define v_c_right (s, cur)
     : is_wrapped_line
       ? s.startcol[cur] - s.wrappedmot
       : s.startcol[cur];
-  
-  if (s.index[cur] <= s.startindex[cur]) 
+ 
+  if (s.index[cur] <= s.startindex[cur])
     s.sel[cur] = substr (s.sel[cur], 2, -1);
   else
     s.sel[cur] += substr (s.lines[cur], s.index[cur] + 1, 1);
@@ -308,7 +308,7 @@ private define v_char_mode (s)
   variable
     chr,
     cur = 0;
-  
+ 
   s.startcol = [s.col[0]];
   s.startindex = [s.index];
   s.index = [s.index];
@@ -351,13 +351,13 @@ vis.c_mode = &v_char_mode;
 private define v_atexit (s, draw)
 {
   topline ("-- pager --");
-  
+ 
   if (draw)
     {
     cf_._i = cf_._ii;
     cf_.ptr[1] = s.col[0];
     cf_._index = s.index;
-    
+ 
     cf_.draw ();
     }
 }

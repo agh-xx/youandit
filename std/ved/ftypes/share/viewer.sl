@@ -190,12 +190,12 @@ define p_left ()
  
     ifnot (cf_._findex)
       is_wrapped_line = 0;
-      
+ 
     return 1;
     }
 
   cf_.ptr[1]--;
-  
+ 
   return 0;
 }
 
@@ -203,7 +203,7 @@ variable i = 0;
 private define left ()
 {
   variable retval = p_left ();
-  
+ 
   if (-1 == retval)
     return;
 
@@ -235,7 +235,7 @@ define p_right (linlen)
  
   cf_._index++;
   cf_._findex++;
-  
+ 
   return 1;
 }
 
@@ -389,7 +389,7 @@ private define word_change_case (what)
     col = cf_._index,
     i = v_lnr ('.'),
     line = v_lin ('.');
-  
+ 
   word = find_word (line, col, &start, &end);
 
   variable ar = decode (word);

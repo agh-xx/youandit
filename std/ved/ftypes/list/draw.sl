@@ -48,6 +48,6 @@ define draw ()
  
   _for i (0, length (ar) - 1)
     IMG[cf_.rows[i]] = {[ar[i]], [cf_.clrs[i]], [cf_.rows[i]], [cf_.cols[i]]};
-  
+ 
   waddlinear_dr (ar, cf_.clrs, cf_.rows, cf_.cols, [cf_.ptr[0], cf_.ptr[1]], COLUMNS);
 }

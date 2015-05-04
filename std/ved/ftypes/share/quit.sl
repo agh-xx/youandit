@@ -45,7 +45,7 @@ define quit ()
       return;
       }
     }
-  
+ 
   if (flags & MODIFIED)
     {
     variable retval = writetofile (file, cf_.lines, cf_._indent);

@@ -35,27 +35,27 @@ define getpage (page)
     {
     p = proc->init (0, 1, 0);
     p.stdout.file = fname;
-    
+ 
     status = p.execv ([gzip, "-dc", page], NULL);
-    
+ 
     p = proc->init (0, 1, 1);
-    p.stdout.file = outfn; 
+    p.stdout.file = outfn;
     p.stderr.file = errfn;
-    
+ 
     status = p.execv ([groff, "-Tutf8", "-m", "man", fname], NULL);
     }
   else
     {
     fname = page;
     p = proc->init (0, 1, 1);
-    p.stdout.file = outfn; 
+    p.stdout.file = outfn;
     p.stderr.file = errfn;
-    
+ 
     status = p.execv ([groff, "-Tutf8", "-m", "man", fname], NULL);
     }
 
   ar = readfile (errfn);
-  
+ 
   errfn = STDERR;
 
   if (length (ar))
@@ -90,7 +90,7 @@ define getpage (page)
         p = proc->init (0, 1, 1);
         p.stdout.file = matchfn;
         p.stderr.file = errfn;
-        
+ 
         status = p.execv ([gzip, "-dc", page], NULL);
         }
       else
@@ -100,7 +100,7 @@ define getpage (page)
     p = proc->init (0, 1, 1);
     p.stdout.file = outfn;
     p.stderr.file = errfn;
-   
+ 
     status = p.execv ([groff, "-Tutf8", "-m", "man", "-I", MYMANDIR, fname], NULL);
     _for i (0, length (manpages) - 1)
       {
@@ -109,12 +109,12 @@ define getpage (page)
       () = remove (sprintf ("%s/%s", MYMANDIR, match));
       }
     }
-  
+ 
   p = proc->init (1, 1, 1);
   p.stderr.file = errfn;
   p.stdout.file = colfn;
   p.stdin.file = outfn;
-  
+ 
   status = p.execv ([col, "-b"], NULL);
 
   return readfile (colfn), status.exit_status;
@@ -190,7 +190,7 @@ define main ()
     fs.walk (MANDIR);
     ulist = list_to_array (ulist, String_Type);
     ulist = ulist[where ("man" == array_map (String_Type,  &substr, ulist, lu + 1, 3))];
-    
+ 
     variable list = [llist, ulist];
 
     _for i (0, length (list) - 1)

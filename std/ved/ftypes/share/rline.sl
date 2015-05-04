@@ -75,7 +75,7 @@ private define write_file ()
         }
       }
     }
-  
+ 
   variable retval = writetofile (file, cf_.lines, cf_._indent);
  
   ifnot (0 == retval)
@@ -111,7 +111,7 @@ private define edit_other ()
 %  BUFFERS[key].vedloop = vedloop;
 %  variable args = __pop_list (_NARGS);
 %  variable fn = args[0];
-%  add_buffer (fn); 
+%  add_buffer (fn);
 %  debug (key, 1);
 }
 

@@ -66,13 +66,15 @@ import ("socket");
 import ("fork");
 import ("pcre");
 
-$1 = socket (PF_UNIX, SOCK_STREAM, 0);
-bind ($1, VED_SOCKADDR);
-listen ($1, 1);
-VED_SOCKET = accept (__tmp ($1));
-
-VEDPROC._fd = VED_SOCKET;
-VEDPROC._state = VEDPROC._state | CONNECTED;
+ifnot (VEDPROC._inited)
+  {
+  $1 = socket (PF_UNIX, SOCK_STREAM, 0);
+  bind ($1, VED_SOCKADDR);
+  listen ($1, 1);
+  VED_SOCKET = accept (__tmp ($1));
+  VEDPROC._fd = VED_SOCKET;
+  VEDPROC._state = VEDPROC._state | CONNECTED;
+  }
 
 try
   {

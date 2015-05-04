@@ -21,7 +21,7 @@ define main (self, fname, gotopager)
 
   p.stderr.file = fname;
   p.stderr.wr_flags = ">>";
-  
+ 
   variable status = p.execve (argv, env, NULL);
 
   if (NULL == status)

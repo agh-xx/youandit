@@ -30,7 +30,7 @@ typedef struct
   ved,
   draw,
   mainloop,
-  parsearray,
+  lexicalhl,
   } Ftype_Type;
 
 typedef struct
@@ -91,6 +91,8 @@ private define draw (t)
   return __get_reference (sprintf ("%s", _function_name ()));
 }
 
+private define lexicalhl ();
+
 define init_ftype (ftype)
 {
   variable type = @Ftype_Type;
@@ -106,6 +108,7 @@ define init_ftype (ftype)
   type.ved = ved (ftype);
   type.draw = draw (ftype);
   type.quit = quit (ftype);
+  type.lexicalhl = &lexicalhl;
 
   return type;
 }

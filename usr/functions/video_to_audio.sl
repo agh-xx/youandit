@@ -244,7 +244,7 @@ define main ()
 
   srv->send_msg_and_refresh ("press q to to stop converting", 1);
 
-  variable status = p.execv (argv, NULL); 
+  variable status = p.execv (argv, NULL);
 
   srv->send_msg_and_refresh (" ", 0);
 

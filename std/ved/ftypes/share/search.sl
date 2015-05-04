@@ -130,7 +130,7 @@ private define search_forward (str)
       pos = [qualifier ("row", PROMPTROW),  col];
       if (qualifier_exists ("context"))
         pos[1] = match[1];
-      
+ 
       waddlinear_dr (ar, clrs, rows, cols, pos, COLUMNS);
 
       lnr = i;

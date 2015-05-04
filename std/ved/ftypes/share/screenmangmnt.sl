@@ -6,11 +6,13 @@ define waddlineat_dr (line, clr, row, col, pos, len)
 define waddlineat (line, clr, row, col, len)
 {
   srv->write_nstr (line, clr, row, col, len);
+  cf_.lexicalhl ([line], [row]);
 }
 
 define waddline (line, clr, row)
 {
   waddlineat (line, clr, row, cf_._indent, cf_._linlen);
+  cf_.lexicalhl ([line], [row]);
 }
 
 define waddlinear (ar, clrs, rows, cols, len)

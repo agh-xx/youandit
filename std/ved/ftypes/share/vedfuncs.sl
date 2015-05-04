@@ -39,7 +39,7 @@ define clear (frow, lrow)
   ar[*] = " ";
   cols[*] = 0;
   clrs[*] = 0;
-  
+ 
   waddlinear_dr (ar, clrs, rows, cols, pos, COLUMNS);
 }
 
@@ -86,30 +86,27 @@ define restore (cmp_lnrs, pos)
       rows = [rows, IMG[i][2]];
       cols = [cols, IMG[i][3]];
       }
-  
+ 
   waddlinear_dr (ar, clrs, rows, cols, pos, COLUMNS);
+}
+
+private define _topline_ (str)
+{
+  variable t = strftime ("[%a %d %b %I:%M:%S]");
+  @str += sprintf (" ftype (%s) LANG (%s) ", cf_._type, GETCH_LANG == GET_CHAR ? "eng" : "el");
+  @str + repeat (" ", COLUMNS - strlen (@str) - strlen (t)) + t;
 }
 
 define topline_dr (str)
 {
-  variable
-    t = strftime ("[%a %d %b %I:%M:%S]");
-
-  str += sprintf (" LANG (%s) ", GETCH_LANG == GET_CHAR ? "eng" : "el");
-
-  waddlineat_dr (str + repeat (" ", COLUMNS - strlen (str) - strlen (t)) + t,
-    16, 0, 0, [cf_.ptr[0], cf_.ptr[1]], COLUMNS);
+  _topline_ (&str);
+  waddlineat_dr (str, 16, 0, 0, [cf_.ptr[0], cf_.ptr[1]], COLUMNS);
 }
 
 define topline (str)
 {
-  variable
-    t = strftime ("[%a %d %b %I:%M:%S]");
-  
-  str += sprintf (" LANG (%s) ", GETCH_LANG == GET_CHAR ? "eng" : "el");
-
-  waddlineat (str + repeat (" ", COLUMNS - strlen (str) - strlen (t)) + t,
-    16, 0, 0, COLUMNS);
+  _topline_ (&str);
+  waddlineat (str, 16, 0, 0, COLUMNS);
 }
 
 define write_prompt (str, col)
@@ -164,7 +161,7 @@ define v_lnr (r)
 %  variable
 %    lnr = v_lnr ('.') + 1,
 %    line = v_lin ('.');
-% 
+%
 %  return sprintf (
 %    "[find %d) (ind %d) ptr1 %d len (%d), linlen %d, maxlen %d chr %d",
 %    cf_._findex, cf_._index,  cf_.ptr[1], v_linlen ('.'), cf_._linlen, cf_._maxlen,
@@ -190,7 +187,7 @@ define draw_tail ()
 {
   if (is_wrapped_line)
     srv->set_color_in_region (1, cf_.ptr[0], COLUMNS - 2, 1, 2);
-  
+ 
   waddlineat_dr (tail (;;__qualifiers ()), INFOCLRFG, cf_.rows[-1], 0, [cf_.ptr[0], cf_.ptr[1]],
     COLUMNS);
 }
@@ -215,13 +212,13 @@ define find_word (line, col, start, end)
 
     @start = col + 1;
     }
-  
+ 
   variable len = strlen (line);
 
   while (col++, col < len && any (wchars == substr (line, col + 1, 1)));
  
   @end = col - 1;
-  
+ 
   return substr (line, @start + 1, @end - @start + 1);
 }
 
@@ -235,13 +232,13 @@ define find_Word (line, col, start, end)
 
     @start = col + 1;
     }
-  
+ 
   variable len = strlen (line);
 
   while (col++, col < len && 0 == isblank (substr (line, col + 1, 1)));
  
   @end = col - 1;
-  
+ 
   return substr (line, @start + 1, @end - @start + 1);
 }
 

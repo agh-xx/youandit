@@ -40,7 +40,7 @@ private define ins_tab (s, line)
     while (cf_.ptr[1]++, i++, (cf_.ptr[1] < cf_._maxlen && i < cf_._shiftwidth));
   else
     i = 0;
-  
+ 
   cf_._findex += (cf_._shiftwidth - i);
 
   variable
@@ -67,9 +67,9 @@ private define ins_char (s, line)
     draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
     return;
     }
-  
+ 
   is_wrapped_line = 1;
-  
+ 
   if (cf_.ptr[1] == cf_._maxlen)
     cf_._findex++;
 
@@ -173,7 +173,7 @@ private define del_prev (s, line)
     lline = substr (@line, cf_._index + 1, -1);
     waddlineat (lline, 0, cf_.ptr[0], cf_.ptr[1], cf_._maxlen);
     }
-  
+ 
   draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
 
   s.modified = 1;
@@ -369,7 +369,7 @@ private define down (s, line)
 
   cf_.lins[cf_.ptr[0] - cf_.rows[0]] = @line;
   cf_.lines[s.lnr] = @line;
-  
+ 
   cf_._findex = cf_._indent;
 
   s.lnr++;
@@ -536,8 +536,8 @@ private define cr (s, line)
     cf_._len++;
  
     cf_.draw ();
-    
-    @line = repeat (" ", cf_._indent) + @line; 
+ 
+    @line = repeat (" ", cf_._indent) + @line;
     waddline (@line, 0, cf_.ptr[0]);
     draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
     cf_._index = cf_._indent;
@@ -595,7 +595,7 @@ private define getline (self, line)
       self.esc (line;;__qualifiers ());
       return;
       }
-    
+ 
     if ('\r' == self.chr)
       {
       self.cr (line;;__qualifiers ());
@@ -667,7 +667,7 @@ private define getline (self, line)
       self.del_next (line);
       continue;
       }
-    
+ 
     if ('\t' == self.chr)
       {
       self.ins_tab (line);
@@ -693,7 +693,7 @@ define insert (line, lnr, prev_l, next_l)
   self.modified = qualifier_exists ("modified");
   self.prev_l = prev_l;
   self.next_l = next_l;
-  
-  draw_tail (); 
+ 
+  draw_tail ();
   getline (self, line;;__qualifiers ());
 }

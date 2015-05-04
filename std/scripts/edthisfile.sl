@@ -35,7 +35,7 @@ define main ()
     command = [editor, fname];
  
   variable p = proc->init (0, 0, 1);
-  
+ 
   variable status = p.execv (command, NULL);
 
   if (NULL == status)
