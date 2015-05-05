@@ -19,7 +19,8 @@ define insert ();
 
 private define ins_tab (s, line)
 {
-  @line = substr (@line, 1, cf_._index) + repeat (" ", cf_._shiftwidth)  + substr (@line, cf_._index + 1, - 1);
+  @line = substr (@line, 1, cf_._index) + repeat (" ", cf_._shiftwidth) +
+    substr (@line, cf_._index + 1, - 1);
 
   cf_._index += cf_._shiftwidth;
 
@@ -118,7 +119,7 @@ private define del_prev (s, line)
 
     cf_._i = cf_._ii;
 
-    cf_.draw ();
+    cf_.draw (;dont_draw);
 
     len = strlen (@line);
     if (len > cf_._maxlen)
@@ -194,7 +195,7 @@ private define del_next (s, line)
           cf_.lines = cf_.lines[wherenot (_isnull (cf_.lines))];
           cf_._len--;
           cf_._i = cf_._ii;
-          cf_.draw ();
+          cf_.draw (;dont_draw);
           s.modified = 1;
           waddline (getlinestr (@line, 1), 0, cf_.ptr[0]);
           draw_tail (;chr = decode (substr (@line, cf_._index + 1, 1))[0]);
@@ -220,7 +221,7 @@ private define del_next (s, line)
       cf_.lines = cf_.lines[wherenot (_isnull (cf_.lines))];
       cf_._len--;
       cf_._i = cf_._ii;
-      cf_.draw ();
+      cf_.draw (;dont_draw);
       s.modified = 1;
       if (is_wrapped_line)
         waddline (getlinestr (@line, cf_._findex + 1 - cf_._indent), 0, cf_.ptr[0]);
@@ -535,7 +536,7 @@ private define cr (s, line)
 
     cf_._len++;
  
-    cf_.draw ();
+    cf_.draw (;dont_draw);
  
     @line = repeat (" ", cf_._indent) + @line;
     waddline (@line, 0, cf_.ptr[0]);
@@ -543,7 +544,7 @@ private define cr (s, line)
     cf_._index = cf_._indent;
     cf_._findex = cf_._indent;
 
-    insert (line, s.lnr + 1, prev_l, next_l;modified);
+    insert (line, s.lnr + 1, prev_l, next_l;modified, dont_draw_tail);
     }
 }
 
@@ -592,13 +593,13 @@ private define getline (self, line)
 
     if (033 == self.chr)
       {
-      self.esc (line;;__qualifiers ());
+      self.esc (line);
       return;
       }
  
     if ('\r' == self.chr)
       {
-      self.cr (line;;__qualifiers ());
+      self.cr (line);
       return;
       }
 
@@ -684,7 +685,7 @@ private define getline (self, line)
 
 define insert (line, lnr, prev_l, next_l)
 {
-  topline_dr (" -- INSERT --");
+  topline (" -- INSERT --");
 
   variable
     self = @Insert_Type;
@@ -693,7 +694,9 @@ define insert (line, lnr, prev_l, next_l)
   self.modified = qualifier_exists ("modified");
   self.prev_l = prev_l;
   self.next_l = next_l;
- 
-  draw_tail ();
-  getline (self, line;;__qualifiers ());
+
+  ifnot (qualifier_exists ("dont_draw_tail")) 
+    draw_tail ();
+
+  getline (self, line);
 }

@@ -44,6 +44,7 @@ define ved (s, fname, rows)
  
   set_img ();
   write_prompt (" ", 0);
+
   s.draw ();
 
   variable func = get_func ();

@@ -21,10 +21,10 @@ private define add (self, s, rows)
     ineed (sprintf ("%s_settype", ftype));
     variable func = __get_reference (sprintf ("%s_settype", ftype));
     (@func) (c, s.fname, rows, NULL);
-    c._indent = qualifier ("indent", 0);
     c._i = c._len >= s.lnr - 1 ? s.lnr - 1 : 0;
-    c.ptr[0] = qualifier ("row", 1);
-    c.ptr[1] = qualifier ("col", s.col - 1);
+    c.ptr[0] = 1;
+    c.ptr[1] = s.col - 1 + c._indent;
+    c._index = c.ptr[1];
     return 0;
     }
 
@@ -134,7 +134,7 @@ private define drawfile ()
     {
     cf_._i = cf_._len >= l.lnr - 1 ? l.lnr - 1 : 0;
     cf_.ptr[0] = 1;
-    cf_.ptr[1] = l.col - 1;
+    cf_.ptr[1] = l.col - 1 + cf_._indent;
     cf_._findex = cf_._indent;
     cf_._index = cf_.ptr[1];
     }

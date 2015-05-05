@@ -1,5 +1,10 @@
 ineed ("insert_mode");
 
+private define newline_str (s)
+{
+  return repeat (" ", s._indent + (s._autoindent ? s._shiftwidth : 0)); 
+}
+
 private define indent_in ()
 {
   variable
@@ -356,8 +361,11 @@ private define edit_line ()
   else
     lline = line;
 
-  waddline (lline, 0, cf_.ptr[0]);
-  srv->refresh ();
+  if (strlen (lline))
+    {
+    waddline (lline, 0, cf_.ptr[0]);
+    srv->refresh ();
+    }
 
   if ('C' == cf_._chr)
     insert (&line, lnr, prev_l, next_l;modified);
@@ -395,9 +403,9 @@ private define newline ()
   cf_._len++;
 
   if (0 == lnr && "prev" == dir)
-    cf_.lines = [" ", cf_.lines];
+    cf_.lines = [repeat (" ", newline_str (cf_)), cf_.lines];
   else
-    cf_.lines = [cf_.lines[[:"next" == dir ? lnr : lnr - 1]], " ",
+    cf_.lines = [cf_.lines[[:"next" == dir ? lnr : lnr - 1]], newline_str (cf_),
       cf_.lines[["next" == dir ? lnr + 1 : lnr:]]];
 
   cf_._i = lnr == 0 ? 0 : cf_._ii;
@@ -408,13 +416,13 @@ private define newline ()
     else
       cf_.ptr[0]++;
 
-  cf_.ptr[1] = cf_._indent;
-  cf_._index = cf_._indent;
-  cf_._findex = cf_._indent;
+  cf_.ptr[1] = cf_._indent + (cf_._autoindent ? cf_._shiftwidth : 0);
+  cf_._index = cf_._indent + (cf_._autoindent ? cf_._shiftwidth : 0);
+  cf_._findex = cf_._indent + (cf_._autoindent ? cf_._shiftwidth : 0);
  
-  cf_.draw ();
+  cf_.draw (;dont_draw);
  
-  line = repeat (" ", cf_._indent);
+  line = newline_str (cf_);
   insert (&line, "next" == dir ? lnr + 1 : lnr, prev_l, next_l;;__qualifiers ());
 }
 
@@ -528,3 +536,4 @@ pagerf[string ('r')] = &chang_chr;
 pagerf[string ('J')] = &join_line;
 pagerf[string ('>')] = &indent_out;
 pagerf[string ('<')] = &indent_in;
+

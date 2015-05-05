@@ -5,9 +5,11 @@ ineed ("sl_syntax");
 define sl_settype (s, fname, rows, lines)
 {
   s.lexicalhl = &sl_lexicalhl;
-
+  
+  s._autoindent = 1;
   s._maxlen = COLUMNS;
   s._fname = fname;
+
   s.st_ = stat_file (s._fname);
   if (NULL == s.st_)
     s.st_ = struct

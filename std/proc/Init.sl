@@ -8,7 +8,7 @@ typedef struct
   execve,
   atexit,
   connect,
-  } ProcType;
+  } Proc_Type;
 
 typedef struct
   {
@@ -20,7 +20,7 @@ typedef struct
   read,
   write,
   wr_flags,
-  } DescrType;
+  } Descr_Type;
 
 private define parse_flags (fd)
 {
@@ -216,16 +216,16 @@ private define _execve (s, argv, env, fg)
 define init (in, out, err)
 {
   variable
-    p = @ProcType;
+    p = @Proc_Type;
 
   if (in)
-    p.stdin = @DescrType;
+    p.stdin = @Descr_Type;
 
   if (out)
-    p.stdout = @DescrType;
+    p.stdout = @Descr_Type;
 
   if (err)
-    p.stderr = @DescrType;
+    p.stderr = @Descr_Type;
 
   p.atexit = &atexit;
   p.connect = &connect_to_socket;

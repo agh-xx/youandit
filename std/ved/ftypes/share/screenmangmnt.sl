@@ -38,4 +38,3 @@ define send_msg (str, clr)
 {
   waddlineat (str, clr, MSGROW, 0, COLUMNS);
 }
-

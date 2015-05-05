@@ -394,6 +394,7 @@ private define search_word ()
 
         cf_._i = lnr;
         cf_.ptr[0] = cf_.rows[0];
+        cf_.ptr[1] = cf_._indent;
         cf_._index = cf_._indent;
         cf_._findex = cf_._indent;
         cf_.draw ();

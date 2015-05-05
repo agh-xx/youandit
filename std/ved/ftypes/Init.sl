@@ -15,6 +15,7 @@ typedef struct
   _index,
   _shiftwidth,
   _undolevel,
+  _autoindent,
   undo,
   undoset,
   ptr,
@@ -109,6 +110,7 @@ define init_ftype (ftype)
   type.draw = draw (ftype);
   type.quit = quit (ftype);
   type.lexicalhl = &lexicalhl;
+  type._autoindent = 0;
 
   return type;
 }

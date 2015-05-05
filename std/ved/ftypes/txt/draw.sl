@@ -1,3 +1,5 @@
+private variable func = [&srv->gotorc_draw, &srv->gotorc];
+
 define draw (s)
 {
   if (-1 == cf_._len)
@@ -52,5 +54,8 @@ define draw (s)
   _for i (0, length (ar) - 1)
     IMG[cf_.rows[i]] = {[ar[i]], [cf_.clrs[i]], [cf_.rows[i]], [cf_.cols[i]]};
 
-  waddlinear_dr (ar, cf_.clrs, cf_.rows, cf_.cols, [cf_.ptr[0], cf_.ptr[1]], COLUMNS);
+  waddlinear (ar, cf_.clrs, cf_.rows, cf_.cols, COLUMNS);
+  cf_.lexicalhl (ar[[:-2]], cf_.vlins);
+  
+  (@func[qualifier_exists ("dont_draw")]) (cf_.ptr[0], cf_.ptr[1]);
 }

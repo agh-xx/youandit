@@ -58,8 +58,11 @@ FTYPES["txt"] = 0;
 FTYPES["sl"] = 0;
 FTYPES["list"] = 0;
 
-set_slang_load_path (sprintf ("%s/ftypes/share%c%s", MYPATH, path_get_delimiter (),
-      getenv ("LOAD_PATH")));
+set_slang_load_path (sprintf (
+  "%s/ftypes/share%c%s", MYPATH,
+  path_get_delimiter (),
+  getenv ("LOAD_PATH")));
+
 set_import_module_path (getenv ("IMPORT_PATH"));
 
 import ("socket");

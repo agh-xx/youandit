@@ -62,7 +62,7 @@ private define down ()
   ifnot (cf_.ptr[0] == cf_.vlins[-1])
     cf_.ptr[0]++;
 
-  cf_.draw ();
+  cf_.draw (;dont_draw);
  
   linlen = v_linlen ('.');
  
@@ -102,7 +102,7 @@ private define up ()
 
   cf_._i--;
 
-  cf_.draw ();
+  cf_.draw (;dont_draw);
  
   linlen = v_linlen ('.');
  
@@ -116,7 +116,7 @@ private define gotoline ()
   if (count <= cf_._len + 1)
     {
     cf_._i = count - (count ? 1 : 0);
-    cf_.draw ();
+    cf_.draw (;dont_draw);
 
     cf_.ptr[0] = cf_.rows[0];
     cf_.ptr[1] = cf_._indent;
@@ -151,7 +151,7 @@ private define eof ()
     return;
     }
 
-  cf_.draw ();
+  cf_.draw (;dont_draw);
 
   cf_.ptr[0] = cf_.vlins[-1];
 
