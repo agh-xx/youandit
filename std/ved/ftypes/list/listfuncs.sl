@@ -170,9 +170,9 @@ private define myquit ()
 
     send_msg_dr (sprintf ("%s: save changes? y[es]|n[o]", cf_._fname), 0, NULL, NULL);
 
-    chr = get_char ();
+    chr = getch ();
     while (0 == any (chr == ['y', 'n']))
-      chr = get_char ();
+      chr = getch ();
  
     if ('n' == chr)
       continue;
@@ -183,7 +183,7 @@ private define myquit ()
       send_msg_dr (sprintf ("%s, press q to quit without saving", errno_string (retval)),
         1, NULL, NULL);
 
-      if ('q' == get_char ())
+      if ('q' == getch ())
         return;
       }
     }

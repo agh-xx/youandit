@@ -181,7 +181,7 @@ private define search ()
   forever
     {
     dothesearch = 0;
-    chr = get_char ();
+    chr = getch ();
 
     if (033 == chr)
       {
@@ -227,7 +227,7 @@ private define search ()
  
     if (any (chr == keys->rmap.changelang))
       {
-      GETCH_LANG = GETCH_LANG == GET_CHAR ? GET_EL_CHAR : GET_CHAR;
+      getchar_lang = string (getchar_lang) == "&en_getch" ? &el_getch : &en_getch;
       topline (" -- PAGER --");
       srv->gotorc_draw (PROMPTROW, col);
       continue;
@@ -373,7 +373,7 @@ private define search_word ()
       return;
       }
 
-    chr = get_char ();
+    chr = getch ();
  
     ifnot (any ([keys->CTRL_n, 033, '\r'] == chr))
       continue;

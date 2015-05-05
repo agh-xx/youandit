@@ -28,9 +28,9 @@ private define quit ()
  
   send_msg_dr ("file is modified, save changes? y[es]|n[o]", 0, NULL, NULL);
 
-  variable chr = get_char ();
+  variable chr = getch ();
   while (0 == any (chr == ['y', 'n']))
-    chr = get_char ();
+    chr = getch ();
 
   cf_.quit (chr == 'y');
 }
@@ -60,7 +60,7 @@ private define write_file ()
         {
         send_msg_dr ("file exists, w! to overwrite, press any key to continue", 1,
           NULL, NULL);
-        () = get_char ();
+        () = getch ();
         send_msg_dr (" ", 0, cf_.ptr[0], cf_.ptr[1]);
         return;
         }
@@ -69,7 +69,7 @@ private define write_file ()
         {
         send_msg_dr ("file is not writable, press any key to continue", 1,
           NULL, NULL);
-        () = get_char ();
+        () = getch ();
         send_msg_dr (" ", 0, cf_.ptr[0], cf_.ptr[1]);
         return;
         }
@@ -82,7 +82,7 @@ private define write_file ()
     {
     send_msg_dr (sprintf ("%s, press any key to continue", errno_string (retval)), 1,
       NULL, NULL);
-    () = get_char ();
+    () = getch ();
     send_msg_dr (" ", 0, cf_.ptr[0], cf_.ptr[1]);
     return;
     }
@@ -485,7 +485,7 @@ private define readline (s)
 
   forever
     {
-    rl_._chr = get_char ();
+    rl_._chr = getch ();
 
     if (033 == rl_._chr)
       {
@@ -835,7 +835,7 @@ private define hlitem (s, ar, base, acol, item)
     row = PROMPTROW - (strlen (rl_._lin) / COLUMNS) + i,
     hl_region = [colr, irow, icol * max_len, 1, max_len]);
  
-  chr = get_char ();
+  chr = getch ();
  
   ifnot (len || any (['\t', [keys->UP:keys->RIGHT], keys->PPAGE, keys->NPAGE] == chr))
     {
@@ -880,7 +880,7 @@ private define hlitem (s, ar, base, acol, item)
         row = PROMPTROW - (strlen (rl_._lin) / COLUMNS) + i,
         hl_region = [colr, irow, icol * max_len, 1, max_len]);
  
-      chr = get_char ();
+      chr = getch ();
       continue;
       }
  
@@ -1039,7 +1039,7 @@ private define hlitem (s, ar, base, acol, item)
       row = PROMPTROW - (strlen (rl_._lin) / COLUMNS) + i,
       hl_region = [colr, irow, icol * max_len, 1, max_len]);
 
-    chr = get_char ();
+    chr = getch ();
     }
 
   return chr;
@@ -1062,7 +1062,7 @@ private define getline (s, line, prev_l, next_l)
 
   forever
     {
-    gl_._chr = get_char ();
+    gl_._chr = getch ();
 
     if (033 == gl_._chr)
       {

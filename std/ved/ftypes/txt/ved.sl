@@ -8,7 +8,7 @@ private define _vedloop_ (s)
   forever
     {
     count = -1;
-    cf_._chr = get_char ();
+    cf_._chr = getch ();
  
     if ('1' <= cf_._chr <= '9')
       {
@@ -17,7 +17,7 @@ private define _vedloop_ (s)
       while ('0' <= cf_._chr <= '9')
         {
         count += char (cf_._chr);
-        cf_._chr = get_char ();
+        cf_._chr = getch ();
         }
 
       count = integer (count);

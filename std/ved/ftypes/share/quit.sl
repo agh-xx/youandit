@@ -27,7 +27,7 @@ define quit ()
       {
       send_msg_dr ("file exists, press q to quit without saving", 1,
         cf_.ptr[0], cf_.ptr[1]);
-      if ('q' == get_char ())
+      if ('q' == getch ())
         doquit ();
 
       srv->gotorc_draw (cf_.ptr[0], cf_.ptr[1]);
@@ -38,7 +38,7 @@ define quit ()
       {
       send_msg_dr ("file is not writable, press q to quit without saving", 1,
         cf_.ptr[0], cf_.ptr[1]);
-      if ('q' == get_char ())
+      if ('q' == getch ())
         doquit ();
 
       srv->gotorc_draw (cf_.ptr[0], cf_.ptr[1]);
@@ -53,7 +53,7 @@ define quit ()
       {
       send_msg_dr (sprintf ("%s, press q to quit without saving", errno_string (retval)),
         1, NULL, NULL);
-      if ('q' == get_char ())
+      if ('q' == getch ())
         doquit ();
 
       srv->gotorc_draw (cf_.ptr[0], cf_.ptr[1]);

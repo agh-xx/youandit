@@ -223,7 +223,7 @@ private define left ()
 
 define p_right (linlen)
 {
-  if (cf_._index - cf_._indent == linlen - 1)
+  if (cf_._index - cf_._indent == linlen - 1 || 0 == linlen)
     return -1;
 
   if (cf_.ptr[1] < cf_._maxlen - 1)
@@ -417,7 +417,7 @@ private define word_change_case (what)
 private define _g_ ()
 {
   variable
-    chr = get_char ();
+    chr = getch ();
 
   if ('g' == chr)
     {

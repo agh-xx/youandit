@@ -13,9 +13,9 @@ public variable
   MODIFIED = 0x01,
   ONDISKMODIFIED = 0x02,
   RDONLY = 0x04,
-  GET_CHAR = 0x01F4,
-  GET_EL_CHAR = 0x012C,
-  GETCH_LANG,
+%  GET_CHAR = 0x01F4,
+%  GET_EL_CHAR = 0x012C,
+%  GETCH_LANG,
   DISPLAY = getenv ("DISPLAY"),
   LINES,
   COLUMNS,
@@ -36,13 +36,10 @@ private variable
   MYPATH = path_dirname (__FILE__),
   JUST_DRAW = 0x064,
   GOTO_EXIT = 0x0C8,
-  OPENFILE = 0xd3,
-  GET_BUFKEY = 0xde,
-  GET_BUFKEYS = 0xe9,
   GET_COLS = 0x0190,
   GET_FILE = 0x0258,
   GET_ROWS = 0x02BC,
-  GET_FTYPE = 0x0320,
+  %0x0320,
   GET_INFOCLRFG = 0x0384,
   GET_INFOCLRBG = 0x0385,
   GET_PROMPTCOLOR = 0x03E8,
@@ -51,8 +48,6 @@ private variable
   GET_LINES = 0x0514,
   VED_SOCKADDR = getenv ("VED_SOCKADDR"),
   STDNS = getenv ("STDNS");
-
-GETCH_LANG = GET_CHAR;
 
 FTYPES["txt"] = 0;
 FTYPES["sl"] = 0;
@@ -66,8 +61,6 @@ set_slang_load_path (sprintf (
 set_import_module_path (getenv ("IMPORT_PATH"));
 
 import ("socket");
-import ("fork");
-import ("pcre");
 
 ifnot (VEDPROC._inited)
   {
@@ -79,52 +72,92 @@ ifnot (VEDPROC._inited)
   VEDPROC._state = VEDPROC._state | CONNECTED;
   }
 
-try
-  {
-  () = evalfile (sprintf ("%s/SockNs/sock_funcs", STDNS), "sock");
-  () = evalfile (sprintf ("%s/client", MYPATH), "srv");
-  () = evalfile (sprintf ("%s/keys", MYPATH), "keys");
-  () = evalfile (sprintf ("%s/I_Ns/lib/except_to_arr", STDNS));
-  () = evalfile (sprintf ("%s/I_Ns/lib/std", STDNS));
-  () = evalfile (sprintf ("%s/proc/Init", STDNS), "proc");
-  () = evalfile (sprintf ("%s/I_Ns/lib/need", STDNS), "i");
-  () = evalfile (sprintf ("%s/ftypes/Init", MYPATH));
-  }
-catch AnyError:
-  {
-  () = fprintf (stderr, "\n__\nERROR during evaluation of std libs\n");
-
-  () = array_map (Integer_Type, &fprintf, stderr, "%s\n",
-      strchop (sprintf ("Caught an exception:%s\n\
-        Message:     %s\n\
-        Object:      %S\n\
-        Function:    %s\n\
-        Line:        %d\n\
-        File:        %s\n\
-        Description: %s\n\
-        Error:       %d\n",
-        _push_struct_field_values (__get_exception_info)), '\n', 0));
- 
-  write (VED_SOCKET, string (GOTO_EXIT));
-  exit (1);
-  }
-
-define send_int (i)
+private define exception_to_array ()
 {
-  sock->send_int (VED_SOCKET, i);
+  return strchop (sprintf ("Caught an exception:%s\n\
+Message:     %s\n\
+Object:      %S\n\
+Function:    %s\n\
+Line:        %d\n\
+File:        %s\n\
+Description: %s\n\
+Error:       %d\n",
+    _push_struct_field_values (__get_exception_info ())), '\n', 0);
 }
 
-define ineed (lib)
+private variable LOADED = Assoc_Type[Integer_Type, 0];
+
+define need ()
 {
+  variable
+    file,
+    ns = current_namespace ();
+
+  if (1 == _NARGS)
+    file = ();
+
+  if (2 == _NARGS)
+    (file, ns) = ();
+
+  if (NULL == ns || "" == ns)
+    ns = "Global";
+ 
+  if (LOADED[sprintf ("%s.%s", ns, file)])
+    return;
+
   try
-    i->need (lib);
+    {
+    () = evalfile (file, ns);
+    }
+  catch OpenError:
+    throw ParseError, sprintf ("%s: couldn't be found", file);
+  catch ParseError:
+    throw ParseError, sprintf ("file %s: %s func: %s lnr: %d", path_basename (file),
+      __get_exception_info.message, __get_exception_info.function,
+      __get_exception_info.line);
+ 
+  LOADED[sprintf ("%s.%s", ns, file)] = 1;
+}
+
+define ineed ()
+{
+  variable args = __pop_list (_NARGS);
+
+  try
+    need (__push_list (args));
   catch ParseError:
     {
     () = array_map (Integer_Type, &fprintf, stderr, "%s\n", exception_to_array ());
 
-    send_int (GOTO_EXIT);
+    write (VED_SOCKET, string (GOTO_EXIT));
+
     exit (1);
     }
+}
+
+define readfile (file)
+{
+  variable
+    end = qualifier ("end", NULL),
+    fp = fopen (file, "r");
+
+  if (NULL == fp)
+    return NULL;
+
+  ifnot (NULL == end)
+    return array_map (String_Type, &strtrim_end, fgetslines (fp, end), "\n");
+
+  return array_map (String_Type, &strtrim_end, fgetslines (fp), "\n");
+}
+
+ineed  (sprintf ("%s/sock", MYPATH), "sock");
+ineed  (sprintf ("%s/client", MYPATH), "srv");
+ineed  (sprintf ("%s/keys", MYPATH), "keys");
+ineed  (sprintf ("%s/ftypes/Init", MYPATH));
+
+define send_int (i)
+{
+  sock->send_int (VED_SOCKET, i);
 }
 
 define get_int ()
@@ -135,12 +168,6 @@ define get_int ()
 define get_int_ar ()
 {
   return sock->get_int_ar (VED_SOCKET);
-}
-
-define get_char ()
-{
-  send_int (GETCH_LANG);
-  return get_int ();
 }
 
 define get_str ()
@@ -217,12 +244,6 @@ define get_func ()
   return get_int ();
 }
 
-define get_bufkey ()
-{
-  send_int (GET_BUFKEY);
-  return get_str ();
-}
-
 define get_count ()
 {
   send_int (0);
@@ -231,10 +252,6 @@ define get_count ()
 
   send_int (0);
   return get_int ();
-}
-
-define add_buffer (fn)
-{
 }
 
 %CHANGE those calls to one
@@ -249,11 +266,25 @@ PROMPTCLR = get_promptcolor ();
 
 $1 = get_file ();
 
+variable TTY_INITED = 0;
+
 define exit_me (exit_code)
 {
+  variable
+    tty_inited = __get_reference ("TTY_Inited"),
+    reset = NULL != tty_inited ? __get_reference ("reset_tty") : NULL;
+
+  if (@tty_inited)
+    (@reset) ();
+
   send_int (GOTO_EXIT);
   exit (exit_code);
 }
+
+define set_modified ();
+define writetofile ();
+define seltoX ();
+define getch ();
 
 private variable s_ = init_ftype (get_ftype ($1));
 

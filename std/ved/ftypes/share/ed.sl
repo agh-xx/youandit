@@ -169,7 +169,7 @@ private define del_word (what)
 private define chang_chr ()
 {
   variable
-    chr = get_char (),
+    chr = getch (),
     col = cf_._index,
     i = v_lnr ('.'),
     line = v_lin ('.');
@@ -237,7 +237,7 @@ private define del_chr ()
 
 private define del ()
 {
-  variable chr = get_char ();
+  variable chr = getch ();
  
   if (any (['d', 'w', 'W'] == chr))
     {

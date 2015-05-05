@@ -14,7 +14,7 @@ define debug (str, get)
 {
   send_msg_dr (str, 1, cf_.ptr[0], cf_.ptr[1]);
   ifnot (NULL == get)
-    () = get_char ();
+    () = getch ();
 }
 
 define set_img ()
@@ -93,7 +93,8 @@ define restore (cmp_lnrs, pos)
 private define _topline_ (str)
 {
   variable t = strftime ("[%a %d %b %I:%M:%S]");
-  @str += sprintf (" ftype (%s) LANG (%s) ", cf_._type, GETCH_LANG == GET_CHAR ? "eng" : "el");
+  @str += sprintf (" ftype (%s) LANG (%s) ", cf_._type,
+    string (getchar_lang) == "&en_getch" ? "US" : "EL");
   @str + repeat (" ", COLUMNS - strlen (@str) - strlen (t)) + t;
 }
 

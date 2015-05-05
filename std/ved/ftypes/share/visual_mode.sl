@@ -136,7 +136,7 @@ private define v_linewise_mode (s)
 
   v_hl_line (s);
 
-  while (chr = get_char (), any (['y', 'd', keys->DOWN, keys->UP] == chr))
+  while (chr = getch (), any (['y', 'd', keys->DOWN, keys->UP] == chr))
     {
     if (chr == keys->DOWN)
       {
@@ -317,7 +317,7 @@ private define v_char_mode (s)
 
   v_hl_ch (s);
 
-  while (chr = get_char (), any (['y', keys->DOWN, keys->RIGHT, keys->UP, keys->LEFT]
+  while (chr = getch (), any (['y', keys->DOWN, keys->RIGHT, keys->UP, keys->LEFT]
     == chr))
     {
     if (keys->RIGHT == chr)

@@ -552,7 +552,7 @@ insfuncs.cr = &cr;
 
 private define esc (s, line)
 {
-  GETCH_LANG = GET_CHAR;
+  getchar_lang = &en_getch;
 
   if (0 < cf_.ptr[1] - cf_._indent)
     cf_.ptr[1]--;
@@ -582,12 +582,12 @@ private define getline (self, line)
  
   forever
     {
-    self.chr = get_char ();
+    self.chr = getch ();
 
     if (any (keys->rmap.changelang == self.chr))
       {
-      GETCH_LANG = GETCH_LANG == GET_CHAR ? GET_EL_CHAR : GET_CHAR;
-      topline_dr (" (ved)  -- INSERT --");
+      getchar_lang = string (getchar_lang) == "&en_getch" ? &el_getch : &en_getch;
+      topline_dr (" -- INSERT --");
       continue;
       }
 

@@ -1,34 +1,31 @@
 typedef struct
   {
   _fname,
-  _addr,
+  _sockaddr,
   _fd,
-  _ftype,
   _state,
   _exists,
-  _me,
+  _func,
+  _count,
+  _drawonly,
+  _issudo,
   p_,
   } Ved_Type;
 
-private variable BUFFERS = Assoc_Type[Ved_Type];
+private variable ved_;
 private variable funcs = Assoc_Type[Ref_Type];
-private variable cb;
-private  variable ftypes = ["txt", "list", "sl"];
 
 private variable
   CONNECTED = 0x1,
   IDLED = 0x2,
   JUST_DRAW = 0x064,
   GOTO_EXIT = 0x0C8,
-  OPENFILE = 0xd3,
-  SEND_BUFKEY = 0xde,
-  SEND_BUFKEYS = 0xe9,
   SEND_COLS = 0x0190,
-  SEND_CHAR = 0x01F4,
-  SEND_EL_CHAR = 0x012C,
+  % 0x01F4,
+  % 0x012C,
   SEND_FILE = 0x0258,
   SEND_ROWS = 0x02BC,
-  SEND_FTYPE = 0x0320,
+  %0x0320,
   SEND_INFOCLRFG = 0x0384,
   SEND_INFOCLRBG = 0x0385,
   SEND_PROMPTCOLOR = 0x03E8,
@@ -36,32 +33,18 @@ private variable
   SEND_FUNC = 0x04b0,
   SEND_LINES = 0x0514;
 
-private variable
-  ISSUDO = 0,
-  FILE,
-  FUNC,
-  FTYPE,
-  COUNT,
-  DRAWONLY;
-
-private define buf_exit (key)
+private define ved_exit ()
 {
-  ifnot (assoc_key_exists (BUFFERS, key))
-    return;
+  variable status = waitpid (ved_.p_.pid, 0);
+  ved_.p_.atexit ();
 
-  variable status = waitpid (cb.p_.pid, 0);
-  cb.p_.atexit ();
-
-  () = close (cb._fd);
-
-  cb = NULL;
-
-  assoc_delete_key (BUFFERS, key);
+  () = close (ved_._fd);
+  __uninitialize (&ved_);
 }
 
 private define send_bufkey (sock)
 {
-  sock->send_str (sock, cb._me);
+  sock->send_str (sock, ved_._me);
 }
 
 private define send_lines (sock)
@@ -71,24 +54,24 @@ private define send_lines (sock)
 
 private define send_func (sock)
 {
-  sock->send_int (sock, NULL == FUNC ? 0 : FUNC);
+  sock->send_int (sock, NULL == ved_._func ? 0 : ved_._func);
 
-  ifnot (NULL == FUNC)
+  ifnot (NULL == ved_._func)
     {
     () = sock->get_int (sock);
-    sock->send_int (sock, NULL == COUNT ? 0 : 1);
+    sock->send_int (sock, NULL == ved_._count ? 0 : 1);
 
-    ifnot (NULL == COUNT)
+    ifnot (NULL == ved_._count)
       {
       () = sock->get_int (sock);
-      sock->send_int (sock, COUNT);
+      sock->send_int (sock, ved_._count);
       }
     }
 }
 
 private define just_draw (sock)
 {
-  sock->send_int (sock, DRAWONLY);
+  sock->send_int (sock, ved_._drawonly);
 }
 
 private define send_rows (sock)
@@ -102,7 +85,7 @@ private define send_rows (sock)
 
 private define send_file (sock)
 {
-  sock->send_str (sock, FILE);
+  sock->send_str (sock, ved_._fname);
 }
 
 private define send_el_chr (sock)
@@ -127,11 +110,6 @@ private define send_msgrow (sock)
   sock->send_int (sock, MSGROW);
 }
 
-private define send_ftype (sock)
-{
-  sock->send_str (sock, FTYPE);
-}
-
 private define send_infoclrfg (sock)
 {
   sock->send_int (sock, COLOR.activeframe);
@@ -145,6 +123,14 @@ private define send_infoclrbg (sock)
 private define send_promptcolor (sock)
 {
   sock->send_int (sock, COLOR.prompt);
+}
+
+private define addflags (p)
+{
+  p.stdout.file = CW.buffers[CW.cur.frame].fname,
+  p.stdout.wr_flags = ">>";
+  p.stderr.file = CW.msgbuf;
+  p.stderr.wr_flags = ">>";
 }
 
 private define broken_sudoproc_broken ()
@@ -171,25 +157,12 @@ private define broken_sudoproc_broken ()
   return p;
 }
 
-private define doproc (sockaddr, issudo)
+private define getargvenv ()
 {
-  variable p;
-
-  ifnot (issudo)
-    p = proc->init (0, 1, 1);
-  else
-    if (p = broken_sudoproc_broken (), p == NULL)
-      return NULL;
-
-  p.stdout.file = CW.buffers[CW.cur.frame].fname,
-  p.stdout.wr_flags = ">>";
-  p.stderr.file = CW.msgbuf;
-  p.stderr.wr_flags = ">>";
-
   variable
     argv = [PROC_EXEC, sprintf ("%s/proc", path_dirname (__FILE__))],
     env = [
-      sprintf ("VED_SOCKADDR=%s", sockaddr),
+      sprintf ("VED_SOCKADDR=%s", ved_._sockaddr),
       sprintf ("IMPORT_PATH=%s", get_import_module_path ()),
       sprintf ("LOAD_PATH=%s", get_slang_load_path ()),
       sprintf ("TERM=%s", getenv ("TERM")),
@@ -200,6 +173,33 @@ private define doproc (sockaddr, issudo)
       sprintf ("DISPLAY=%S", getenv ("DISPLAY")),
       sprintf ("PATH=%s", getenv ("PATH")),
       ];
+
+  if (ved_._issudo)
+    argv = [SUDO_EXEC, "-S", "-E",  "-C", sprintf ("%d", _fileno (SRV_SOCKET)+ 1), argv];
+
+  return argv, env;
+}
+
+private define doproc ()
+{
+  variable p, argv, env;
+
+  ifnot (ved_._issudo)
+    {
+    if (p = proc->init (0, 1, 1), p == NULL)
+      return NULL;
+
+    addflags (p);
+    }
+  else
+    {
+    if (p = broken_sudoproc_broken (), p == NULL)
+      return NULL;
+
+    addflags (p);
+    }
+
+  (argv, env) = getargvenv ();
 
   if (NULL == p.execve (argv, env, 1))
     return NULL;
@@ -245,84 +245,65 @@ private define check_file (fn, issudo)
   return 0;
 }
 
-private define get_ftype (fn)
-{
-  variable ftype = substr (path_extname (fn), 2, -1);
-  ifnot (any (ftype == ftypes))
-    ftype = "txt";
-  return ftype;
-}
-
 private define parse_args ()
 {
-  ifnot (_NARGS)
-    FILE = CW.buffers[CW.cur.frame].fname;
+  variable issudo = ();
+  variable fname = ();
+
+  ifnot (_NARGS - 2)
+    @fname = CW.buffers[CW.cur.frame].fname;
   else
-    FILE = ();
+    @fname = ();
  
-  variable exists = check_file (FILE, ISSUDO);
+  variable exists = check_file (@fname, issudo);
 
   if (-1 == exists)
     return -1;
 
-  COUNT = qualifier ("count");
-  FUNC = qualifier ("func");
-  DRAWONLY = qualifier_exists ("drawonly");
-
   return exists;
 }
 
-private define connect_to_child (p, sockaddr)
+private define connect_to_child ()
 {
-  cb._fd = p.connect (sockaddr);
+  ved_._fd = ved_.p_.connect (ved_._sockaddr);
 
-  if (NULL == cb._fd)
+  if (NULL == ved_._fd)
     {
-    p.atexit ();
-    () = kill (p.pid, SIGKILL);
+    ved_.p_.atexit ();
+    () = kill (ved_.p_.pid, SIGKILL);
     return;
     }
  
-  cb._state = cb._state | CONNECTED;
+  ved_._state = ved_._state | CONNECTED;
 
   variable retval;
 
   forever
     {
-    retval = sock->get_int (cb._fd);
+    retval = sock->get_int (ved_._fd);
  
     ifnot (Integer_Type == typeof (retval))
       break;
 
     if (retval == GOTO_EXIT)
       {
-      cb._state = cb._state & ~CONNECTED;
+      ved_._state = ved_._state & ~CONNECTED;
       break;
       }
  
-    (@funcs[string (retval)]) (cb._fd);
+    (@funcs[string (retval)]) (ved_._fd);
     }
 }
 
-private define create_key (fn, sockaddr)
+private define init_ved (fn, exists)
 {
-  return fn + "::" + sockaddr;
-}
-
-private define init_buf (fn, p, sockaddr, exists, ftype)
-{
-  variable k = create_key (fn, sockaddr);
-
-  BUFFERS[k] = @Ved_Type;
-  BUFFERS[k]._fname = fn;
-  BUFFERS[k]._addr = sockaddr;
-  BUFFERS[k]._ftype = ftype;
-  BUFFERS[k]._state = 0;
-  BUFFERS[k]._exists = exists;
-  BUFFERS[k]._me = k;
-  BUFFERS[k].p_ = p;
-  cb = BUFFERS[k];
-  return k;
+  ved_ = @Ved_Type;
+  ved_._fname = fn;
+  ved_._state = 0;
+  ved_._exists = exists;
+  ved_._count = qualifier ("count");
+  ved_._func = qualifier ("func");
+  ved_._drawonly = qualifier_exists ("drawonly");
 }
 
 private define init_sockaddr (fn)
@@ -333,62 +314,49 @@ private define init_sockaddr (fn)
 
 private define _ved_ ()
 {
-  variable args = __pop_list (_NARGS);
-  variable exists = parse_args (__push_list (args);;__qualifiers ());
+  variable issudo = ();
+  variable file;
+  variable args = __pop_list (_NARGS - 1);
+  variable exists = parse_args (__push_list (args), &file, issudo;;__qualifiers ());
+
   if (-1 == exists)
     return;
 
-  variable
-    retval,
-    sockaddr = init_sockaddr (FILE),
-    p = doproc (sockaddr, ISSUDO);
+  init_ved (file, exists;;__qualifiers ());
 
-  if (NULL == p)
+  ved_._issudo = issudo;
+  
+  ved_._sockaddr = init_sockaddr (file);
+
+  ved_.p_ = doproc ();
+  
+  if (NULL == ved_.p_)
     return;
- 
-  FTYPE = qualifier ("ftype");
-  if (NULL == FTYPE)
-    FTYPE = get_ftype (FILE);
-  else
-    ifnot (any (FTYPE == ftypes))
-      FTYPE = "txt";
 
-  variable key = init_buf (FILE, p, sockaddr, exists, FTYPE);
+  connect_to_child ();
 
-  connect_to_child (p, sockaddr);
-
-  buf_exit (key);
+  ved_exit ();
 }
 
 define ved ()
 {
   variable args = __pop_list (_NARGS);
-  _ved_ (__push_list (args);;__qualifiers ());
+  _ved_ (__push_list (args), 0;;__qualifiers ());
 
   if (qualifier_exists ("drawwind"))
     CW.drawwind ();
-
-  ISSUDO = 0;
 }
 
 define vedsudo ()
 {
-  ISSUDO = 1;
- 
   variable args = __pop_list (_NARGS);
-  _ved_ (__push_list (args);;__qualifiers ());
-
-  ISSUDO = 0;
+  _ved_ (__push_list (args), 1;;__qualifiers ());
 }
 
-funcs[string (SEND_BUFKEY)] = &send_bufkey;
 funcs[string (JUST_DRAW)] = &just_draw;
-funcs[string (SEND_CHAR)] = &send_chr;
-funcs[string (SEND_EL_CHAR)] = &send_el_chr;
 funcs[string (SEND_COLS)] = &send_cols;
 funcs[string (SEND_FILE)] = &send_file;
 funcs[string (SEND_ROWS)] = &send_rows;
-funcs[string (SEND_FTYPE)] = &send_ftype;
 funcs[string (SEND_INFOCLRBG)] = &send_infoclrbg;
 funcs[string (SEND_INFOCLRFG)] = &send_infoclrfg;
 funcs[string (SEND_PROMPTCOLOR)] = &send_promptcolor;
