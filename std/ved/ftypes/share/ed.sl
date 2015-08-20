@@ -11,17 +11,17 @@ private define indent_in ()
     i_ = cf_._indent,
     i = v_lnr ('.'),
     line = v_lin ('.');
+  
+  ifnot (strlen (line) - cf_._indent)
+    return;
 
   ifnot (isblank (line[i_]))
     return;
- 
-  while (isblank (line[i_]))
+  
+  while (isblank (line[i_]) && i_ < cf_._shiftwidth + cf_._indent)
     i_++;
 
-  if (i_ > cf_._shiftwidth)
-    i_ = cf_._shiftwidth;
-
-  line = substr (line, i_ + 1, -1);
+  line = substr (line, i_ + 1 - cf_._indent, -1);
 
   cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
   cf_.lines[i] = line;
@@ -30,6 +30,9 @@ private define indent_in ()
 
   if (0 > cf_.ptr[1] - cf_._indent)
     cf_.ptr[1] = cf_._indent;
+
+  if (0 > cf_._index - cf_._indent)
+    cf_._index = cf_._indent;
 
   set_modified ();
 
@@ -219,9 +222,12 @@ private define del_chr ()
  
   ifnot (strlen (line))
     line = sprintf ("%s ", repeat (" ", cf_._indent));
-
+  
   if (cf_.ptr[1] - cf_._indent < 0)
     cf_.ptr[1] = cf_._indent;
+
+  if (cf_._index - cf_._indent < 0)
+    cf_._index = cf_._indent;
 
   cf_.lins[cf_.ptr[0] - cf_.rows[0]] = line;
   cf_.lines[i] = line;
@@ -357,10 +363,10 @@ private define edit_line ()
     }
  
   if (cf_._index - cf_._indent > cf_._maxlen)
-    lline = getlinestr (line, cf_._findex + 1 - cf_._indent);
+    lline = getlinestr (line, cf_._findex + 1);
   else
-    lline = line;
-
+    lline = getlinestr (line, 1);
+  
   if (strlen (lline))
     {
     waddline (lline, 0, cf_.ptr[0]);

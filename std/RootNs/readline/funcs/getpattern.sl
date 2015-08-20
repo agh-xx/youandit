@@ -13,7 +13,8 @@ define main (self, pat)
     len = length (ar),
     lines = LINES - (strlen (keep.line) / COLUMNS);
 
-  srv->write_nstring_at (NULL, COLUMNS, 7, 0, [PROMPTROW - (strlen (self.cur.line) / COLUMNS) - length (ar) - 1, 0, 0, strlen (self.cur.argv[0])]);
+  srv->write_nstring_at (NULL, COLUMNS, 7, 0, [PROMPTROW - (strlen (self.cur.line) / COLUMNS) - length (ar) - 1,
+     0, 0, strlen (self.cur.argv[0])]);
 
   () = root.lib.printout (ar, strlen (self.cur.argv[0]), &len;
     header = qualifier ("pat", ""), lines = lines,

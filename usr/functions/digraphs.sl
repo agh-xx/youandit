@@ -1150,11 +1150,11 @@ define main ()
     i += items + 1;
     }
 
- out = [out, strjoin (ar[[i-1:]], "  ")];
+  out = [out, strjoin (ar[[i-1:]], "  ")];
 
- writefile (["DIGRAPHS TABLE", repeat ("_", COLUMNS), out], file);
+  writefile (["DIGRAPHS TABLE", repeat ("_", COLUMNS), out], file);
 
- (@CW.gotopager) (CW, file);
+  ved (file;drawwind);
 
- throw GotoPrompt;
+  throw GotoPrompt;
 }

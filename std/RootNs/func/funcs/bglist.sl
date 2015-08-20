@@ -24,9 +24,9 @@ define main ()
   writefile (array_map (String_Type, &sprintf, "%d : %s", pids, coms), file);
 
   ifnot (gotopager)
-    (@CW.gotopager) (CW, file;drawonly);
+    ved (file;drawonly);
   else
-    (@CW.gotopager) (CW, file);
+    ved (file;drawwind);
 
   throw GotoPrompt;
 }

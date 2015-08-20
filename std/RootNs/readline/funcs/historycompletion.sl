@@ -51,7 +51,7 @@ define main (self)
  
     if (any (keys->cmap.histdown == chr))
       {
-      index--;
+      index -= 2;
       continue;
       }
 

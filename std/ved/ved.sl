@@ -160,7 +160,7 @@ private define broken_sudoproc_broken ()
 private define getargvenv ()
 {
   variable
-    argv = [PROC_EXEC, sprintf ("%s/proc", path_dirname (__FILE__))],
+    argv = [PROC_EXEC, sprintf ("%s/proc", path_dirname (__FILE__)), ved_._fname],
     env = [
       sprintf ("VED_SOCKADDR=%s", ved_._sockaddr),
       sprintf ("IMPORT_PATH=%s", get_import_module_path ()),

@@ -118,3 +118,49 @@ Defaults:USER timestamp_timeout=1
 
 # Now run
 /usr/bin/local/slsh ./you.sl
+
+%%%
+Development continues to "ayios" project, which that name it can also means
+the son of this project.
+
+The purpose of the project was more like a waterfall process, where the
+idea first was to understand and implement a design, and then write some
+code for initial develpment and to test the system.
+That means in terms of versioning 0.5.
+
+The purpose of the new project is to design and stabizize the api.
+
+It should do it by reusing much of the present code, as this code reused
+code which was written initial in spring of 2010 while learning S-Lang.
+
+I'm quite happy with the project for some of the following reasons:
+
+- it came in a very difficult period for me and my family and coding was a
+a way to keep me consentrate
+
+- the working flaw is in some ways exciting and I should say quite fast.
+The interface is common for all functions/commands/applications, where even
+for the kids (even for my older daughter which is now 10) it was easy to
+understand and use it (tab makes wonders)
+(It's really practical to write code in the language you know, that does
+everything you want, with a personalized, common and _predictable_ way.)
+
+- the quality of the code is quite good in many cases. The missing Internet
+connection for years, helped me to solve the problems i was facing by myself,
+and the solutions strangely in many cases it was more in the same direction
+other people followed to solve the same problems (after later check other people's
+work, even the name of the functions was sometimes the same). For an undecuated
+farmer and shepherd that started coding in old aga, made me feel a little
+proud. There are some functionalities that dont exist in high profiled
+programs, written by engineers that work in Google or Samusng :)
+
+- the program does what it does by using very few system resources and does
+it fast. Faults are not end up in unresponsive state, error handling is good
+and the messages helps you understand at once where is the line code that
+gave the error (this is a high priority); this is not still the case for
+ayios (suppossedly a better designed code (at the time of writting this,
+at 20 of August) - but it will be (if there is a future)), so ...... --->
+
+https://github.com/ayios
+
+

@@ -149,9 +149,9 @@ define main ()
   ifnot (retval)
     {
     ifnot (gotopager)
-      (@CW.gotopager) (CW, file;drawonly);
+      ved (file;drawonly);
     else
-      (@CW.gotopager) (CW, file);
+      ved (file;drawwind);
     }
 
   throw GotoPrompt;

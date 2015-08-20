@@ -1,9 +1,3 @@
-private define betaprintout (self, ar, col, len)
-{
-  return self.exec (sprintf ("%s/funcs/%s", path_dirname (__FILE__), _function_name ()), ar, col, len
-    ;;__qualifiers ());
-}
-
 private define printout (self, ar, col, len)
 {
   return self.exec (sprintf ("%s/funcs/%s", path_dirname (__FILE__), _function_name ()), ar, col, len
@@ -51,7 +45,6 @@ define main (self)
   throw Return, " ", struct
     {
     exec = self.exec,
-    betaprintout = &betaprintout,
     printout = &printout,
     printtostdout = &printtostdout,
     ask = &ask,

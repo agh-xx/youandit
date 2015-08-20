@@ -54,7 +54,7 @@ PROC_EXEC = [SLSH_EXEC, sprintf ("%s/proc/funccall.slc", STDNS), ROOTDIR,
 
 define dev_on ()
 {
-  () = evalfile (sprintf ("%s/I_Ns/dev/dev_on", STDNS));
+  () = evalfile (sprintf ("%s/I_Ns/init/dev_on", STDNS));
 }
 
 try

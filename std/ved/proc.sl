@@ -264,10 +264,6 @@ INFOCLRFG = get_infoclrfg ();
 INFOCLRBG = get_infoclrbg ();
 PROMPTCLR = get_promptcolor ();
 
-$1 = get_file ();
-
-variable TTY_INITED = 0;
-
 define exit_me (exit_code)
 {
   variable
@@ -281,15 +277,10 @@ define exit_me (exit_code)
   exit (exit_code);
 }
 
-define set_modified ();
-define writetofile ();
-define seltoX ();
-define getch ();
-
-private variable s_ = init_ftype (get_ftype ($1));
+private variable s_ = init_ftype (get_ftype (__argv[-1]));
 
 VEDPROC._inited = 1;
 
-s_.ved (__tmp ($1), get_rows ());
+s_.ved (__argv[-1], get_rows ());
 
 exit_me (0);

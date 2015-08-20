@@ -15,7 +15,7 @@ define need ()
   if (NULL == ns || "" == ns)
     ns = "Global";
  
-  if (LOADED[sprintf ("%s.%s", ns, file)])
+  if (LOADED[sprintf ("%s:%s", ns, file)] && 0 == qualifier_exists ("force"))
     return;
 
   try

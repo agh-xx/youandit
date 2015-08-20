@@ -36,9 +36,9 @@ define main ()
   if (NULL == proc->is_arg ("--help", args) &&
       NULL == proc->is_arg ("--info", args))
     ifnot (gotopager)
-      (@CW.gotopager) (CW, file;drawonly);
+      ved (file;drawonly);
     else
-      (@CW.gotopager) (CW, file);
+      ved (file;drawwind);
   else
     CW.drawwind ();
 

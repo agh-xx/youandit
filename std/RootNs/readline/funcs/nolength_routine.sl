@@ -1,7 +1,14 @@
 define main (self, commands)
 {
   if ('@' == self.cur.chr && NULL == struct_field_exists (self, "disable_pager"))
-   CW.gotopager ();
+    {
+    if (CW.type == "Shell_Type")
+      ved (;drawwind, func='G');
+    else
+      ved (;drawwind);
+    
+    throw GotoPrompt;
+    }
  
   if ('!' == self.cur.chr && NULL == struct_field_exists (self, "disable_shell"))
     throw Return, " ", self.shell_routine (commands);

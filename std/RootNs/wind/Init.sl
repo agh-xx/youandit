@@ -1,13 +1,3 @@
-private define gotopager ()
-{
-  variable
-    args = _NARGS > 1 ?__pop_list (_NARGS - 1) : {},
-    self = ();
- 
-  self.exec (sprintf ("%s/funcs/%s", path_dirname (__FILE__), _function_name ()),
-    __push_list (args);;__qualifiers ());
-}
-
 private define makeframename (self)
 {
   return self.exec (sprintf ("%s/funcs/%s", path_dirname (__FILE__), _function_name ())
@@ -192,7 +182,6 @@ define main (self, name, type)
     addframe = &addframe,
     drawwind = &drawwind,
     setwindim = &setwindim,
-    gotopager = &gotopager,
     setframes = &setframes,
     drawframe = &drawframe,
     gotoprompt = &gotoprompt,

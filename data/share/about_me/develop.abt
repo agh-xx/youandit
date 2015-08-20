@@ -277,3 +277,13 @@ retval = get[var][map].ref ("var");
 retval = get[var][map].ref ("should_be_null");
 () = fprintf (stdout, "expected NULL received %S ... %s\n", retval,
   NULL == retval ? "succeeded" : "failed");
+
+to know where i really am
+   the coding part, where there is some kind of movement
+     see smg -  ved|viewer...
+     seems to be glue-ing better with a module that knows both
+   because the energy which spends to find the exact pointer and index
+   position is high considering the value (which is at great importance,
+         because for its coding part, which should give accuration)
+         but it doesn't need to steel energy from the real focus (which
+               is the intention goal of the application

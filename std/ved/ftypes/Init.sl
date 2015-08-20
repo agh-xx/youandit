@@ -32,6 +32,7 @@ typedef struct
   draw,
   mainloop,
   lexicalhl,
+  autoindent,
   } Ftype_Type;
 
 typedef struct
@@ -57,6 +58,11 @@ typedef struct
   } Insert_Type;
 
 variable BUFFERS = Assoc_Type[Ftype_Type];
+variable TTY_INITED = 0;
+define set_modified ();
+define writetofile ();
+define seltoX ();
+define getch ();
 
 variable
   cf_,
@@ -93,6 +99,7 @@ private define draw (t)
 }
 
 private define lexicalhl ();
+private define autoindent ();
 
 define init_ftype (ftype)
 {
@@ -110,6 +117,7 @@ define init_ftype (ftype)
   type.draw = draw (ftype);
   type.quit = quit (ftype);
   type.lexicalhl = &lexicalhl;
+  type.autoindent = &autoindent;
   type._autoindent = 0;
 
   return type;

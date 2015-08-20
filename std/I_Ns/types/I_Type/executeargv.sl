@@ -132,13 +132,13 @@ define main (self, argv)
     {
     ifnot (NULL == routine)
       {
-      self.drawframe (0;reread_buf);
-      self.setinfoline (buf, 0, length (buf.ar_len));
-      self.writeinfolines ();
+      %self.drawframe (0;reread_buf);
+      %self.setinfoline (buf, 0, length (buf.ar_len));
+      %self.writeinfolines ();
       ifnot (gotopager)
-        self.gotopager (buf.fname;drawonly, func='G');
+        ved (buf.fname;drawonly, func='G');
       else
-        self.gotopager (buf.fname;func='G');
+        ved (buf.fname;func='G');
       }
 
     self.gotoprompt ();

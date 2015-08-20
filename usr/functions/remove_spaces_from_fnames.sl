@@ -34,9 +34,9 @@ define main ()
   writefile (sprintf ("EXIT CODE: %d", retval), file; mode = "a");
 
   ifnot (gotopager)
-    (@CW.gotopager) (CW, file;drawonly);
+    ved (file;drawonly);
   else
-    (@CW.gotopager) (CW, file);
+    ved (file;drawwind);
 
   throw GotoPrompt;
 }

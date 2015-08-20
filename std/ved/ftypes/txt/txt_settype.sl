@@ -1,7 +1,12 @@
 define txt_settype (s, fname, rows, lines)
 {
-  s._maxlen = COLUMNS;
   s._fname = fname;
+
+  s._maxlen = COLUMNS;
+  s._indent = 0;
+  s._shiftwidth = 4;
+  s._linlen = s._maxlen - s._indent;
+
   s.st_ = stat_file (s._fname);
   if (NULL == s.st_)
     s.st_ = struct
@@ -14,9 +19,6 @@ define txt_settype (s, fname, rows, lines)
       };
 
   s.rows = rows;
-  s._indent = 0;
-  s._shiftwidth = 4;
-  s._linlen = s._maxlen - s._indent;
   s.lines = NULL == lines ? getlines (s._fname, s._indent, s.st_) : lines;
   s._flags = 0;
  
